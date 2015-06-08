@@ -1,0 +1,75 @@
+<dom-module id="delay-cfg">
+  <style>
+  distrib-cfg, reorder-cfg {
+    margin-top: 10px;
+  }
+  </style>
+
+  <template>
+    <paper-checkbox name="chk-delay" checked="{{ enabled }}">Delay</paper-checkbox>
+
+    <summary is="div">
+      Adds the chosen delay to the packets outgoing to chosen network
+      interface. The optional parameters allow to introduce a delay variation
+      and a correlation. Delay and jitter values are expressed in ms while
+      correlation is percentage.
+    </summary>
+
+    <section hidden$="{{ !enabled }}">
+      <float-slider label="Time:"
+                    name="delay_time"
+                    units="ms"
+                    value="{{ delay }}"
+                    disabled$="{{ !enabled }}"
+                    max="10000">
+        Amount of time to delay each packet
+      </float-slider>
+
+      <float-slider label="Jitter:"
+                    name="delay_jitter"
+                    units="ms"
+                    value="{{ jitter }}"
+                    disabled$="{{ !enabled }}"
+                    max="10000">
+        <i>Optional</i>. Delay each packet &#177; the jitter value
+      </float-slider>
+
+      <float-slider label="Correlation:"
+                    name="delay_corr"
+                    units="%"
+                    value="{{ correlation }}"
+                    disabled$="{{ !enabled }}">
+        <i>Optional</i>. Amount that the next delay value depends on the previous delay value
+      </float-slider>
+
+      <p>
+      <reorder-cfg disabled$="{{ !enabled }}"></reorder-cfg>
+      </p>
+
+      <!--
+      TODO: Figure out how to detect which distribution model is currently
+      active so it can be set using the API.
+      //-->
+      <section hidden="true">
+        <h4>Distribution</h4>
+
+        <paper-radio-group name="distribution" selected="normal">
+          <paper-radio-button name="uniform" disabled$="{{ !enabled }}">Uniform</paper-radio-button>
+          <paper-radio-button name="normal" disabled$="{{ !enabled }}">Normal</paper-radio-button>
+          <paper-radio-button name="pareto" disabled$="{{ !enabled }}">Pareto</paper-radio-button>
+          <paper-radio-button name="paretonormal" disabled$="{{ !enabled }}">Pareto-Normal</paper-radio-button>
+        </paper-radio-group>
+      </section>
+    </section>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'delay-cfg',
+
+  properties: {
+    enabled: Boolean
+  }
+});
+</script>

@@ -1,0 +1,71 @@
+<dom-module id="percent-correlation">
+  <template>
+    <float-slider label="Percent:"
+                  name$="{{ pctName }}"
+                  units="%"
+                  value="{{ percent }}"
+                  disabled$="{{ disabled }}">
+    </float-slider>
+
+    <float-slider label="Correlation:"
+                  name$="{{ corrName }}"
+                  units="%"
+                  value="{{ correlation }}"
+                  disabled$="{{ disabled }}">
+      <i>Optional</i>
+    </float-slider>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  Polymer({
+    is: 'percent-correlation',
+
+    properties: {
+      prefix: {
+        type: String,
+        value: '',
+        observer: 'applyPrefix'
+      },
+      pctName: {
+        type: String,
+        value: 'pct'
+      },
+      corrName: {
+        type: String,
+        value: 'corr'
+      },
+      disabled: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+      percent: {
+        type: Number,
+        value: 0,
+        notify: true
+      },
+      correlation: {
+        type: Number,
+        value: 0,
+        notify: true
+      }
+    },
+
+    ready: function () {
+      this.applyPrefix();
+    },
+
+    applyPrefix: function() {
+      if (!_.isEmpty(this.prefix)) {
+        this.pctName = this.prefix + '_pct';
+        this.corrName = this.prefix + '_corr';
+      } else {
+        this.pctName = 'pct';
+        this.corrName = 'corr';
+      }
+    }
+  });
+})();
+</script>

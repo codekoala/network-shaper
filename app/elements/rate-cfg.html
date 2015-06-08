@@ -1,0 +1,133 @@
+<dom-module id="rate-cfg">
+  <style>
+  .note {
+    background-color: orange;
+    margin: 10px;
+    padding: 10px;
+    font-weight: lighter;
+  }
+  </style>
+
+  <template>
+    <paper-checkbox name="chk-rate" checked="{{ enabled }}">Rate Limit</paper-checkbox>
+
+    <summary>
+      Delay packets based on packet size.
+    </summary>
+
+    <paper-material elevation="1" class="note" hidden$="{{ !enabled }}">
+      Rate throttling is limited by several factors. The kernel clock
+      granularity avoids a perfect shaping at a specific level. This will show
+      up in an artificial packet compression (bursts). Network adapter buffers
+      can also add artificial delay.
+    </paper-material>
+
+    <section hidden$="{{ !enabled }}">
+      <float-slider label="Rate:"
+                    name="rate_speed"
+                    units="kb/s"
+                    value="{{ rate }}"
+                    disabled$="{{ !enabled }}"
+                    max="1000000">
+        Maximum bitrate in kilobits per second
+      </float-slider>
+
+      <float-slider label="Packet Overhead:"
+                    name="rate_pkt_overhead"
+                    step="1"
+                    units="bytes"
+                    value="{{ packetoverhead }}"
+                    disabled$="{{ packetOverheadDisabled }}"
+                    min="-1000"
+                    max="1000">
+        <i>Optional</i>. Per packet overhead and can be negative. A positive
+        value can be used to simulate additional link layer headers. A negative
+        value can be used to artificial strip the Ethernet header (e.g. -14)
+        and/or simulate a link layer header compression scheme.
+      </float-slider>
+
+      <float-slider label="Cell size:"
+                    name="rate_cell_size"
+                    step="1"
+                    units="bytes"
+                    value="{{ cellsize }}"
+                    disabled$="{{ cellSizeDisabled }}"
+                    max="1000">
+        <i>Optional</i>. Can be used to simulate link layer schemes. ATM, for
+        example, has an payload cell size of 48 bytes and 5 byte per cell
+        header. If a packet is 50 bytes then ATM must use two cells: 2 * 48
+        bytes payload including 2 * 5 byte header, thus consume 106 byte on the
+        wire.
+      </float-slider>
+
+      <float-slider label="Cell overhead:"
+                    name="rate_cell_overhead"
+                    step="1"
+                    units="bytes"
+                    value="{{ celloverhead }}"
+                    disabled$="{{ cellOverheadDisabled }}"
+                    min="-100"
+                    max="100">
+        <i>Optional</i>. Can be used to specify per cell overhead--5 for our
+        ATM example. Cell overhead can be negative, but use negative values
+        with caution.
+      </float-slider>
+    </section>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'rate-cfg',
+
+  properties: {
+    enabled: Boolean,
+    rate: {
+      type: Number,
+      notify: true,
+      observer: 'togglePacketOverhead'
+    },
+    packetoverhead: {
+      type: Number,
+      notify: true,
+      observer: 'toggleCellSize'
+    },
+    cellsize: {
+      type: Number,
+      notify: true,
+      observer: 'toggleCellOverhead'
+    }
+  },
+
+  ready: function() {
+    this.togglePacketOverhead();
+    this.toggleCellSize();
+  },
+
+  togglePacketOverhead: function() {
+    if (this.enabled) {
+      this.packetOverheadDisabled = !(
+        (_.isNumber(this.rate) && this.rate > 0)
+      );
+    } else {
+      this.packetOverheadDisabled = true;
+    }
+  },
+
+  toggleCellSize: function() {
+    if (!this.packetOverheadDisabled) {
+      this.cellSizeDisabled = !(_.isNumber(this.packetoverhead) && this.packetoverhead !== 0);
+    } else {
+      this.cellSizeDisabled = true;
+    }
+  },
+
+  toggleCellOverhead: function() {
+    if (!this.cellSizeDisabled) {
+      this.cellOverheadDisabled = !(_.isNumber(this.cellsize) && this.cellsize > 0);
+    } else {
+      this.cellOverheadDisabled = true;
+    }
+  }
+});
+</script>

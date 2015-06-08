@@ -1,0 +1,26 @@
+<dom-module id="loss-cfg">
+  <template>
+    <paper-checkbox name="chk-loss" checked="{{ enabled }}">Packet Loss</paper-checkbox>
+
+    <summary>
+      Adds an independent loss probability to the packets outgoing from the
+      chosen network interface. It is also possible to add a correlation, but
+      this option is now deprecated due to the noticed bad behavior.
+    </summary>
+
+    <section hidden$="{{ !enabled }}">
+      <percent-correlation prefix="loss" disabled$="{{ !enabled }}" percent="5" correlation="10"></percent-correlation>
+    </section>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'loss-cfg',
+
+  properties: {
+    enabled: Boolean,
+    gap: Number
+  }
+});
+</script>

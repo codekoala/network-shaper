@@ -1,0 +1,80 @@
+<dom-module id="float-slider">
+  <style>
+  paper-slider {
+    width: 100%;
+  }
+
+  paper-slider::shadow paper-input#input {
+    width: 70px;
+  }
+
+  paper-slider::shadow > div.paper-slider {
+    width: calc(100% - 105px) !important;
+  }
+
+  unit {
+    padding-left: 15px;
+    min-width: 30px;
+  }
+
+  :host([disabled]) div.float-slider,
+  :host([disabled]) subtitle {
+    color: #d0d0d0;
+  }
+
+  div.float-slider {
+    @apply(--layout-horizontal);
+    @apply(--layout-center);
+  }
+  div.float-slider label {
+    width: 150px;
+  }
+  </style>
+
+  <template>
+    <div class="float-slider">
+      <label>{{ label }}</label>
+      <paper-slider step="{{ step }}" value="{{ value }}" disabled$="{{ disabled }}" min="{{ min }}" max="{{ max }}" editable></paper-slider>
+
+      <template is="dom-if" if="[[ units ]]">
+        <unit>[[ units ]]</unit>
+      </template>
+    </div>
+
+    <subtitle><content></content></subtitle>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'float-slider',
+
+  properties: {
+    step: {
+      type: Number,
+      value: 0.1,
+      notify: true
+    },
+    value: {
+      type: Number,
+      value: 0.0,
+      notify: true
+    },
+    disabled: {
+      type: Boolean,
+      value: false,
+      notify: true
+    },
+    min: {
+      type: Number,
+      value: 0.0,
+      notify: true
+    },
+    max: {
+      type: Number,
+      value: 100.0,
+      notify: true
+    }
+  }
+});
+</script>
