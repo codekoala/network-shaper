@@ -10,18 +10,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 )
 
 var (
-	// inDev (internal device) is the name of the network interface which
-	// connects to the same switch/router of the machines whose traffic shall
-	// be shaped
-	inDev = flag.String("int", "eth0", "Name of NIC on internal network")
-
-	// exDev (external device) is the name of the network interface which
-	// connects the restricted devices to other services, such as the Internet
-	exDev = flag.String("ext", "eth1", "Name of NIC on external network")
-
 	// host is the interface that will accept web requests. Use the default
 	// "0.0.0.0" to bind to all interfaces
 	host = flag.String("bind", "0.0.0.0", "Bind to this address for the web UI")
@@ -29,40 +21,42 @@ var (
 	// port is the port which shall accept web requests on the interface
 	// specified above. The default is port 81 as a cheap check for root
 	// privileges (which you need in order to use netem itself)
-	port = flag.Int("port", 81, "Bind to this port")
+	port = flag.Int("port", 80, "Bind to this port")
+
+	// nicName is the name of the network interface to which netem settings
+	// will be applied
+	nicName string
 )
 
 func init() {
 	flag.Parse()
+
+	if len(os.Args) < 2 {
+		log.Fatalln("Please specify a network interface")
+	} else if len(os.Args) > 2 {
+		log.Fatalln("Too many arguments")
+	}
+
+	nics, _ := net.Interfaces()
+	for _, nic := range nics {
+		if nic.Name == os.Args[1] {
+			nicName = os.Args[1]
+			return
+		}
+	}
+
+	log.Fatalln("Invalid network interface name")
 }
 
 func main() {
 	// allow netem configuration to be removed
-	http.HandleFunc("/remove/internal", func(w http.ResponseWriter, req *http.Request) {
-		removeConfig(*inDev, w, req)
-	})
-	http.HandleFunc("/remove/external", func(w http.ResponseWriter, req *http.Request) {
-		removeConfig(*exDev, w, req)
-	})
+	http.HandleFunc("/remove", removeConfig)
 
 	// allow netem configuration to be updated
-	http.HandleFunc("/apply/internal", func(w http.ResponseWriter, req *http.Request) {
-		applyConfig(*inDev, w, req)
-	})
-	http.HandleFunc("/apply/external", func(w http.ResponseWriter, req *http.Request) {
-		applyConfig(*exDev, w, req)
-	})
+	http.HandleFunc("/apply", applyConfig)
 
 	// expose the current netem configuration
-	http.HandleFunc("/refresh/internal", func(w http.ResponseWriter, req *http.Request) {
-		refreshConfig(*inDev, w, req)
-	})
-	http.HandleFunc("/refresh/external", func(w http.ResponseWriter, req *http.Request) {
-		refreshConfig(*exDev, w, req)
-	})
-
-	// allow the user to select from the NICs available on this system
-	http.HandleFunc("/nics", getValidNics)
+	http.HandleFunc("/refresh", refreshConfig)
 
 	// serve static files for the web UI
 	http.Handle("/", http.FileServer(&assetfs.AssetFS{
@@ -74,8 +68,6 @@ func main() {
 	// begin accepting web requests
 	bind := fmt.Sprintf("%s:%d", *host, *port)
 	log.Println("Listening at http://%s", bind)
-	log.Println("Internal NIC:", *inDev)
-	log.Println("External NIC:", *exDev)
 
 	if err := http.ListenAndServe(bind, nil); err != nil {
 		log.Fatalln(err)
@@ -85,8 +77,8 @@ func main() {
 // refreshConfig queries the current netem configuration for the specified
 // device and returns it as JSON to the client. Configuration may be requested
 // using any HTTP method.
-func refreshConfig(device string, w http.ResponseWriter, req *http.Request) {
-	n := ParseCurrentNetem(device)
+func refreshConfig(w http.ResponseWriter, req *http.Request) {
+	n := ParseCurrentNetem(nicName)
 	j, err := json.Marshal(n)
 	if err != nil {
 		msg := "Failed to parse netem configuration: " + err.Error()
@@ -103,14 +95,14 @@ func refreshConfig(device string, w http.ResponseWriter, req *http.Request) {
 
 // applyConfig tries to update netem configuration for the specified device.
 // Changes must be submitted as an HTTP POST request.
-func applyConfig(device string, w http.ResponseWriter, req *http.Request) {
+func applyConfig(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		w.WriteHeader(405)
 		return
 	}
 
 	var msg string
-	log.Println("Updating netem for", device)
+	log.Println("Updating netem for", nicName)
 
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -135,7 +127,7 @@ func applyConfig(device string, w http.ResponseWriter, req *http.Request) {
 	}
 
 	// apply the new settings
-	err = netem.Apply(device)
+	err = netem.Apply(nicName)
 	if err != nil {
 		w.WriteHeader(400)
 		msg = "Failed to apply settings: " + err.Error()
@@ -150,33 +142,14 @@ func applyConfig(device string, w http.ResponseWriter, req *http.Request) {
 // removeConfig will remove our netem settings from the specified device,
 // reverting back to the default configuration. Once complete, the device's
 // netem settings are sent back to the client.
-func removeConfig(device string, w http.ResponseWriter, req *http.Request) {
+func removeConfig(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		w.WriteHeader(405)
 		return
 	}
 
-	log.Println("Removing netem configuration for", device)
-	RemoveNetemConfig(device)
+	log.Println("Removing netem configuration for", nicName)
+	RemoveNetemConfig(nicName)
 
-	refreshConfig(device, w, req)
-}
-
-func getValidNics(w http.ResponseWriter, req *http.Request) {
-	if req.Method != "GET" {
-		w.WriteHeader(405)
-		return
-	}
-
-	nics, _ := net.Interfaces()
-	nicsJson, err := json.Marshal(nics)
-	if err != nil {
-		msg := "Failed to serialize NICs: " + err.Error()
-		log.Println(msg)
-
-		w.WriteHeader(500)
-		w.Write([]byte(msg))
-	} else {
-		w.Write(nicsJson)
-	}
+	refreshConfig(w, req)
 }
