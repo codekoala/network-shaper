@@ -14,6 +14,8 @@ import (
 )
 
 var (
+	VERSION string
+
 	// host is the interface that will accept web requests. Use the default
 	// "0.0.0.0" to bind to all interfaces
 	host = flag.String("bind", "0.0.0.0", "Bind to this address for the web UI")
@@ -29,6 +31,8 @@ var (
 )
 
 func init() {
+	log.Println("Starting Network Shaper", VERSION)
+
 	flag.Parse()
 
 	if len(os.Args) < 2 {
@@ -67,7 +71,7 @@ func main() {
 
 	// begin accepting web requests
 	bind := fmt.Sprintf("%s:%d", *host, *port)
-	log.Println("Listening at http://%s", bind)
+	log.Printf("Listening at http://%s\n", bind)
 
 	if err := http.ListenAndServe(bind, nil); err != nil {
 		log.Fatalln(err)
