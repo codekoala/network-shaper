@@ -4,5 +4,6 @@ test/temp
 bower_components
 .tmp
 test/bower_components/
-server/shaper
+server/network-shaper
 server/bindata*.go
+*.rpm

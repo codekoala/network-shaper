@@ -1,4 +1,4 @@
-OUT := shaper
+OUT := network-shaper
 ASSETS := ../dist
 
 all:

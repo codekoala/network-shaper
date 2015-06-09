@@ -1,0 +1,11 @@
+[Unit]
+Description=Network Traffic Shaper
+
+[Service]
+EnvironmentFile=/etc/network-shaper
+ExecStart=/usr/sbin/network-shaper $OPTIONS
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
