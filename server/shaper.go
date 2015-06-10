@@ -13,14 +13,16 @@ import (
 )
 
 var (
+	VERSION = "dev"
+
 	// inDev (internal device) is the name of the network interface which
 	// connects to the same switch/router of the machines whose traffic shall
 	// be shaped
-	inDev = flag.String("int", "eth0", "Name of NIC on internal network")
+	inDev = flag.String("int", "", "Name of NIC on internal network")
 
 	// exDev (external device) is the name of the network interface which
 	// connects the restricted devices to other services, such as the Internet
-	exDev = flag.String("ext", "eth1", "Name of NIC on external network")
+	exDev = flag.String("ext", "", "Name of NIC on external network")
 
 	// host is the interface that will accept web requests. Use the default
 	// "0.0.0.0" to bind to all interfaces
@@ -29,11 +31,37 @@ var (
 	// port is the port which shall accept web requests on the interface
 	// specified above. The default is port 81 as a cheap check for root
 	// privileges (which you need in order to use netem itself)
-	port = flag.Int("port", 81, "Bind to this port")
+	port = flag.Int("port", 80, "Bind to this port")
 )
 
 func init() {
+	var inValid, exValid bool
+
+	log.Println("Starting Network Shaper", VERSION)
+
 	flag.Parse()
+
+	nics, _ := net.Interfaces()
+	for _, nic := range nics {
+		if nic.Name == *inDev {
+			inValid = true
+		}
+		if nic.Name == *exDev {
+			exValid = true
+		}
+	}
+
+	if !inValid {
+		log.Fatalln("Invalid internal network interface name:", *inDev)
+	}
+
+	if !exValid {
+		log.Fatalln("Invalid external network interface name:", *exDev)
+	}
+
+	if *inDev == *exDev {
+		log.Fatalln("You must specify different NICs for your internal and external networks")
+	}
 }
 
 func main() {
@@ -73,7 +101,7 @@ func main() {
 
 	// begin accepting web requests
 	bind := fmt.Sprintf("%s:%d", *host, *port)
-	log.Println("Listening at http://%s", bind)
+	log.Printf("Listening at http://%s\n", bind)
 	log.Println("Internal NIC:", *inDev)
 	log.Println("External NIC:", *exDev)
 
@@ -162,6 +190,7 @@ func removeConfig(device string, w http.ResponseWriter, req *http.Request) {
 	refreshConfig(device, w, req)
 }
 
+// getValidNics offers a list of NICs that are present on this system
 func getValidNics(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "GET" {
 		w.WriteHeader(405)
