@@ -1,0 +1,19 @@
+$tab-base-color: $neutral-light-color !dynamic;
+$tab-base-color-over: mix($base-color, $tab-base-color, 20%) !dynamic;
+$tab-base-color-active: $base-highlight-color !dynamic;
+$tab-base-color-disabled: $tab-base-color !dynamic;
+
+$tab-border-width: 1px !dynamic;
+
+$tab-border-color: $neutral-light-color !dynamic;
+$tab-border-color-active: $tab-base-color-active !dynamic;
+$tab-border-color-disabled: $tab-border-color !dynamic;
+
+$tab-inner-border-color-focus: $tab-base-color-active !dynamic;
+$tab-inner-border-color-focus-over: $tab-inner-border-color-focus !dynamic;
+
+$tab-color: #000 !dynamic;
+$tab-color-active: #fff !dynamic;
+$tab-color-disabled: $tab-color !dynamic;
+
+$tab-padding: 3px 8px !dynamic;

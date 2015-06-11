@@ -1,0 +1,19 @@
+/**
+ * @var {boolean}
+ * `true` to include the FontAwesome font-face for use in the theme or application.
+ */
+$enable-font-awesome: false !dynamic;
+
+$fa-font-path: get-resource-path('fonts');
+
+@import "_mixins";
+@import "_path";
+@import "_core";
+@import "_larger";
+@import "_fixed-width";
+@import "_list";
+@import "_bordered-pulled";
+@import "_animated";
+@import "_rotated-flipped";
+@import "_stacked";
+@import "_icons";

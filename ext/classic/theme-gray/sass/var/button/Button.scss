@@ -1,0 +1,33 @@
+/** @class Ext.button.Button */
+//
+
+$button-default-base-color: #f8f8f8 !dynamic;
+$button-default-base-color-over: #f3f3f3 !dynamic;
+$button-default-base-color-focus: $button-default-base-color-over !dynamic;
+$button-default-base-color-pressed: #d6d6d6 !dynamic;
+$button-default-base-color-disabled: adjust-color($base-color, $hue: 0deg, $saturation: -55.556%, $lightness: 12.745%) !dynamic; //F7F7F7
+
+$button-default-border-color: #bbbbbb !dynamic;
+$button-default-border-color-over: #9d9d9d !dynamic;
+$button-default-border-color-focus: $button-default-border-color-over !dynamic;
+$button-default-border-color-pressed: $button-default-border-color-over !dynamic;
+$button-default-border-color-disabled: adjust-color($button-default-base-color-disabled, $hue: 0deg, $saturation: 0%, $lightness: -8.627%) !dynamic;
+
+$button-default-background-gradient: 'matte' !dynamic;
+$button-default-background-gradient-over: 'matte' !dynamic;
+$button-default-background-gradient-focus: 'matte' !dynamic;
+$button-default-background-gradient-pressed: 'matte-reverse' !dynamic;
+$button-default-background-gradient-disabled: 'matte' !dynamic;
+
+$button-toolbar-border-color-over: $button-default-border-color-over !dynamic;
+$button-toolbar-border-color-focus: $button-default-border-color-focus !dynamic;
+$button-toolbar-border-color-pressed: $button-default-border-color-pressed !dynamic;
+$button-toolbar-border-color-disabled: $button-default-border-color-disabled !dynamic;
+
+$button-toolbar-background-color-over: $button-default-base-color-over !dynamic;
+$button-toolbar-background-color-focus: $button-default-base-color-focus !dynamic;
+$button-toolbar-background-color-pressed: $button-default-base-color-pressed !dynamic;
+
+$button-toolbar-background-gradient-over: $button-default-background-gradient-over !dynamic;
+$button-toolbar-background-gradient-focus: $button-default-background-gradient-focus !dynamic;
+$button-toolbar-background-gradient-pressed: $button-default-background-gradient-pressed !dynamic;

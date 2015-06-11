@@ -1,0 +1,65 @@
+$button-default-color: $light-color !dynamic;
+$button-default-base-color: $base-color !dynamic;
+$button-default-background-gradient: null !dynamic;
+$button-default-background-gradient-over: null !dynamic;
+$button-default-background-gradient-focus: null !dynamic;
+$button-default-background-gradient-pressed: null !dynamic;
+$button-default-background-gradient-focus-over: null !dynamic;
+$button-default-background-gradient-focus-pressed: null !dynamic;
+$button-default-background-gradient-disabled: null !dynamic;
+
+$button-toolbar-background-gradient: null !dynamic;
+$button-toolbar-background-gradient-over: null !dynamic;
+$button-toolbar-background-gradient-focus: null !dynamic;
+$button-toolbar-background-gradient-pressed: null !dynamic;
+$button-toolbar-background-gradient-focus-over: null !dynamic;
+$button-toolbar-background-gradient-focus-pressed: null !dynamic;
+$button-toolbar-background-gradient-disabled: null !dynamic;
+
+$button-toolbar-color: $highlight-color !dynamic;
+$button-toolbar-border-color: $neutral-color !dynamic;
+$button-toolbar-split-line-color: $button-toolbar-border-color !dynamic;
+$button-toolbar-inner-border-color-focus: $base-color !dynamic;
+
+$button-default-border-color: mix(#000, $button-default-base-color, 7%) !dynamic;
+
+$button-small-border-radius: 0 !dynamic;
+$button-medium-border-radius: 0 !dynamic;
+$button-large-border-radius: 0 !dynamic;
+$button-grid-cell-border-radius: 0 !dynamic;
+
+$button-small-font-weight: $font-weight-bold !dynamic;
+$button-medium-font-weight: $font-weight-bold !dynamic;
+$button-large-font-weight: $font-weight-bold !dynamic;
+
+$button-split-line-width: 1px !dynamic;
+
+$button-icon-spacing: 8px !dynamic;
+$button-small-padding: 7px !dynamic;
+$button-small-icon-size: 16px !dynamic;
+$button-medium-padding: 8px !dynamic;
+$button-medium-icon-size: 20px !dynamic;
+$button-large-padding: 9px !dynamic;
+$button-large-icon-size: 24px !dynamic;
+
+$button-small-arrow-width: 18px !dynamic;
+$button-small-arrow-height: 12px !dynamic;
+$button-medium-arrow-width: 20px !dynamic;
+$button-medium-arrow-height: 14px !dynamic;
+$button-large-arrow-width: 22px !dynamic;
+$button-large-arrow-height: 16px !dynamic;
+
+$button-small-split-width: 20px !dynamic;
+$button-small-split-height: 20px !dynamic;
+$button-medium-split-width: 26px !dynamic;
+$button-medium-split-height: 24px !dynamic;
+$button-large-split-width: 32px !dynamic;
+$button-large-split-height: 28px !dynamic;
+
+$button-small-glyph-font-size: 16px !dynamic;
+$button-medium-glyph-font-size: 20px !dynamic;
+$button-large-glyph-font-size: 24px !dynamic;
+
+$button-default-glyph-opacity: 1 !dynamic;
+$button-toolbar-glyph-opacity: 1 !dynamic;
+$button-toolbar-glyph-color: $neutral-dark-color !dynamic;

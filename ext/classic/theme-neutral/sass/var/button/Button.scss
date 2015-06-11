@@ -1,0 +1,2024 @@
+/** @class Ext.button.Button */
+//
+
+/**
+ * @var {number}
+ * The default width for a button's {@link #cfg-menu} arrow
+ */
+$button-arrow-width: 8px !dynamic;
+
+/**
+ * @var {number}
+ * The default height for a button's {@link #cfg-menu} arrow
+ */
+$button-arrow-height: 8px !dynamic;
+
+/**
+ * @var {number}
+ * The default height for a button's {@link #cfg-menu} arrow
+ */
+$button-arrow-height: 8px !dynamic;
+
+/**
+ * @var {number}
+ * The default width for a {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-split-width: 14px !dynamic;
+
+/**
+ * @var {number}
+ * The default height for a {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-split-height: 14px !dynamic;
+
+/**
+ * @var {number}
+ * The default width for a {@link Ext.button.Split Split Button}'s line.
+ * Themes that include the line in the arrow background image should set this to 0
+ */
+$button-split-line-width: 0 !dynamic;
+
+/**
+ * @var {number}
+ * The default space between a button's icon and text
+ */
+$button-icon-spacing: 4px !dynamic;
+
+/**
+ * @var {number}
+ * The default border-radius for a small {@link #scale} button
+ */
+$button-small-border-radius: 3px !dynamic;
+
+/**
+ * @var {number}
+ * The default border-width for a small {@link #scale} button
+ */
+$button-small-border-width: 1px !dynamic;
+
+/**
+ * @var {number}
+ * The default padding for a small {@link #scale} button
+ */
+$button-small-padding: 2px !dynamic;
+
+/**
+ * @var {number}
+ * The default horizontal padding to add to the left and right of the text element for
+ * a small {@link #scale} button
+ */
+$button-small-text-padding: 4px !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a small {@link #scale} button
+ */
+$button-small-font-size: ceil($font-size * .9) !dynamic; //11px
+
+/**
+ * @var {number}
+ * The default font-size for a small {@link #scale} button when the cursor is over the button
+ */
+$button-small-font-size-over: $button-small-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a small {@link #scale} button when the button is focused
+ */
+$button-small-font-size-focus: $button-small-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a small {@link #scale} button when the button is pressed
+ */
+$button-small-font-size-pressed: $button-small-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a small {@link #scale} button when the button is focused and
+ * the cursor is over the button
+ */
+$button-small-font-size-focus-over: $button-small-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a small {@link #scale} button when the button is focused and pressed
+ */
+$button-small-font-size-focus-pressed: $button-small-font-size-pressed !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a small {@link #scale} button when the button is disabled
+ */
+$button-small-font-size-disabled: $button-small-font-size !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a small {@link #scale} button
+ */
+$button-small-font-weight: $font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a small {@link #scale} button when the cursor is over the button
+ */
+$button-small-font-weight-over: $button-small-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a small {@link #scale} button when the button is focused
+ */
+$button-small-font-weight-focus: $button-small-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a small {@link #scale} button when the button is pressed
+ */
+$button-small-font-weight-pressed: $button-small-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a small {@link #scale} button when the button is focused
+ * and the cursor is over the button
+ */
+$button-small-font-weight-focus-over: $button-small-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a small {@link #scale} button when the button is focused
+ * and pressed
+ */
+$button-small-font-weight-focus-pressed: $button-small-font-weight-pressed !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a small {@link #scale} button when the button is disabled
+ */
+$button-small-font-weight-disabled: $button-small-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a small {@link #scale} button
+ */
+$button-small-font-family: $font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a small {@link #scale} button when the cursor is over the button
+ */
+$button-small-font-family-over: $button-small-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a small {@link #scale} button when the button is focused
+ */
+$button-small-font-family-focus: $button-small-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a small {@link #scale} button when the button is pressed
+ */
+$button-small-font-family-pressed: $button-small-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a small {@link #scale} button when the button is focused
+ * and the cursor is over the button
+ */
+$button-small-font-family-focus-over: $button-small-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a small {@link #scale} button when the button is focused
+ * and pressed
+ */
+$button-small-font-family-focus-pressed: $button-small-font-family-pressed !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a small {@link #scale} button when the button is disabled
+ */
+$button-small-font-family-disabled: $button-small-font-family !dynamic;
+
+/**
+ * @var {number}
+ * The line-height for the text in a small {@link #scale} button
+ */
+$button-small-line-height: 16px !dynamic;
+
+/**
+ * @var {number}
+ * The default icon size for a small {@link #scale} button
+ */
+$button-small-icon-size: 16px !dynamic;
+
+/**
+ * @var {number}
+ * The the font-size for small {@link #scale} button glyphs
+ */
+$button-small-glyph-font-size: $button-small-icon-size !dynamic;
+
+/**
+ * @var {number}
+ * The space between a small {@link #scale} button's icon and text
+ */
+$button-small-icon-spacing: $button-icon-spacing !dynamic;
+
+/**
+ * @var {number}
+ * The default width of a small {@link #scale} button's {@link #cfg-menu} arrow
+ */
+$button-small-arrow-width: $button-arrow-width !dynamic;
+
+/**
+ * @var {number}
+ * The default height of a small {@link #scale} button's {@link #cfg-menu} arrow
+ */
+$button-small-arrow-height: $button-arrow-height !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for a small button arrow when when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$button-small-arrow-glyph: $fa-var-caret-down 16px $font-icon-font-family !dynamic;
+
+/**
+ * @var {number}
+ * The default width of a small {@link #scale} {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-small-split-width: $button-split-width !dynamic;
+
+/**
+ * @var {number}
+ * The default height of a small {@link #scale} {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-small-split-height: $button-split-height !dynamic;
+
+/**
+ * @var {number}
+ * The width of a small {@link #scale} {@link Ext.button.Split Split Button}'s line.
+ * Themes that include the line in the arrow background image should set this to 0
+ */
+$button-small-split-line-width: $button-split-line-width !dynamic;
+
+/**
+ * @var {number}
+ * The default border-radius for a medium {@link #scale} button
+ */
+$button-medium-border-radius: 3px !dynamic;
+
+/**
+ * @var {number}
+ * The default border-width for a medium {@link #scale} button
+ */
+$button-medium-border-width: 1px !dynamic;
+
+/**
+ * @var {number}
+ * The default padding for a medium {@link #scale} button
+ */
+$button-medium-padding: 3px !dynamic;
+
+/**
+ * @var {number}
+ * The default horizontal padding to add to the left and right of the text element for
+ * a medium {@link #scale} button
+ */
+$button-medium-text-padding: 4px !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a medium {@link #scale} button
+ */
+$button-medium-font-size: $font-size !dynamic; //11px
+
+/**
+ * @var {number}
+ * The default font-size for a medium {@link #scale} button when the cursor is over the button
+ */
+$button-medium-font-size-over: $button-medium-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a medium {@link #scale} button when the button is focused
+ */
+$button-medium-font-size-focus: $button-medium-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a medium {@link #scale} button when the button is pressed
+ */
+$button-medium-font-size-pressed: $button-medium-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a medium {@link #scale} button when the button is focused
+ * and the cursor is over the button
+ */
+$button-medium-font-size-focus-over: $button-medium-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a medium {@link #scale} button when the button is focused
+ * and pressed
+ */
+$button-medium-font-size-focus-pressed: $button-medium-font-size-pressed !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a medium {@link #scale} button when the button is disabled
+ */
+$button-medium-font-size-disabled: $button-medium-font-size !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a medium {@link #scale} button
+ */
+$button-medium-font-weight: $font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a medium {@link #scale} button when the cursor is over the button
+ */
+$button-medium-font-weight-over: $button-medium-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a medium {@link #scale} button when the button is focused
+ */
+$button-medium-font-weight-focus: $button-medium-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a medium {@link #scale} button when the button is pressed
+ */
+$button-medium-font-weight-pressed: $button-medium-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a medium {@link #scale} button when the button is focused
+ * and the cursor is over the button
+ */
+$button-medium-font-weight-focus-over: $button-medium-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a medium {@link #scale} button when the button is focused
+ * and pressed
+ */
+$button-medium-font-weight-focus-pressed: $button-medium-font-weight-pressed !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a medium {@link #scale} button when the button is disabled
+ */
+$button-medium-font-weight-disabled: $button-medium-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a medium {@link #scale} button
+ */
+$button-medium-font-family: $font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a medium {@link #scale} button when the cursor is over the button
+ */
+$button-medium-font-family-over: $button-medium-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a medium {@link #scale} button when the button is focused
+ */
+$button-medium-font-family-focus: $button-medium-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a medium {@link #scale} button when the button is pressed
+ */
+$button-medium-font-family-pressed: $button-medium-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a medium {@link #scale} button when the button is focused
+ * and the cursor is over the button
+ */
+$button-medium-font-family-focus-over: $button-medium-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a medium {@link #scale} button when the button is focused
+ * and pressed
+ */
+$button-medium-font-family-focus-pressed: $button-medium-font-family-pressed !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a medium {@link #scale} button when the button is disabled
+ */
+$button-medium-font-family-disabled: $button-medium-font-family !dynamic;
+
+/**
+ * @var {number}
+ * The line-height for the text in a medium {@link #scale} button
+ */
+$button-medium-line-height: 16px !dynamic;
+
+/**
+ * @var {number}
+ * The default icon size for a medium {@link #scale} button
+ */
+$button-medium-icon-size: 24px !dynamic;
+
+/**
+ * @var {number}
+ * The the font-size for medium {@link #scale} button glyphs
+ */
+$button-medium-glyph-font-size: $button-medium-icon-size !dynamic;
+
+/**
+ * @var {number}
+ * The space between a medium {@link #scale} button's icon and text
+ */
+$button-medium-icon-spacing: $button-icon-spacing !dynamic;
+
+/**
+ * @var {number}
+ * The default width of a medium {@link #scale} button's {@link #cfg-menu} arrow
+ */
+$button-medium-arrow-width: $button-arrow-width !dynamic;
+
+/**
+ * @var {number}
+ * The default height of a medium {@link #scale} button's {@link #cfg-menu} arrow
+ */
+$button-medium-arrow-height: $button-arrow-height !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for a medium button arrow when when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$button-medium-arrow-glyph: $fa-var-caret-down 20px $font-icon-font-family !dynamic;
+
+/**
+ * @var {number}
+ * The default width of a medium {@link #scale} {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-medium-split-width: $button-split-width !dynamic;
+
+/**
+ * @var {number}
+ * The default height of a medium {@link #scale} {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-medium-split-height: $button-split-height !dynamic;
+
+/**
+ * @var {number}
+ * The width of a medium {@link #scale} {@link Ext.button.Split Split Button}'s line.
+ * Themes that include the line in the arrow background image should set this to 0
+ */
+$button-medium-split-line-width: $button-split-line-width !dynamic;
+
+/**
+ * @var {number}
+ * The default border-radius for a large {@link #scale} button
+ */
+$button-large-border-radius: 3px !dynamic;
+
+/**
+ * @var {number}
+ * The default border-width for a large {@link #scale} button
+ */
+$button-large-border-width: 1px !dynamic;
+
+/**
+ * @var {number}
+ * The default padding for a large {@link #scale} button
+ */
+$button-large-padding: 3px !dynamic;
+
+/**
+ * @var {number}
+ * The default horizontal padding to add to the left and right of the text element for
+ * a large {@link #scale} button
+ */
+$button-large-text-padding: 4px !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a large {@link #scale} button
+ */
+$button-large-font-size: $font-size !dynamic; //11px
+
+/**
+ * @var {number}
+ * The default font-size for a large {@link #scale} button when the cursor is over the button
+ */
+$button-large-font-size-over: $button-large-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a large {@link #scale} button when the button is focused
+ */
+$button-large-font-size-focus: $button-large-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a large {@link #scale} button when the button is pressed
+ */
+$button-large-font-size-pressed: $button-large-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a large {@link #scale} button when the button is focused
+ * and the cursor is over the button
+ */
+$button-large-font-size-focus-over: $button-large-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a large {@link #scale} button when the button is focused
+ * and pressed
+ */
+$button-large-font-size-focus-pressed: $button-large-font-size-pressed !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a large {@link #scale} button when the button is disabled
+ */
+$button-large-font-size-disabled: $button-large-font-size !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a large {@link #scale} button
+ */
+$button-large-font-weight: $font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a large {@link #scale} button when the cursor is over the button
+ */
+$button-large-font-weight-over: $button-large-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a large {@link #scale} button when the button is focused
+ */
+$button-large-font-weight-focus: $button-large-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a large {@link #scale} button when the button is pressed
+ */
+$button-large-font-weight-pressed: $button-large-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a large {@link #scale} button when the button is focused
+ * and the cursor is over the button
+ */
+$button-large-font-weight-focus-over: $button-large-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a large {@link #scale} button when the button is focused
+ * and pressed
+ */
+$button-large-font-weight-focus-pressed: $button-large-font-weight-pressed !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a large {@link #scale} button when the button is disabled
+ */
+$button-large-font-weight-disabled: $button-large-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a large {@link #scale} button
+ */
+$button-large-font-family: $font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a large {@link #scale} button when the cursor is over the button
+ */
+$button-large-font-family-over: $button-large-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a large {@link #scale} button when the button is focused
+ */
+$button-large-font-family-focus: $button-large-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a large {@link #scale} button when the button is pressed
+ */
+$button-large-font-family-pressed: $button-large-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a large {@link #scale} button when the button is focused
+ * and the cursor is over the button
+ */
+$button-large-font-family-focus-over: $button-large-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a large {@link #scale} button when the button is focused
+ * and pressed
+ */
+$button-large-font-family-focus-pressed: $button-large-font-family-pressed !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a large {@link #scale} button when the button is disabled
+ */
+$button-large-font-family-disabled: $button-large-font-family !dynamic;
+
+/**
+ * @var {number}
+ * The line-height for the text in a large {@link #scale} button
+ */
+$button-large-line-height: 16px !dynamic;
+
+/**
+ * @var {number}
+ * The default icon size for a large {@link #scale} button
+ */
+$button-large-icon-size: 32px !dynamic;
+
+/**
+ * @var {number}
+ * The the font-size for large {@link #scale} button glyphs
+ */
+$button-large-glyph-font-size: $button-large-icon-size !dynamic;
+
+/**
+ * @var {number}
+ * The space between a large {@link #scale} button's icon and text
+ */
+$button-large-icon-spacing: $button-icon-spacing !dynamic;
+
+/**
+ * @var {number}
+ * The default width of a large {@link #scale} button's {@link #cfg-menu} arrow
+ */
+$button-large-arrow-width: $button-arrow-width !dynamic;
+
+/**
+ * @var {number}
+ * The default height of a large {@link #scale} button's {@link #cfg-menu} arrow
+ */
+$button-large-arrow-height: $button-arrow-height !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for a large button arrow when when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$button-large-arrow-glyph: $fa-var-caret-down 24px $font-icon-font-family !dynamic;
+
+/**
+ * @var {number}
+ * The default width of a large {@link #scale} {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-large-split-width: $button-split-width !dynamic;
+
+/**
+ * @var {number}
+ * The default height of a large {@link #scale} {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-large-split-height: $button-split-height !dynamic;
+
+/**
+ * @var {number}
+ * The width of a large {@link #scale} {@link Ext.button.Split Split Button}'s line.
+ * Themes that include the line in the arrow background image should set this to 0
+ */
+$button-large-split-line-width: $button-split-line-width !dynamic;
+
+/**
+ * @var {color}
+ * The base color for the `default` button UI
+ */
+$button-default-base-color: $base-color !dynamic;
+
+/**
+ * @var {color}
+ * The base color for the `default` button UI when the cursor is over the button
+ */
+$button-default-base-color-over: button-default-background-color-over($button-default-base-color) !dynamic;
+
+/**
+ * @var {color}
+ * The base color for the `default` button UI when the button is focused
+ */
+$button-default-base-color-focus: button-default-background-color-focus($button-default-base-color) !dynamic;
+
+/**
+ * @var {color}
+ * The base color for the `default` button UI when the button is pressed
+ */
+$button-default-base-color-pressed: button-default-background-color-pressed($button-default-base-color) !dynamic;
+
+/**
+ * @var {color}
+ * The base color for the `default` button UI when the button is focused and the cursor
+ * is over the button
+ */
+$button-default-base-color-focus-over: $button-default-base-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The base color for the `default` button UI when the button is focused and pressed
+ */
+$button-default-base-color-focus-pressed: $button-default-base-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The base color for the `default` button UI when the button is disabled
+ */
+$button-default-base-color-disabled: button-default-background-color-disabled($button-default-base-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default` button UI
+ */
+$button-default-border-color: $button-default-base-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default` button UI when the cursor is over the button
+ */
+$button-default-border-color-over: button-default-border-color-over($button-default-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default` button UI when the button is focused
+ */
+$button-default-border-color-focus: button-default-border-color-focus($button-default-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default` button UI when the button is pressed
+ */
+$button-default-border-color-pressed: button-default-border-color-pressed($button-default-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default` button UI when the button is focused and the cursor
+ * is over the button
+ */
+$button-default-border-color-focus-over: $button-default-border-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default` button UI when the button is focused and pressed
+ */
+$button-default-border-color-focus-pressed: $button-default-border-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default` button UI when the button is disabled
+ */
+$button-default-border-color-disabled: button-default-border-color-disabled($button-default-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default` button UI
+ */
+$button-default-background-color: $button-default-base-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default` button UI when the cursor is over the button
+ */
+$button-default-background-color-over: $button-default-base-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default` button UI when the button is focused
+ */
+$button-default-background-color-focus: $button-default-base-color-focus !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default` button UI when the button is pressed
+ */
+$button-default-background-color-pressed: $button-default-base-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default` button UI when the button is focused and the
+ * cursor is over the button
+ */
+$button-default-background-color-focus-over: $button-default-background-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default` button UI when the button is focused and pressed
+ */
+$button-default-background-color-focus-pressed: $button-default-background-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default` button UI when the button is disabled
+ */
+$button-default-background-color-disabled: $button-default-base-color-disabled !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default` button UI.  Can be either the name of a
+ * predefined gradient or a list of color stops. Used as the `$type` parameter for
+ * {@link Global_CSS#background-gradient}.
+ */
+$button-default-background-gradient: 'glossy-button' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default` button UI when the cursor is over the button.
+ * Can be either the name of a predefined gradient or a list of color stops. Used as the
+ * `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-default-background-gradient-over: 'glossy-button-over' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default` button UI when the button is focused.  Can be
+ * either the name of a predefined gradient or a list of color stops. Used as the `$type`
+ * parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-default-background-gradient-focus: $button-default-background-gradient-over !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default` button UI when the button is pressed.  Can be
+ * either the name of a predefined gradient or a list of color stops. Used as the `$type`
+ * parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-default-background-gradient-pressed: 'glossy-button-pressed' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default` button UI when the button is focused and the
+ * cursor is over the button. Can be either the name of a predefined gradient or a list
+ * of color stops. Used as the `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-default-background-gradient-focus-over: $button-default-background-gradient-over !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default` button UI when the button is focused and
+ * pressed.  Can be either the name of a predefined gradient or a list of color stops.
+ * Used as the `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-default-background-gradient-focus-pressed: $button-default-background-gradient-pressed !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default` button UI when the button is disabled.  Can be
+ * either the name of a predefined gradient or a list of color stops. Used as the `$type`
+ * parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-default-background-gradient-disabled: 'glossy-button-disabled' !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default` button UI
+ */
+$button-default-color: #000 !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default` button UI when the cursor is over the button
+ */
+$button-default-color-over: button-default-color-over($button-default-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default` button UI when the button is focused
+ */
+$button-default-color-focus: button-default-color-focus($button-default-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default` button UI when the button is pressed
+ */
+$button-default-color-pressed: button-default-color-pressed($button-default-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default` button UI when the button is focused and the cursor
+ * is over the button
+ */
+$button-default-color-focus-over: $button-default-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default` button UI when the button is focused and pressed
+ */
+$button-default-color-focus-pressed: $button-default-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default` button UI when the button is disabled
+ */
+$button-default-color-disabled: button-default-color-disabled($button-default-color) !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default` button UI
+ */
+$button-default-inner-border-width: 'none' !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default` button UI when the cursor is over the button
+ */
+$button-default-inner-border-width-over: $button-default-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default` button UI when the button is focused
+ */
+$button-default-inner-border-width-focus: $button-default-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default` button UI when the button is pressed
+ */
+$button-default-inner-border-width-pressed: $button-default-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default` button UI when the button is focused and the
+ * cursor is over the button
+ */
+$button-default-inner-border-width-focus-over: $button-default-inner-border-width-focus !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default` button UI when the button is focused and pressed
+ */
+$button-default-inner-border-width-focus-pressed: $button-default-inner-border-width-focus !dynamic;
+
+/**
+ * @var {number/lipressed}
+ * The inner border-width for the `default` button UI when the button is disabled
+ */
+$button-default-inner-border-width-disabled: $button-default-inner-border-width !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default` button UI
+ */
+$button-default-inner-border-color: button-default-inner-border-color($button-default-background-color, $button-default-color) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default` button UI when the cursor is over the button
+ */
+$button-default-inner-border-color-over: button-default-inner-border-color-over($button-default-background-color-over, $button-default-color-over) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default` button UI when the button is focused
+ */
+$button-default-inner-border-color-focus: button-default-inner-border-color-focus($button-default-background-color-focus, $button-default-color-focus) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default` button UI when the button is pressed
+ */
+$button-default-inner-border-color-pressed: button-default-inner-border-color-pressed($button-default-background-color-pressed, $button-default-color-pressed) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default` button UI when the button is focused and the
+ * cursor is over the button
+ */
+$button-default-inner-border-color-focus-over: button-default-inner-border-color-focus-over($button-default-background-color-focus-over, $button-default-color-focus-over) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default` button UI when the button is focused and pressed
+ */
+$button-default-inner-border-color-focus-pressed: button-default-inner-border-color-focus-pressed($button-default-background-color-focus-pressed, $button-default-color-focus-pressed) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default` button UI when the button is disabled
+ */
+$button-default-inner-border-color-disabled: button-default-inner-border-color-disabled($button-default-background-color-disabled, $button-default-color-disabled) !dynamic;
+
+/**
+ * @var {number}
+ * The body outline width for the `default` button UI when the button is focused
+ */
+$button-default-body-outline-width-focus: 0 !dynamic;
+
+/**
+ * @var {string}
+ * The body outline-style for the `default` button UI when the button is focused
+ */
+$button-default-body-outline-style-focus: dotted !dynamic;
+
+/**
+ * @var {color}
+ * The body outline color for the `default` button UI when the button is focused
+ */
+$button-default-body-outline-color-focus: $button-default-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of the {@link #glyph} icon for the `default` button UI
+ */
+$button-default-glyph-color: $button-default-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph color for the button arrow of the `default` button UI when
+ * {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$button-default-arrow-glyph-color: $button-default-color !dynamic;
+
+/**
+ * @var {color}
+ * The color for a {@link Ext.button.Split Split Button}'s line in the `default` button UI.
+ * Only applicable when {@link #$button-split-width} is greater than 0.
+ */
+$button-default-split-line-color: $button-default-arrow-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The opacity of the {@link #glyph} icon for the `default` button UI
+ */
+$button-default-glyph-opacity: 0.5 !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default-toolbar` button UI
+ */
+$button-toolbar-border-color: $base-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default-toolbar` button UI when the cursor is over the button
+ */
+$button-toolbar-border-color-over: button-toolbar-border-color-over($button-toolbar-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default-toolbar` button UI when the button is focused
+ */
+$button-toolbar-border-color-focus: button-toolbar-border-color-focus($button-toolbar-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default-toolbar` button UI when the button is pressed
+ */
+$button-toolbar-border-color-pressed: button-toolbar-border-color-pressed($button-toolbar-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default-toolbar` button UI when the button is focused and the
+ * cursor is over the button
+ */
+$button-toolbar-border-color-focus-over: $button-toolbar-border-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default-toolbar` button UI when the button is focused and
+ * pressed
+ */
+$button-toolbar-border-color-focus-pressed: $button-toolbar-border-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `default-toolbar` button UI when the button is disabled
+ */
+$button-toolbar-border-color-disabled: button-toolbar-border-color-disabled($button-toolbar-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default-toolbar` button UI
+ */
+$button-toolbar-background-color: $base-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default-toolbar` button UI when the cursor is over the button
+ */
+$button-toolbar-background-color-over: button-toolbar-background-color-over($button-toolbar-background-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default-toolbar` button UI when the button is focused
+ */
+$button-toolbar-background-color-focus: button-toolbar-background-color-focus($button-toolbar-background-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default-toolbar` button UI when the button is pressed
+ */
+$button-toolbar-background-color-pressed: button-toolbar-background-color-pressed($button-toolbar-background-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default-toolbar` button UI when the button is focused
+ * and the cursor is over the button
+ */
+$button-toolbar-background-color-focus-over: $button-toolbar-background-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default-toolbar` button UI when the button is focused
+ * and pressed
+ */
+$button-toolbar-background-color-focus-pressed: $button-toolbar-background-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `default-toolbar` button UI when the button is disabled
+ */
+$button-toolbar-background-color-disabled: button-toolbar-background-color-disabled($button-toolbar-background-color) !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default-toolbar` button UI.  Can be either the name of
+ * a predefined gradient or a list of color stops. Used as the `$type` parameter for
+ * {@link Global_CSS#background-gradient}.
+ */
+$button-toolbar-background-gradient: 'glossy-button' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default-toolbar` button UI when the cursor is over the
+ * button. Can be either the name of a predefined gradient or a list of color stops. Used
+ * as the `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-toolbar-background-gradient-over: 'glossy-button-over' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default-toolbar` button UI when the button is focused.
+ * Can be either the name of a predefined gradient or a list of color stops. Used as the
+ * `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-toolbar-background-gradient-focus: $button-toolbar-background-gradient-over !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default-toolbar` button UI when the button is pressed.
+ * Can be either the name of a predefined gradient or a list of color stops. Used as the
+ * `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-toolbar-background-gradient-pressed: 'glossy-button-pressed' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default-toolbar` button UI when the button is focused
+ * and the cursor is over the button. Can be either the name of a predefined gradient or a
+ * list of color stops. Used as the `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-toolbar-background-gradient-focus-over: $button-toolbar-background-gradient-over !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default-toolbar` button UI when the button is focused
+ * and pressed. Can be either the name of a predefined gradient or a list of color stops.
+ * Used as the `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-toolbar-background-gradient-focus-pressed: $button-toolbar-background-gradient-pressed !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `default-toolbar` button UI when the button is disabled.
+ * Can be either the name of a predefined gradient or a list of color stops. Used as the
+ * `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-toolbar-background-gradient-disabled: 'glossy-button-disabled' !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default-toolbar` button UI
+ */
+$button-toolbar-color: #000 !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default-toolbar` button UI when the cursor is over the button
+ */
+$button-toolbar-color-over: button-toolbar-color-over($button-toolbar-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default-toolbar` button UI when the button is focused
+ */
+$button-toolbar-color-focus: button-toolbar-color-focus($button-toolbar-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default-toolbar` button UI when the button is pressed
+ */
+$button-toolbar-color-pressed: button-toolbar-color-pressed($button-toolbar-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default-toolbar` button UI when the button is focused and the
+ * cursor is over the button
+ */
+$button-toolbar-color-focus-over: $button-toolbar-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default-toolbar` button UI when the button is focused and pressed
+ */
+$button-toolbar-color-focus-pressed: $button-toolbar-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `default-toolbar` button UI when the button is disabled
+ */
+$button-toolbar-color-disabled: button-toolbar-color-disabled($button-toolbar-color) !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default-toolbar` button UI
+ */
+$button-toolbar-inner-border-width: 'none' !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default-toolbar` button UI when the cursor is over the button
+ */
+$button-toolbar-inner-border-width-over: $button-toolbar-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default-toolbar` button UI when the button is focused
+ */
+$button-toolbar-inner-border-width-focus: $button-toolbar-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default-toolbar` button UI when the button is pressed
+ */
+$button-toolbar-inner-border-width-pressed: $button-toolbar-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default-toolbar` button UI when the button is focused
+ * and the cursor is over the button
+ */
+$button-toolbar-inner-border-width-focus-over: $button-toolbar-inner-border-width-focus !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default-toolbar` button UI when the button is focused
+ * and pressed
+ */
+$button-toolbar-inner-border-width-focus-pressed: $button-toolbar-inner-border-width-focus !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `default-toolbar` button UI when the button is disabled
+ */
+$button-toolbar-inner-border-width-disabled: $button-toolbar-inner-border-width !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default-toolbar` button UI
+ */
+$button-toolbar-inner-border-color: button-toolbar-inner-border-color($button-toolbar-background-color, $button-toolbar-color) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default-toolbar` button UI when the cursor is over the button
+ */
+$button-toolbar-inner-border-color-over: button-toolbar-inner-border-color-over($button-toolbar-background-color-over, $button-toolbar-color-over) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default-toolbar` button UI when the button is focused
+ */
+$button-toolbar-inner-border-color-focus: button-toolbar-inner-border-color-focus($button-toolbar-background-color-focus, $button-toolbar-color-focus) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default-toolbar` button UI when the button is pressed
+ */
+$button-toolbar-inner-border-color-pressed: button-toolbar-inner-border-color-pressed($button-toolbar-background-color-pressed, $button-toolbar-color-pressed) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default-toolbar` button UI when the button is focused
+ * and the cursor is over the button
+ */
+$button-toolbar-inner-border-color-focus-over: button-toolbar-inner-border-color-focus-over($button-toolbar-background-color-focus-over, $button-toolbar-color-focus-over) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default-toolbar` button UI when the button is focused
+ * and pressed
+ */
+$button-toolbar-inner-border-color-focus-pressed: button-toolbar-inner-border-color-focus-pressed($button-toolbar-background-color-focus-pressed, $button-toolbar-color-focus-pressed) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `default-toolbar` button UI when the button is disabled
+ */
+$button-toolbar-inner-border-color-disabled: button-toolbar-inner-border-color-disabled($button-toolbar-background-color-disabled, $button-toolbar-color-disabled) !dynamic;
+
+/**
+ * @var {number}
+ * The body outline width for the `default-toolbar` button UI when the button is focused
+ */
+$button-toolbar-body-outline-width-focus: $button-default-body-outline-width-focus !dynamic;
+
+/**
+ * @var {string}
+ * The body outline-style for the `default-toolbar` button UI when the button is focused
+ */
+$button-toolbar-body-outline-style-focus: $button-default-body-outline-style-focus !dynamic;
+
+/**
+ * @var {color}
+ * The body outline color for the `default-toolbar` button UI when the button is focused
+ */
+$button-toolbar-body-outline-color-focus: $button-default-body-outline-color-focus !dynamic;
+
+/**
+ * @var {color}
+ * The color of the {@link #glyph} icon for the `default-toolbar` button UI
+ */
+$button-toolbar-glyph-color: $button-toolbar-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph color for the button arrow of the `default-toolbar` button UI when when
+ * {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$button-toolbar-arrow-glyph-color: $button-toolbar-color !dynamic;
+
+/**
+ * @var {color}
+ * The color for a {@link Ext.button.Split Split Button}'s line in the `toolbar` button UI.
+ * Only applicable when {@link #$button-split-width} is greater than 0.
+ */
+$button-toolbar-split-line-color: $button-toolbar-arrow-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The opacity of the {@link #glyph} icon for the `default-toolbar` button UI
+ */
+$button-toolbar-glyph-opacity: .5 !dynamic;
+
+/**
+ * @var {boolean} $button-include-ui-menu-arrows
+ * True to use a different image url for the menu button arrows for each button UI
+ */
+$button-include-ui-menu-arrows: false !dynamic;
+
+/**
+ * @var {boolean} $button-include-ui-split-arrows
+ * True to use a different image url for the split button arrows for each button UI
+ */
+$button-include-ui-split-arrows: false !dynamic;
+
+/**
+ * @var {boolean} $button-include-split-over-arrows
+ * True to include different split arrows for buttons' hover state.
+ */
+$button-include-split-over-arrows: false !dynamic;
+
+/**
+ * @var {boolean} $button-include-split-noline-arrows
+ * True to include "noline" split arrows for buttons in their default state.
+ */
+$button-include-split-noline-arrows: false !dynamic;
+
+/**
+ * @var {boolean} $button-toolbar-include-split-noline-arrows
+ * True to include "noline" split arrows for toolbar buttons in their default state.
+ */
+$button-toolbar-include-split-noline-arrows: false !dynamic;
+
+/**
+ * @var {number} $button-opacity-disabled
+ * opacity to apply to the button's main element when the buton is disabled
+ */
+$button-opacity-disabled: 0.5 !dynamic;
+
+/**
+ * @var {number} $button-inner-opacity-disabled
+ * opacity to apply to the button's inner elements (icon and text) when the buton is disabled
+ */
+$button-inner-opacity-disabled: 1 !dynamic;
+
+/**
+ * @var {number} $button-toolbar-opacity-disabled
+ * opacity to apply to the toolbar button's main element when the button is disabled
+ */
+$button-toolbar-opacity-disabled: 0.5 !dynamic;
+
+/**
+ * @var {number} $button-toolbar-inner-opacity-disabled
+ * opacity to apply to the toolbar button's inner elements (icon and text) when the buton is disabled
+ */
+$button-toolbar-inner-opacity-disabled: 1 !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default" button UI
+ */
+$include-button-default-ui: $include-default-uis !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default" button UI for "small" scale buttons
+ */
+$include-button-default-small-ui: $include-button-default-ui !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default" button UI for "medium" scale buttons
+ */
+$include-button-default-medium-ui: $include-button-default-ui !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default" button UI for "large" scale buttons
+ */
+$include-button-default-large-ui: $include-button-default-ui !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default" button UI for buttons rendered inside a grid cell (Slightly smaller height than default)
+ */
+$include-button-grid-cell-ui: $include-button-default-ui !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default-toolbar" button UI
+ */
+$include-button-default-toolbar-ui: $include-default-uis !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default-toolbar" button UI for "small" scale buttons
+ */
+$include-button-default-toolbar-small-ui: $include-button-default-toolbar-ui !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default-toolbar" button UI for "medium" scale buttons
+ */
+$include-button-default-toolbar-medium-ui: $include-button-default-toolbar-ui !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default-toolbar" button UI for "large" scale buttons
+ */
+$include-button-default-toolbar-large-ui: $include-button-default-toolbar-ui !dynamic;
+
+/**
+ * @var {number}
+ * The default width for a grid cell button's {@link #cfg-menu} arrow
+ */
+$button-grid-cell-arrow-width: $button-arrow-width !dynamic;
+
+/**
+ * @var {number}
+ * The default height for a grid cell button's {@link #cfg-menu} arrow
+ */
+$button-grid-cell-arrow-height: $button-arrow-height !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for a grid cell button arrow when when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$button-grid-cell-arrow-glyph: $button-small-arrow-glyph !dynamic;
+
+/**
+ * @var {number}
+ * The default width a grid cell {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-grid-cell-split-width: $button-split-width !dynamic;
+
+/**
+ * @var {number}
+ * The default height a grid cell {@link Ext.button.Split Split Button}'s arrow
+ */
+$button-grid-cell-split-height: $button-split-height !dynamic;
+
+/**
+ * @var {number}
+ * The default space between a grid cell button's icon and text
+ */
+$button-grid-cell-icon-spacing: $button-icon-spacing !dynamic;
+
+/**
+ * @var {number}
+ * The default border-radius for a grid cell button
+ */
+$button-grid-cell-border-radius: $button-small-border-radius !dynamic;
+
+/**
+ * @var {number}
+ * The default border-width for a grid cell button
+ */
+$button-grid-cell-border-width: $button-small-border-width !dynamic;
+
+/**
+ * @var {number}
+ * The default padding for a grid cell button
+ */
+$button-grid-cell-padding: $button-small-padding !dynamic;
+
+/**
+ * @var {number}
+ * The default horizontal padding to add to the left and right of the text element for
+ * a grid cell button
+ */
+$button-grid-cell-text-padding: $button-small-text-padding !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a grid cell button
+ */
+$button-grid-cell-font-size: $button-small-font-size !dynamic; //11px
+
+/**
+ * @var {number}
+ * The default font-size for a grid cell button when the cursor is over the button
+ */
+$button-grid-cell-font-size-over: $button-grid-cell-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a grid cell button when the button is focused
+ */
+$button-grid-cell-font-size-focus: $button-grid-cell-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a grid cell button when the button is pressed
+ */
+$button-grid-cell-font-size-pressed: $button-grid-cell-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a grid cell button when the button is focused and the cursor
+ * is over the button
+ */
+$button-grid-cell-font-size-focus-over: $button-grid-cell-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a grid cell button when the button is focused and pressed
+ */
+$button-grid-cell-font-size-focus-pressed: $button-grid-cell-font-size-pressed !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size for a grid cell button when the button is disabled
+ */
+$button-grid-cell-font-size-disabled: $button-grid-cell-font-size !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a grid cell button
+ */
+$button-grid-cell-font-weight: $button-small-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a grid cell button when the cursor is over the button
+ */
+$button-grid-cell-font-weight-over: $button-grid-cell-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a grid cell button when the button is focused
+ */
+$button-grid-cell-font-weight-focus: $button-grid-cell-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a grid cell button when the button is pressed
+ */
+$button-grid-cell-font-weight-pressed: $button-grid-cell-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a grid cell button when the button is focused and the
+ * cursor is over the button
+ */
+$button-grid-cell-font-weight-focus-over: $button-grid-cell-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a grid cell button when the button is focused and pressed
+ */
+$button-grid-cell-font-weight-focus-pressed: $button-grid-cell-font-weight-pressed !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight for a grid cell button when the button is disabled
+ */
+$button-grid-cell-font-weight-disabled: $button-grid-cell-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a grid cell button
+ */
+$button-grid-cell-font-family: $button-small-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a grid cell button when the cursor is over the button
+ */
+$button-grid-cell-font-family-over: $button-grid-cell-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a grid cell button when the button is focused
+ */
+$button-grid-cell-font-family-focus: $button-grid-cell-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a grid cell button when the button is pressed
+ */
+$button-grid-cell-font-family-pressed: $button-grid-cell-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a grid cell button when the button is focused and the
+ * cursor is over the button
+ */
+$button-grid-cell-font-family-focus-over: $button-grid-cell-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a grid cell button when the button is focused and pressed
+ */
+$button-grid-cell-font-family-focus-pressed: $button-grid-cell-font-family-pressed !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family for a grid cell button when the button is disabled
+ */
+$button-grid-cell-font-family-disabled: $button-grid-cell-font-family !dynamic;
+
+/**
+ * @var {number}
+ * The line-height for the text in a grid cell button
+ */
+$button-grid-cell-line-height: $button-small-line-height !dynamic;
+
+/**
+ * @var {number}
+ * The default icon size for a grid cell button
+ */
+$button-grid-cell-icon-size: $button-small-icon-size !dynamic;
+
+/**
+ * @var {number}
+ * The the font-size for grid cell button glyphs
+ */
+$button-grid-cell-glyph-font-size: $button-grid-cell-icon-size !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `cell` button UI
+ */
+$button-grid-cell-border-color: $button-default-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `cell` button UI when the cursor is over the button
+ */
+$button-grid-cell-border-color-over: button-default-border-color-over($button-grid-cell-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `cell` button UI when the button is focused
+ */
+$button-grid-cell-border-color-focus: button-default-border-color-focus($button-grid-cell-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `cell` button UI when the button is pressed
+ */
+$button-grid-cell-border-color-pressed: button-default-border-color-pressed($button-grid-cell-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `cell` button UI when the button is focused and the cursor
+ * is over the button
+ */
+$button-grid-cell-border-color-focus-over: $button-grid-cell-border-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `cell` button UI when the button is focused and pressed
+ */
+$button-grid-cell-border-color-focus-pressed: $button-grid-cell-border-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The border-color for the `cell` button UI when the button is disabled
+ */
+$button-grid-cell-border-color-disabled: button-default-border-color-disabled($button-grid-cell-border-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `cell` button UI
+ */
+$button-grid-cell-background-color: $button-default-background-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `cell` button UI when the cursor is over the button
+ */
+$button-grid-cell-background-color-over: button-default-background-color-over($button-grid-cell-background-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `cell` button UI when the button is focused
+ */
+$button-grid-cell-background-color-focus: button-default-background-color-focus($button-grid-cell-background-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `cell` button UI when the button is pressed
+ */
+$button-grid-cell-background-color-pressed: button-default-background-color-pressed($button-grid-cell-background-color) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `cell` button UI when the button is focused and the cursor
+ * is over the button
+ */
+$button-grid-cell-background-color-focus-over: $button-grid-cell-background-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `cell` button UI when the button is focused and pressed
+ */
+$button-grid-cell-background-color-focus-pressed: $button-grid-cell-background-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The background-color for the `cell` button UI when the button is disabled
+ */
+$button-grid-cell-background-color-disabled: button-default-background-color-disabled($button-grid-cell-background-color) !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `cell` button UI.  Can be either the name of a
+ * predefined gradient or a list of color stops. Used as the `$type` parameter for
+ * {@link Global_CSS#background-gradient}.
+ */
+$button-grid-cell-background-gradient: $button-default-background-gradient !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `cell` button UI when the cursor is over the button.
+ * Can be either the name of a predefined gradient or a list of color stops. Used as the
+ * `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-grid-cell-background-gradient-over: $button-default-background-gradient-over !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `cell` button UI when the button is focused.  Can be
+ * either the name of a predefined gradient or a list of color stops. Used as the `$type`
+ * parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-grid-cell-background-gradient-focus: $button-grid-cell-background-gradient-over !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `cell` button UI when the button is pressed.  Can be
+ * either the name of a predefined gradient or a list of color stops. Used as the `$type`
+ * parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-grid-cell-background-gradient-pressed: $button-default-background-gradient-pressed !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `cell` button UI when the button is focused and the
+ * cursor is over the button.  Can be either the name of a predefined gradient or a list
+ * of color stops. Used as the `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-grid-cell-background-gradient-focus-over: $button-grid-cell-background-gradient-over !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `cell` button UI when the button is focused and pressed.
+ * Can be either the name of a predefined gradient or a list of color stops. Used as the
+ * `$type` parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-grid-cell-background-gradient-focus-pressed: $button-grid-cell-background-gradient-pressed !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the `cell` button UI when the button is disabled.  Can be
+ * either the name of a predefined gradient or a list of color stops. Used as the `$type`
+ * parameter for {@link Global_CSS#background-gradient}.
+ */
+$button-grid-cell-background-gradient-disabled: $button-default-background-gradient-disabled !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `cell` button UI
+ */
+$button-grid-cell-color: $button-default-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `cell` button UI when the cursor is over the button
+ */
+$button-grid-cell-color-over: button-default-color-over($button-grid-cell-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `cell` button UI when the button is focused
+ */
+$button-grid-cell-color-focus: button-default-color-focus($button-grid-cell-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `cell` button UI when the button is pressed
+ */
+$button-grid-cell-color-pressed: button-default-color-pressed($button-grid-cell-color) !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `cell` button UI when the button is focused and the cursor is
+ * over the button
+ */
+$button-grid-cell-color-focus-over: $button-grid-cell-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `cell` button UI when the button is focused and pressed
+ */
+$button-grid-cell-color-focus-pressed: $button-grid-cell-color-pressed !dynamic;
+
+/**
+ * @var {color}
+ * The text color for the `cell` button UI when the button is disabled
+ */
+$button-grid-cell-color-disabled: button-default-color-disabled($button-grid-cell-color) !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `cell` button UI
+ */
+$button-grid-cell-inner-border-width: 'none' !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `cell` button UI when the cursor is over the button
+ */
+$button-grid-cell-inner-border-width-over: $button-grid-cell-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `cell` button UI when the button is focused
+ */
+$button-grid-cell-inner-border-width-focus: $button-grid-cell-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `cell` button UI when the button is pressed
+ */
+$button-grid-cell-inner-border-width-pressed: $button-grid-cell-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `cell` button UI when the button is focused and the
+ * cursor is over the button
+ */
+$button-grid-cell-inner-border-width-focus-over: $button-grid-cell-inner-border-width-focus !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `cell` button UI when the button is focused and pressed
+ */
+$button-grid-cell-inner-border-width-focus-pressed: $button-grid-cell-inner-border-width-focus !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width for the `cell` button UI when the button is disabled
+ */
+$button-grid-cell-inner-border-width-disabled: $button-grid-cell-inner-border-width !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `cell` button UI
+ */
+$button-grid-cell-inner-border-color: button-default-inner-border-color($button-grid-cell-background-color, $button-grid-cell-color) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `cell` button UI when the cursor is over the button
+ */
+$button-grid-cell-inner-border-color-over: button-default-inner-border-color-over($button-grid-cell-background-color-over, $button-grid-cell-color-over) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `cell` button UI when the button is focused
+ */
+$button-grid-cell-inner-border-color-focus: button-default-inner-border-color-focus($button-grid-cell-background-color-focus, $button-grid-cell-color-focus) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `cell` button UI when the button is pressed
+ */
+$button-grid-cell-inner-border-color-pressed: button-default-inner-border-color-pressed($button-grid-cell-background-color-pressed, $button-grid-cell-color-pressed) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `cell` button UI when the button is focused and the
+ * cursor is over the button
+ */
+$button-grid-cell-inner-border-color-focus-over: button-default-inner-border-color-focus-over($button-grid-cell-background-color-focus-over, $button-grid-cell-color-focus-over) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `cell` button UI when the button is focused and pressed
+ */
+$button-grid-cell-inner-border-color-focus-pressed: button-default-inner-border-color-focus-pressed($button-grid-cell-background-color-focus-pressed, $button-grid-cell-color-focus-pressed) !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color for the `cell` button UI when the button is disabled
+ */
+$button-grid-cell-inner-border-color-disabled: button-default-inner-border-color-disabled($button-grid-cell-background-color-disabled, $button-grid-cell-color-disabled) !dynamic;
+
+/**
+ * @var {number}
+ * The body outline width for the `cell` button UI when the button is focused
+ */
+$button-grid-cell-body-outline-width-focus: $button-default-body-outline-width-focus !dynamic;
+
+/**
+ * @var {string}
+ * The body outline-style for the `cell` button UI when the button is focused
+ */
+$button-grid-cell-body-outline-style-focus: $button-default-body-outline-style-focus !dynamic;
+
+/**
+ * @var {color}
+ * The body outline color for the `cell` button UI when the button is focused
+ */
+$button-grid-cell-body-outline-color-focus: $button-default-body-outline-color-focus !dynamic;
+
+/**
+ * @var {color}
+ * The color of the {@link #glyph} icon for the `cell` button UI
+ */
+$button-grid-cell-glyph-color: $button-grid-cell-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph color for the button arrow of the `cell` button UI when when
+ * {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$button-grid-cell-arrow-glyph-color: $button-grid-cell-color !dynamic;
+
+/**
+ * @var {color}
+ * The width for a {@link Ext.button.Split Split Button}'s line in the `cell` button UI.
+ */
+$button-grid-cell-split-line-width: $button-small-split-line-width !dynamic;
+
+/**
+ * @var {color}
+ * The color for a {@link Ext.button.Split Split Button}'s line in the `cell` button UI.
+ * Only applicable when {@link #$button-grid-cell-split-line-width} is greater than 0.
+ */
+$button-grid-cell-split-line-color: $button-grid-cell-arrow-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The opacity of the {@link #glyph} icon for the `cell` button UI
+ */
+$button-grid-cell-glyph-opacity: $button-default-glyph-opacity !dynamic;
+
+/**
+ * @var {number} $button-grid-cell-opacity-disabled
+ * opacity to apply to the button's main element when the button is disabled
+ */
+$button-grid-cell-opacity-disabled: $button-opacity-disabled !dynamic;
+
+/**
+ * @var {number} $button-grid-cell-inner-opacity-disabled
+ * opacity to apply to the button's inner elements (icon and text) when the buton is disabled
+ */
+$button-grid-cell-inner-opacity-disabled: $button-inner-opacity-disabled !dynamic;

@@ -1,0 +1,8 @@
+/** @class Ext.window.Window */
+//
+
+$window-base-color: $base-highlight-color !dynamic;
+$window-body-border-width: 1px !dynamic;
+$window-border-width: $panel-frame-border-width !dynamic;
+$window-header-border-width: $window-border-width !dynamic;
+$window-include-border-management-rules: true !dynamic;

@@ -1,0 +1,45 @@
+/**
+ * @class Ext.form.FieldSet
+ */
+
+/**
+ * @var {measurement} $form-fieldset-radius
+ * Default border-radius for form fieldsets.
+ */
+$form-fieldset-radius: .4em !dynamic;
+
+/**
+ * @var {color} $form-fieldset-light
+ * Light color for form fieldsets, mostly used on field borders.
+ */
+$form-fieldset-light: #ddd !dynamic;
+
+/**
+ * @var {color} $form-fieldset-dark
+ * Dark color for form fields, mostly used on labels/text.
+ */
+$form-fieldset-dark: #333 !dynamic;
+
+ /**
+ * @var {color} $form-fieldset-border-color
+ * Default fieldset border color.
+ */
+$form-fieldset-border-color: $form-fieldset-light !dynamic;
+
+ /**
+ * @var {measurement} $form-fieldset-border-width
+ * Default fieldset border width.
+ */
+$form-fieldset-border-width: 1px !dynamic;
+
+/**
+ * @var {boolean} $form-fieldset-title-text-shadow
+ * Default text shadow setting for the fieldset title.
+ */
+$form-fieldset-title-text-shadow: true !dynamic;
+
+/**
+ * @var {color} $form-fieldset-title-color
+ * Default text color setting for the fieldset title.
+ */
+$form-fieldset-title-color: $form-fieldset-dark !dynamic;

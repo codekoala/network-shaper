@@ -1,0 +1,17 @@
+/** @class Ext.menu.Menu */
+//
+
+$menu-background-color: #f0f0f0 !dynamic;
+$menu-border-color: $panel-border-color !dynamic;
+$menu-separator-border-color: #e0e0e0 !dynamic;
+$menu-item-active-background-color: adjust-color($base-color, $saturation: 25.397%, $lightness: 7.647%) !dynamic;
+$menu-item-background-gradient: 'matte' !dynamic;
+$menu-item-active-border-radius: 3px !dynamic;
+$menu-item-font-size: ceil($font-size * .9) !dynamic;
+$menu-text-color: #222 !dynamic;
+$menu-item-icon-vertical-offset: 1px !dynamic;
+$menu-item-text-vertical-offset: 1px !dynamic;
+$menu-scroller-height: 5px !dynamic;
+$menu-scroller-width: 35px !dynamic;
+$menu-scroller-opacity-disabled: 0.5 !dynamic;
+$menu-classic-scrollers: true !dynamic;

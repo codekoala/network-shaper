@@ -1,0 +1,51 @@
+/**
+ * @class Ext.toolbar.Paging
+ */
+
+/**
+ * @var {boolean}
+ * True to include different icons when the paging toolbar buttons are disabled.
+ */
+$grid-paging-toolbar-include-disabled-icons: true !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for paging toolbar icons when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-paging-toolbar-glyph-color: $button-toolbar-glyph-color !dynamic;
+
+/**
+ * @var {number}
+ * The font size to use for paging toolbar icons when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-paging-toolbar-glyph-font-size: 16px !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "first" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-paging-toolbar-first-glyph: $fa-var-angle-double-left $grid-paging-toolbar-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "prev" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-paging-toolbar-prev-glyph: $fa-var-angle-left $grid-paging-toolbar-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "next" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-paging-toolbar-next-glyph: $fa-var-angle-right $grid-paging-toolbar-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "last" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-paging-toolbar-last-glyph: $fa-var-angle-double-right $grid-paging-toolbar-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "refresh" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-paging-toolbar-refresh-glyph: $fa-var-refresh $grid-paging-toolbar-glyph-font-size $font-icon-font-family !dynamic;

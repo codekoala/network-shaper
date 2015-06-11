@@ -1,0 +1,52 @@
+/**
+ * @class Ext.grid.filters.Filters
+ */
+
+/**
+ * @var {string}
+ * The font-style of the filtered column.
+ */
+$grid-filters-column-filtered-font-style: italic !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of the filtered column.
+ */
+$grid-filters-column-filtered-font-weight: $font-weight-bold !dynamic;
+
+/**
+ * @var {string}
+ * The text-decoration of the filtered column.
+ */
+$grid-filters-column-filtered-text-decoration: inherit !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the grid header menu "text filter" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-filters-header-menu-find-glyph: $fa-var-search $grid-header-menu-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the grid header menu "greater than" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-filters-header-menu-greater-than-glyph: $fa-var-chevron-right $grid-header-menu-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the grid header menu "less than" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-filters-header-menu-less-than-glyph: $fa-var-chevron-left $grid-header-menu-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the grid header menu "equals" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$grid-filters-header-menu-equals-glyph: $ext-icon-equals $grid-header-menu-glyph-font-size ExtJS !dynamic;
+
+
+
+
+
+
+

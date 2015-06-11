@@ -1,0 +1,23 @@
+/** @class Global_CSS */
+//
+
+$color: #000 !dynamic;
+$font-family: helvetica, arial, verdana, sans-serif !dynamic;
+$font-size: 13px !dynamic;
+$font-weight: normal !dynamic;
+$font-weight-bold: bold !dynamic;
+$line-height: 17px !dynamic;
+$base-color: #157fcc !dynamic;
+$base-highlight-color: mix(#fff, $base-color, 15%) !dynamic;
+$base-light-color: mix(#fff, $base-color, 65%) !dynamic;
+$base-dark-color: mix(#000, $base-color, 14%) !dynamic;
+$neutral-color: #e1e1e1 !dynamic;
+$neutral-light-color: mix(#fff, $neutral-color, 68%) !dynamic;
+$neutral-medium-dark-color: mix(#000, $neutral-color, 14%) !dynamic;
+$neutral-dark-color: mix(#000, $neutral-color, 22%) !dynamic;
+$error-color: #cf4c35 !dynamic;
+$confirmation-color: #73b51e !dynamic;
+$error-light-color: mix(#fff, $error-color, 20%) !dynamic;
+$confirmation-light-color: mix(#fff, $confirmation-color, 35%) !dynamic;
+$body-background-color: $neutral-light-color !dynamic;
+$include-default-uis: true !dynamic;

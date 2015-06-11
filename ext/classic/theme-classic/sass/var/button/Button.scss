@@ -1,0 +1,50 @@
+/** @class Ext.button.Button */
+//
+
+$button-small-font-size: ceil($font-size * .9) !dynamic; //11px
+$button-medium-font-size: ceil($font-size * .9) !dynamic; //11px
+$button-large-font-size: ceil($font-size * .9) !dynamic; //11px
+
+$button-default-base-color: adjust-color($neutral-color, $hue: 0deg, $saturation: -55.556%, $lightness: 12.745%) !dynamic; //F7F7F7
+$button-default-base-color-over: adjust-color($base-color, $hue: -6.667deg, $saturation: 44.444%, $lightness: 10.588%) !dynamic; //E4F3FF
+$button-default-base-color-focus: $button-default-base-color !dynamic;
+$button-default-base-color-pressed: adjust-color($base-color, $hue: -0.725deg, $saturation: -9.556%, $lightness: -3.725%) !dynamic; //B6CBE4
+$button-default-base-color-disabled: adjust-color($base-color, $hue: 0deg, $saturation: -55.556%, $lightness: 12.745%) !dynamic; //F7F7F7
+
+$button-default-border-color: adjust-color($button-default-base-color, $hue: 0deg, $saturation: 0%, $lightness: -18.039%) !dynamic;
+$button-default-border-color-over: adjust-color($button-default-base-color-over, $hue: 8.177deg, $saturation: -28.283%, $lightness: -12.745%) !dynamic;
+$button-default-border-color-focus: $button-default-border-color-over !dynamic;
+$button-default-border-color-pressed: adjust-color($button-default-base-color-pressed, $hue: 2.317deg, $saturation: 6.756%, $lightness: -5.294%) !dynamic;
+$button-default-border-color-disabled: adjust-color($button-default-base-color-disabled, $hue: 0deg, $saturation: 0%, $lightness: -8.627%) !dynamic;
+
+$button-default-body-outline-width-focus: 1px !dynamic;
+
+$button-default-color: #333 !dynamic;
+$button-default-background-color-disabled: $button-default-base-color-disabled !dynamic;
+
+$button-toolbar-border-color: transparent !dynamic;
+$button-toolbar-border-color-over: adjust-color($base-color, $hue: 0.084deg, $saturation: -9.891%, $lightness: -18.039%) !dynamic;
+$button-toolbar-border-color-focus: transparent !dynamic;
+$button-toolbar-border-color-pressed: adjust-color($base-color, $hue: 0.721deg, $saturation: -17.014%, $lightness: -21.765%) !dynamic;
+$button-toolbar-border-color-disabled: $button-default-border-color-disabled !dynamic;
+
+$button-toolbar-background-color: transparent !dynamic;
+$button-toolbar-background-color-over: adjust-color($base-color, $hue: -5deg, $saturation: 44.444%, $lightness: 8.824%) !dynamic;
+$button-toolbar-background-color-focus: $button-toolbar-background-color !dynamic;
+$button-toolbar-background-color-pressed: adjust-color($base-color, $hue: -1.138deg, $saturation: -11.47%, $lightness: -2.353%) !dynamic;
+$button-toolbar-background-color-disabled: transparent !dynamic;
+
+$button-toolbar-background-gradient: 'none' !dynamic;
+$button-toolbar-background-gradient-disabled: 'none' !dynamic;
+
+$button-toolbar-color: #333 !dynamic;
+$button-toolbar-color-disabled: lighten($button-toolbar-color, 35) !dynamic;
+
+$button-opacity-disabled: 1 !dynamic;
+$button-inner-opacity-disabled: .5 !dynamic;
+
+$button-include-split-over-arrows: true !dynamic;
+$button-toolbar-include-split-noline-arrows: true !dynamic;
+
+$button-grid-cell-icon-size: 12px !dynamic;
+$button-grid-cell-line-height: 12px !dynamic;

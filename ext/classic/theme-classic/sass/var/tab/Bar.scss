@@ -1,0 +1,12 @@
+/** @class Ext.tab.Bar */
+//
+
+$tabbar-padding: 1px 0 0 !dynamic;
+$tabbar-base-color: adjust-color($panel-base-color, $hue: 0deg, $saturation: -3.156%, $lightness: -5.294%) !dynamic;
+
+$tabbar-scroller-opacity-disabled: .5 !dynamic;
+$tabbar-scroller-symmetrical-icons: false !dynamic;
+$tabbar-classic-scrollers: true !dynamic;
+
+$tabbar-scroller-width: 18px !dynamic;
+$tabbar-scroller-height: auto !dynamic;

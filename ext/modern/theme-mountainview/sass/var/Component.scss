@@ -1,0 +1,20 @@
+$touch-theme-mountainview: true;
+
+/**
+ * @var {boolean} $include-default-icons
+ * Optionally remove the default icon set which includes the following toolbar and tab bar icons: action,
+ * add, arrow_down, arrow_left, arrow_right, arrow_up, bookmarks, compose, delete, download, favorites,
+ * home, info, locate, maps, more, organize, refresh, reply, search, settings, star, team, time, trash,
+ * and user. Set to false to reduce CSS weight.
+ */
+$include-default-icons: true !dynamic;
+
+$dark-theme: true !dynamic;
+
+$base-color: #4abce7 !dynamic;
+
+$background-color: if($dark-theme, #323232, #f9f9f9) !dynamic;
+$foreground-color: if($dark-theme, #5b5b5b, #d2d2d2) !dynamic;
+$secondary-color: if($dark-theme, #3a3a3a, #e6e6e6) !dynamic;
+$primary-text-color: if($dark-theme, #fff, #231f20) !dynamic;
+$secondary-text-color: if($dark-theme, #808183, #818285) !dynamic;

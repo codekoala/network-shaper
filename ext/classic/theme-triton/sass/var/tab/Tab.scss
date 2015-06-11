@@ -1,0 +1,47 @@
+$tab-base-color: transparent !dynamic;
+$tab-base-color-focus: $tab-base-color !dynamic;
+$tab-base-color-over: #000 !dynamic;
+$tab-base-color-active: #fff !dynamic;
+
+$tab-background-opacity-over: .08 !dynamic;
+$tab-background-opacity-focus-over: $tab-background-opacity-over !dynamic;
+
+$tab-color: $light-color !dynamic;
+$tab-color-active: $base-dark-color !dynamic;
+$tab-plain-color: $highlight-color !dynamic;
+$tab-plain-color-active: $color !dynamic;
+$tab-glyph-opacity: .7 !dynamic;
+
+$tab-inner-border-width-focus: 0 !dynamic;
+$tab-inner-border-color-focus: $base-color !dynamic;
+$tab-inner-border-color-focus-over: $tab-inner-border-color-focus !dynamic;
+$tab-inner-border-color-focus-active: $tab-inner-border-color-focus !dynamic;
+
+$tab-border-radius: 0 !dynamic;
+
+$tab-border-color: $tab-base-color !dynamic;
+$tab-border-color-focus: $tab-base-color-focus !dynamic;
+$tab-border-color-over: $tab-base-color-over !dynamic;
+$tab-border-color-active: $tab-base-color-active !dynamic;
+$tab-border-color-disabled: $tab-border-color !dynamic;
+
+$tab-border-width: 0 !dynamic;
+
+$tab-icon-width: 24px !dynamic;
+$tab-icon-height: 24px !dynamic;
+$tab-padding: 6px 10px !dynamic;
+$tab-margin: 0 4px 0 0 !dynamic;
+
+$tab-outline-width-focus: 1px !dynamic;
+$tab-outline-color-focus: $base-color !dynamic;
+$tab-outline-offset-focus: -3px !dynamic;
+
+
+$tab-closable-icon-width: 16px !dynamic;
+$tab-closable-icon-height: 16px !dynamic;
+$tab-closable-icon-glyph-color: #fff !dynamic;
+$tab-closable-icon-glyph-color-active: $neutral-dark-color !dynamic;
+
+$tab-plain-closable-icon-glyph-color: $neutral-dark-color !dynamic;
+$tab-plain-closable-icon-glyph-color-active: $tab-closable-icon-glyph-color-active !dynamic;
+

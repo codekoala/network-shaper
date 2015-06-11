@@ -1,0 +1,13 @@
+/** @class Ext.layout.container.Accordion */
+//
+
+$accordion-header-color: #666 !dynamic;
+$accordion-header-font-weight: $font-weight-bold !dynamic;
+$accordion-header-background-color: mix($base-light-color, $neutral-light-color, 30%) !dynamic;
+$accordion-header-over-background-color: mix($base-light-color, #fff, 30%) !dynamic;
+$accordion-header-border-width: 0 !dynamic;
+$accordion-background-color: #fff !dynamic;
+$accordion-padding: 5px 5px 0 !dynamic;
+$accordion-header-padding: 8px 10px !dynamic;
+$accordion-item-margin: 0 0 5px !dynamic;
+$accordion-tool-background-image: 'tools/tool-sprites-dark' !dynamic;

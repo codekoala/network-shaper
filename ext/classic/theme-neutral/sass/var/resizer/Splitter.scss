@@ -1,0 +1,158 @@
+/**
+ * @class Ext.resizer.Splitter
+ */
+
+/**
+ * @var {number}
+ * The size of the Splitter
+ */
+$splitter-size: 5px !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of the active Splitter (the Splitter currently being dragged)
+ */
+$splitter-active-background-color: #b4b4b4 !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of the active Splitter (the Splitter currently being dragged)
+ */
+$splitter-active-opacity: .8 !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of the collapse tool on the active Splitter (the Splitter currently being dragged)
+ */
+$splitter-active-collapse-tool-opacity: .3 !dynamic;
+
+/**
+ * @var {color}
+ * The color of the outline around the splitter when it is focused
+ */
+$splitter-focus-outline-color: $base-color !dynamic;
+
+/**
+ * @var {string}
+ * The outline-style of the splitter when it is focused
+ */
+$splitter-focus-outline-style: solid !dynamic;
+
+/**
+ * @var {number}
+ * The outline-width of the splitter when it is focused
+ */
+$splitter-focus-outline-width: 1px !dynamic;
+
+/**
+ * @var {number}
+ * The outline-offset of the splitter when it is focused
+ */
+$splitter-focus-outline-offset: -$splitter-focus-outline-width !dynamic;
+
+/**
+ * @var {string}
+ * The the type of cursor to display when the cursor is over the collapse tool
+ */
+$collapse-tool-cursor: pointer !dynamic;
+
+/**
+ * @var {number}
+ * The size of the collapse tool. This becomes the width of the collapse tool for
+ * horizontal splitters, and the height for vertical splitters.
+ */
+$collapse-tool-size: 35px !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of the collapse tool.
+ */
+$collapse-tool-opacity: 1 !dynamic;
+
+/**
+ * @var {string/list}
+ * The border-color of the collapse tool.
+ */
+$splitter-collapse-tool-border-color: #fff  !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-color of the collapse tool.
+ */
+$splitter-collapse-tool-background-color: transparent !dynamic;
+
+/**
+ * @var {number}
+ * The border-width of the collapse tool.
+ */
+$splitter-collapse-tool-border-width: 0 !dynamic;
+
+/**
+ * @var {number}
+ * The border-style of the collapse tool.
+ */
+$splitter-collapse-tool-border-style: solid !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the collapse tool when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$splitter-collapse-tool-glyph-color: $neutral-color !dynamic;
+
+/**
+ * @var {number}
+ * The font size to use the collapse tool when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$splitter-collapse-tool-glyph-font-size: 16px !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "top" collapse tool when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$splitter-collapse-tool-top-glyph: $fa-var-caret-up $splitter-collapse-tool-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "right" collapse tool when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$splitter-collapse-tool-right-glyph: $fa-var-caret-right $splitter-collapse-tool-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "bottom" collapse tool when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$splitter-collapse-tool-bottom-glyph: $fa-var-caret-down $splitter-collapse-tool-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "left" collapse tool when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$splitter-collapse-tool-left-glyph: $fa-var-caret-left $splitter-collapse-tool-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of the "top" collapse tool's glyph element when {@link Global_CSS#$enable-font-icons} is `true`.
+ * Use to achieve precise alignment of the collapse tool.
+ */
+$splitter-collapse-tool-top-glyph-padding: 0 !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of the "right" collapse tool's glyph element when {@link Global_CSS#$enable-font-icons} is `true`.
+ * Use to achieve precise alignment of the collapse tool.
+ */
+$splitter-collapse-tool-right-glyph-padding: 0 !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of the "bottom" collapse tool's glyph element when {@link Global_CSS#$enable-font-icons} is `true`.
+ * Use to achieve precise alignment of the collapse tool.
+ */
+$splitter-collapse-tool-bottom-glyph-padding: 0 !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of the "left" collapse tool's glyph element when {@link Global_CSS#$enable-font-icons} is `true`.
+ * Use to achieve precise alignment of the collapse tool.
+ */
+$splitter-collapse-tool-left-glyph-padding: 0 !dynamic;

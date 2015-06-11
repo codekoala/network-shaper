@@ -1,0 +1,24 @@
+{
+    "name": "theme-classic-sandbox",
+    "toolkit": "classic",
+    "alternateName": ["ext-theme-classic-sandbox"],
+    "type": "theme",
+    "creator": "Sencha",
+    "summary": "Ext JS Classic Sandbox Theme",
+    "detailedDescription": "The same visuals as the Classic Theme but in a CSS sandbox",
+    "version": "6.0.0.415",
+    "compatVersion": "5.0.0",
+    "format": "1",
+    "slicer": {
+        "js": [
+            {
+                "path": "${package.dir}/sass/example/custom.js",
+                "isWidgetManifest": true
+            }
+        ]
+    },
+    "output": "${workspace.subpkg.prefix}/${package.name}",
+    "local": true,
+    "requires": [],
+    "extend": "theme-classic"
+}

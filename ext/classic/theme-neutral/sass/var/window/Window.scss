@@ -1,0 +1,297 @@
+/**
+ * @class Ext.window.Window
+ */
+
+/**
+ * @var {color}
+ * The base color of Windows
+ */
+$window-base-color: $base-color !dynamic;
+
+/**
+ * @var {number}
+ * The padding of Windows
+ */
+$window-padding: $panel-frame-padding !dynamic;
+
+/**
+ * @var {number}
+ * The border-radius of Windows
+ */
+$window-border-radius: $panel-frame-border-radius !dynamic;
+
+/**
+ * @var {number}
+ * The border-width of Windows
+ */
+$window-border-width: 1px !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of Windows
+ */
+$window-border-color: $window-base-color !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of Windows
+ */
+$window-inner-border-color: #fff !dynamic;
+
+/**
+ * @var {number}
+ * The inner border-width of Windows
+ */
+$window-inner-border-width: 0 !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of Windows
+ */
+$window-background-color: #fff !dynamic;
+
+/**
+ * @var {number}
+ * The body border-width of Windows
+ */
+$window-body-border-width: 1px !dynamic;
+
+/**
+ * @var {string}
+ * The body border-style of Windows
+ */
+$window-body-border-style: solid !dynamic;
+
+/**
+ * @var {color}
+ * The body border-color of Windows
+ */
+$window-body-border-color: $window-base-color !dynamic;
+
+/**
+ * @var {color}
+ * The body background-color of Windows
+ */
+$window-body-background-color: #fff !dynamic;
+
+/**
+ * @var {color}
+ * The body text color of Windows
+ */
+$window-body-color: #000 !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of Window Headers
+ */
+$window-header-padding: $panel-frame-header-padding !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of Window Headers
+ */
+$window-header-font-size: $panel-header-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The line-height of Window Headers
+ */
+$window-header-line-height: $panel-header-line-height !dynamic;
+
+/**
+ * @var {color}
+ * The text color of Window Headers
+ */
+$window-header-color: $panel-header-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of Window Headers
+ */
+$window-header-background-color: $window-base-color !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of Window Headers
+ */
+$window-header-font-weight: $panel-header-font-weight !dynamic;
+
+/**
+ * @var {number}
+ * The space between the Window {@link Ext.panel.Tool Tools}
+ */
+$window-tool-spacing: $panel-tool-spacing !dynamic;
+
+/**
+ * @var {string}
+ * The background sprite to use for Window {@link Ext.panel.Tool Tools}
+ */
+$window-tool-background-image: 'tools/tool-sprites' !dynamic;
+
+/**
+ * @var {color}
+ * The color of the outline around Window {@link Ext.panel.Tool Tools} when focused
+ */
+$window-tool-focus-outline-color: $panel-tool-focus-outline-color !dynamic;
+
+/**
+ * @var {string}
+ * The outline-style of Window {@link Ext.panel.Tool Tools} when focused
+ */
+$window-tool-focus-outline-style: $panel-tool-focus-outline-style !dynamic;
+
+/**
+ * @var {number}
+ * The outline-width of Window {@link Ext.panel.Tool Tools} when focused
+ */
+$window-tool-focus-outline-width: $panel-tool-focus-outline-width !dynamic;
+
+/**
+ * @var {number}
+ * The outline-offset of Window {@link Ext.panel.Tool Tools} when focused
+ */
+$window-tool-focus-outline-offset: $panel-tool-focus-outline-offset !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of Window Headers
+ */
+$window-header-font-family: $panel-header-font-family !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of the Window Header's text element
+ */
+$window-header-text-padding: $panel-header-text-padding !dynamic;
+
+/**
+ * @var {string}
+ * The text-transform of Window Headers
+ */
+$window-header-text-transform: $panel-header-text-transform !dynamic;
+
+/**
+ * @var {number}
+ * The width of the Window Header icon
+ */
+$window-header-icon-width: $panel-header-icon-width !dynamic;
+
+/**
+ * @var {number}
+ * The height of the Window Header icon
+ */
+$window-header-icon-height: $panel-header-icon-height !dynamic;
+
+/**
+ * @var {number}
+ * The space between the Window Header icon and text
+ */
+$window-header-icon-spacing: $panel-header-icon-spacing !dynamic;
+
+/**
+ * @var {list}
+ * The background-position of  the Window Header icon
+ */
+$window-header-icon-background-position: $panel-header-icon-background-position !dynamic;
+
+/**
+ * @var {color}
+ * The color of the Window Header glyph icon
+ */
+$window-header-glyph-color: $window-header-color !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of the Window Header glyph icon
+ */
+$window-header-glyph-opacity: $panel-header-glyph-opacity !dynamic;
+
+/**
+ * @var {number}
+ * The border-width of Window Headers
+ */
+$window-header-border-width: 1px !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of Window Headers
+ */
+$window-header-inner-border-color: #fff !dynamic;
+
+/**
+ * @var {number}
+ * The inner border-width of Window Headers
+ */
+$window-header-inner-border-width: 0 !dynamic;
+
+/**
+ * @var {boolean} $ui-force-header-border
+ * True to force the window header to have a border on the side facing the window body.
+ * Overrides dock layout's border management border removal rules.
+ */
+$window-force-header-border: true !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of ghost Windows while dragging
+ */
+$window-ghost-opacity: $panel-ghost-opacity !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include neptune style border management rules.
+ */
+$window-include-border-management-rules: false !dynamic;
+
+/**
+ * @var {color}
+ * The color to apply to the border that wraps the body and docked items. The presence of
+ * the wrap border is controlled by the {@link #border} config. Only applicable when
+ * `$window-include-border-management-rules` is `true`.
+ */
+$window-wrap-border-color: $window-border-color !dynamic;
+
+/**
+ * @var {number}
+ * The width to apply to the border that wraps the body and docked items. The presence of
+ * the wrap border is controlled by the {@link #border} config. Only applicable when
+ * `$window-include-border-management-rules` is `true`.
+ */
+$window-wrap-border-width: 1px !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default" window UI
+ */
+$include-window-default-ui: $include-default-uis !dynamic;
+
+/**
+ * @var {boolean}
+ * True to ignore the frame padding.  By default, the frame mixin adds extra padding when
+ * border radius is larger than border width.  This is intended to prevent the content
+ * from colliding with the rounded corners of the frame.  Set this to true to prevent
+ * the window frame from adding this extra padding.
+ */
+$window-ignore-frame-padding: $panel-ignore-frame-padding !dynamic;
+
+/**
+ * @var {number}
+ * The default font-size of the Window body
+ */
+$window-body-font-size: $panel-body-font-size !dynamic;
+
+/**
+ * @var {string}
+ * The default font-weight of the Window body
+ */
+$window-body-font-weight: $panel-body-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The default font-family of the Window body
+ */
+$window-body-font-family: $panel-body-font-family !dynamic;
+
+
+// private
+$window-use-classic-header-padding: false !dynamic;

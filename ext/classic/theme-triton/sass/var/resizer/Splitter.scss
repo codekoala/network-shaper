@@ -1,0 +1,11 @@
+$splitter-size: 10px !dynamic;
+$splitter-collapse-tool-border-color: mix(#000, $border-layout-ct-background-color, 15%)  !dynamic;
+$splitter-collapse-tool-background-color: mix(#000, $border-layout-ct-background-color, 5%) !dynamic;
+$splitter-collapse-tool-glyph-color: $neutral-dark-color !dynamic;
+$splitter-collapse-tool-top-glyph-padding: 0 0 2px 0 !dynamic;
+$splitter-collapse-tool-bottom-glyph-padding: 0 !dynamic;
+$splitter-collapse-tool-left-glyph-padding: 0 !dynamic;
+$splitter-collapse-tool-right-glyph-padding: 0 0 0 2px !dynamic;
+$splitter-focus-outline-color: $base-dark-color !dynamic;
+$splitter-focus-outline-offset: -$splitter-focus-outline-width * 2 !dynamic;
+

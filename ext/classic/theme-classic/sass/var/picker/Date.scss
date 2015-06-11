@@ -1,0 +1,53 @@
+/** @class Ext.picker.Date */
+//
+
+$datepicker-base-color: $base-color !dynamic;
+$datepicker-border-color: adjust-color($datepicker-base-color, $hue: 5.926deg, $saturation: 4.444%, $lightness: -57.647%) !dynamic; //#1b376c
+$datepicker-next-image: 'shared/right-btn' !dynamic;
+$datepicker-prev-image: 'shared/left-btn' !dynamic;
+$datepicker-arrow-opacity: .7 !dynamic;
+$datepicker-arrow-width: 15px !dynamic;
+$datepicker-arrow-height: 15px !dynamic;
+$datepicker-item-height: 20px !dynamic;
+$datepicker-item-width: 25px !dynamic;
+$datepicker-item-padding: 0 4px 0 0 !dynamic;
+$datepicker-header-padding: 3px 6px !dynamic;
+$datepicker-month-button-arrow-image: 'button/s-arrow-light' !dynamic;
+$datepicker-monthpicker-next-image: 'tools/tool-sprites' !dynamic;
+$datepicker-monthpicker-prev-image: 'tools/tool-sprites' !dynamic;
+
+$datepicker-header-background-color: adjust-color($datepicker-base-color, $hue: 5.768deg, $saturation: 0.419%, $lightness: -52.941%) !dynamic; //#23427c
+$datepicker-header-background-gradient: matte !dynamic;
+
+$datepicker-column-header-color: adjust-color($datepicker-base-color, $hue: 5.586deg, $saturation: -4.167%, $lightness: -55.882%) !dynamic; //#233d6d
+$datepicker-column-header-font-size: 10px !dynamic;
+$datepicker-column-header-background-color: adjust-color($datepicker-base-color, $hue: -1.19deg, $saturation: 22.222%, $lightness: 8.824%) !dynamic; //#dfecfb
+$datepicker-column-header-background-gradient: matte !dynamic;
+$datepicker-column-header-border-color: darken($datepicker-column-header-background-color, 10) !dynamic;
+$datepicker-column-header-item-padding: 0 7px 0 0 !dynamic;
+
+$datepicker-footer-background-color: $datepicker-column-header-background-color !dynamic;
+$datepicker-footer-background-gradient: color_stops(adjust-color($datepicker-base-color, $hue: 0.58deg, $saturation: -2.067%, $lightness: 7.451%), adjust-color($datepicker-base-color, $hue: -0.43deg, $saturation: -4.736%, $lightness: 3.922%) 49%, adjust-color($datepicker-base-color, $hue: -0.175deg, $saturation: -4.204%, $lightness: 1.373%) 51%, adjust-color($datepicker-base-color, $hue: 0.952deg, $saturation: -4.831%, $lightness: 2.353%)) !dynamic;
+$datepicker-footer-padding: 4px 0 !dynamic;
+$datepicker-monthpicker-item-color: adjust-color($datepicker-base-color, $hue: 3.785deg, $saturation: 18.194%, $lightness: -52.745%) !dynamic; //#15428B
+$datepicker-item-hover-background-color: adjust-color($datepicker-base-color, $hue: -0.606deg, $saturation: 38.73%, $lightness: 9.02%) !dynamic; //#ddecfe
+$datepicker-item-selected-background-color: adjust-color($datepicker-base-color, $hue: 0.267deg, $saturation: -4.535%, $lightness: 6.275%) !dynamic;
+$datepicker-item-selected-border-color: adjust-color($datepicker-base-color, $hue: 0.853deg, $saturation: 5.008%, $lightness: -11.961%) !dynamic; //#8db2e3
+$datepicker-item-today-border-color: darkred !dynamic;
+$datepicker-item-font-size: ceil($font-size * .9) !dynamic;
+$datepicker-item-prev-next-color: #aaa !dynamic;
+$datepicker-item-disabled-color: #bbb !dynamic;
+
+$datepicker-footer-border-color: $datepicker-column-header-border-color !dynamic;
+
+$datepicker-monthpicker-item-margin: 5px 5px 4px !dynamic;
+$datepicker-monthpicker-item-height: 18px !dynamic;
+
+$datepicker-monthpicker-yearnav-button-height: 15px !dynamic;
+$datepicker-monthpicker-yearnav-button-width: 15px !dynamic;
+$datepicker-monthpicker-next-background-position: 0 -120px !dynamic;
+$datepicker-monthpicker-next-background-position-over: -15px -120px !dynamic;
+$datepicker-monthpicker-prev-background-position: 0 -105px !dynamic;
+$datepicker-monthpicker-prev-background-position-over: -15px -105px !dynamic;
+
+$datepicker-monthpicker-small-item-margin: 2px 5px !dynamic;

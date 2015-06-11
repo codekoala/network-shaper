@@ -1,0 +1,19 @@
+/** @class Ext.window.Window */
+//
+
+$window-base-color: $base-color !dynamic;
+$window-border-radius: 5px !dynamic;
+$window-border-color: adjust-color($window-base-color, $hue: 0.952deg, $saturation: -32.377%, $lightness: -13.725%) !dynamic;
+$window-inner-border-color: adjust-color($window-base-color, $hue: 2.667deg, $saturation: 9.662%, $lightness: 11.373%) !dynamic;
+$window-inner-border-width: 1px !dynamic;
+$window-header-color: adjust-color($window-base-color, $hue: -2.451deg, $saturation: 38.889%, $lightness: -55.882%) !dynamic;
+$window-header-font-size: ceil($font-size * .9) !dynamic; //11px
+$window-background-color: adjust-color($window-base-color, $hue: 0.267deg, $saturation: -21.309%, $lightness: 1.569%) !dynamic;
+$window-header-background-color: $window-background-color !dynamic;
+$window-body-background-color: adjust-color($window-base-color, $hue: 3.188deg, $saturation: 0.542%, $lightness: 7.843%) !dynamic;
+$window-body-border-color: adjust-color($window-base-color, $hue: 0.844deg, $saturation: 7.644%, $lightness: -8.627%) !dynamic;
+
+$window-header-inner-border-color: $window-inner-border-color !dynamic;
+$window-header-inner-border-width: 1px 1px 0 !dynamic;
+$window-force-header-border: false !dynamic;
+$window-use-classic-header-padding: true !dynamic;

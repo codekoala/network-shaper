@@ -1,0 +1,22 @@
+/** @class Ext.toolbar.Toolbar */
+//
+
+$toolbar-font-size: ceil($font-size * .9) !dynamic;
+$toolbar-text-font-size: ceil($font-size * .9) !dynamic;
+$toolbar-background-color: adjust-color($base-color, $hue: -1.333deg, $saturation: -3.831%, $lightness: 4.51%) !dynamic;
+$toolbar-background-gradient: color_stops(lighten($toolbar-background-color, 3), $toolbar-background-color) !dynamic;
+$toolbar-scroller-top-margin: 5px 0 !dynamic;
+$toolbar-scroller-right-margin: 0 !dynamic;
+$toolbar-scroller-bottom-margin: 5px 0 !dynamic;
+$toolbar-scroller-left-margin: 0 !dynamic;
+$toolbar-scroller-vertical-height: 5px !dynamic;
+$toolbar-scroller-vertical-width: 35px !dynamic;
+
+$toolbar-scroller-opacity: 1 !dynamic;
+$toolbar-scroller-opacity-disabled: .5 !dynamic;
+$toolbar-scroller-opacity-pressed: 1 !dynamic;
+$toolbar-scroller-opacity-over: 1 !dynamic;
+// this should be the same as panel border color, but it can't reuse the $panel-border-color
+// var because toolbar cannot depend on panel
+$toolbar-border-color: adjust-color($base-color, $hue: 0deg, $saturation: 7.644%, $lightness: -8.627%) !dynamic;
+$toolbar-classic-scrollers: true !dynamic;

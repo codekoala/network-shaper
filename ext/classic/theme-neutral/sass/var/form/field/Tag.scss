@@ -1,0 +1,182 @@
+/**
+ * @class Ext.form.field.Tag
+ */
+
+/**
+ * @var {number/list}
+ * Tag field padding
+ */
+$tag-field-padding: 2px 0 0 4px !dynamic;
+
+/**
+ * @var {number}
+ * The height of tag field items
+ */
+$tag-field-item-height: 18px !dynamic;
+
+/**
+ * @var {number/list}
+ * The border-radius of tag field items
+ */
+$tag-field-item-border-radius: 3px !dynamic;
+
+/**
+ * @var {color}
+ * The text color of tag field items
+ */
+$tag-field-item-color: $color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of tag field items when hovered
+ */
+$tag-field-item-over-color: $tag-field-item-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of tag field items when selected
+ */
+$tag-field-item-selected-color: #fff !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of tag field items
+ */
+$tag-field-item-background-color: mix(#fff, $neutral-color, 15%) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of tag field items when hovered
+ */
+$tag-field-item-over-background-color: mix(#000, $tag-field-item-background-color, 5%) !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of tag field items when selected
+ */
+$tag-field-item-selected-background-color: $base-highlight-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-width of tag field items
+ */
+$tag-field-item-border-width: 1px !dynamic;
+
+/**
+ * @var {color}
+ * The border-style of tag field items
+ */
+$tag-field-item-border-style: solid !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of tag field items
+ */
+$tag-field-item-border-color: $tag-field-item-background-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of tag field items when hovered
+ */
+$tag-field-item-over-border-color: $tag-field-item-over-background-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of tag field items when selected
+ */
+$tag-field-item-selected-border-color: $base-color !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of tag field items
+ */
+$tag-field-item-padding: 0 5px !dynamic;
+
+/**
+ * @var {number/list}
+ * The margin of tag field items
+ */
+$tag-field-item-margin: 0 4px 2px 0 !dynamic;
+
+/**
+ * @var {number}
+ * The size of the close icon
+ */
+$tag-field-item-close-icon-size: 12px !dynamic;
+
+/**
+ * @var {number}
+ * Number of pixels to offset the close icon from the top of the item
+ */
+$tag-field-item-close-icon-top: 1px !dynamic;
+
+/**
+ * @var {number}
+ * Number of pixels to offset the close icon from the right of the item
+ */
+$tag-field-item-close-icon-right: 1px !dynamic;
+
+/**
+ * @var {number}
+ * Number of pixels of space between the tag field item text and close icon
+ */
+$tag-field-item-close-icon-spacing: 6px !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "close" icon of items in a tag field when
+ * {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tag-field-item-close-icon-glyph-color: $tag-field-item-color !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "close" icon of selected items in a tag field when
+ * {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tag-field-item-selected-close-icon-glyph-color: $tag-field-item-selected-color !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "close" icon of hovered items in a tag field when
+ * {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tag-field-item-over-close-icon-glyph-color: $tag-field-item-over-color !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "close" icon of selected and hovered items in a tag field when
+ * {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tag-field-item-selected-over-close-icon-glyph-color: $tag-field-item-selected-close-icon-glyph-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "close" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tag-field-item-close-icon-glyph: $fa-var-close 16px $font-icon-font-family !dynamic;
+
+/**
+ * @var {color}
+ * Opacity of the "close" icon
+ */
+$tag-field-item-close-icon-opacity: null !dynamic;
+
+/**
+ * @var {color}
+ * Opacity of the "close" icon when hovered
+ */
+$tag-field-item-close-icon-opacity-over: $tag-field-item-close-icon-opacity !dynamic;
+
+/**
+ * @var {color}
+ * Opacity of the "close" icon when pressed
+ */
+$tag-field-item-close-icon-opacity-pressed: $tag-field-item-close-icon-opacity-over !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default" tag field UI
+ */
+$include-tag-field-default-ui: $include-text-field-default-ui !dynamic;
+

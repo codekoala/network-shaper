@@ -1,0 +1,14 @@
+/** @class Ext.form.FieldSet */
+//
+
+$fieldset-header-line-height: 16px !dynamic;
+$fieldset-collapse-tool-size: 15px !dynamic;
+$fieldset-collapse-tool-margin: 2px 4px 0 0 !dynamic;
+$fieldset-border-color: $neutral-dark-color !dynamic;
+$fieldset-header-color: $color !dynamic;
+
+$fieldset-collapse-tool-background-image: 'fieldset/collapse-tool' !dynamic;
+
+$fieldset-collapse-tool-opacity: .8 !dynamic;
+$fieldset-collapse-tool-opacity-over: .9 !dynamic;
+$fieldset-collapse-tool-opacity-pressed: 1 !dynamic;

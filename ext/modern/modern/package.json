@@ -1,0 +1,17 @@
+{
+    "name": "modern",
+    "type": "toolkit",
+    "creator": "Sencha",
+    "summary": "The Modern UI Toolkit",
+    "detailedDescription": "UI Components for Modern Browsers",
+    "version": "6.0.0.415",
+    "compatVersion": "6.0.0",
+    "format": "1",
+    "output": "${framework.dir}/build",
+    "build":{
+      "dir": "${package.output}"
+    },
+    "requires": ["core"],
+    "framework": "ext",
+    "local": true
+}

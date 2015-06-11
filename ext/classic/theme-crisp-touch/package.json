@@ -1,0 +1,26 @@
+{
+    "name": "theme-crisp-touch",
+    "toolkit": "classic",
+    "alternateName": ["ext-theme-crisp-touch"],
+    "type": "theme",
+    "creator": "Sencha",
+    "summary": "Ext JS Crisp Touch Theme",
+    "detailedDescription": "Adds touch-friendly sizing to the Crisp Theme",
+    "version": "6.0.0.415",
+    "compatVersion": "1.0.0",
+    "format": "1",
+    "slicer": {
+        "js": [
+            {
+                "path": "${package.dir}/sass/example/custom.js",
+                "isWidgetManifest": true
+            }
+        ]
+    },
+    "output": "${workspace.subpkg.prefix}/${package.name}",
+    "local": true,
+    "requires": [
+        "touch-sizing"
+    ],
+    "extend": "theme-crisp"
+}

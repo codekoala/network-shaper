@@ -1,0 +1,11 @@
+$grid-header-border-width: 0 !dynamic;
+$grid-header-background-color: #fff !dynamic;
+$grid-header-over-background-color: $grid-row-cell-over-background-color !dynamic;
+$grid-header-trigger-background-color-open: mix(#000, $grid-header-open-background-color, 5%) !dynamic;
+$grid-header-border-color: $neutral-color !dynamic;
+$grid-header-padding: 7px 10px 6px !dynamic;
+$grid-header-trigger-glyph-color: $neutral-dark-color !dynamic;
+$grid-header-sort-icon-spacing: 5px !dynamic;
+$grid-header-sorted-background-color: $grid-header-background-color !dynamic;
+$grid-header-sort-glyph-color: $neutral-dark-color !dynamic;
+$grid-header-trigger-width: 24px !dynamic;

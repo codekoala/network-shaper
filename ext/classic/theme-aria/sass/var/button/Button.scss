@@ -1,0 +1,16 @@
+$button-default-base-color: #2a3142 !dynamic;
+$button-default-border-color: darken($button-default-base-color, 4%) !dynamic;
+$button-default-base-color-over: $orange !dynamic;
+$button-default-border-color-over: darken($orange, 15%) !dynamic;
+$button-default-base-color-pressed: #da7b19 !dynamic;
+$button-default-border-color-pressed: darken($button-default-base-color-pressed, 15%) !dynamic;
+$button-default-color: #fff !dynamic;
+$button-toolbar-border-color: $button-default-border-color !dynamic;
+$button-toolbar-border-color-over: $button-default-border-color-over !dynamic;
+$button-toolbar-border-color-pressed: $button-default-border-color-pressed !dynamic;
+$button-toolbar-background-color: $button-default-base-color !dynamic;
+$button-toolbar-background-color-over: $button-default-base-color-over !dynamic;
+$button-toolbar-background-color-pressed: $button-default-base-color-pressed !dynamic;
+$button-toolbar-color: $button-default-color !dynamic;
+$button-default-border-color-focus: $orange !dynamic;
+$button-toolbar-border-color-focus: $orange !dynamic;

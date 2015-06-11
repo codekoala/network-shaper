@@ -1,0 +1,11 @@
+$body-background-color: #000 !dynamic;
+$base-color: #3f4757 !dynamic;
+$base-highlight-color: mix(#fff, $base-color, 15%) !dynamic;
+$base-light-color: mix(#fff, $base-color, 65%) !dynamic;
+$base-dark-color: mix(#000, $base-color, 14%) !dynamic;
+$orange: #ed9200 !dynamic;
+$focus-color: $orange !dynamic;
+$color: #fff !dynamic;
+$font-size: 15px !dynamic;
+$css-shadow-background-color: #000000 !dynamic;
+$include-shadow-images: false !dynamic;

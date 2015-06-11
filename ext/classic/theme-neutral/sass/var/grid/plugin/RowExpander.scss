@@ -1,0 +1,64 @@
+/**
+ * @class Ext.grid.plugin.RowExpander
+ */
+
+/**
+ * @var {number}
+ * The height of the RowExpander icon
+ */
+$row-expander-height: 11px !dynamic;
+
+/**
+ * @var {number}
+ * The width of the RowExpander icon
+ */
+$row-expander-width: 11px !dynamic;
+
+/**
+ * @var {number}
+ * The horizontal space before the RowExpander icon
+ */
+$row-expander-cell-spacing-before: 6px !dynamic;
+
+/**
+ * @var {number}
+ * The horizontal space after the RowExpander icon
+ */
+$row-expander-cell-spacing-after: 6px !dynamic;
+
+/**
+ * @var {string}
+ * The cursor for the RowExpander icon
+ */
+$row-expander-cursor: pointer !dynamic;
+
+// private
+$row-expander-cell-padding:
+    max(ceil(($grid-row-height - $row-expander-height) / 2), 0)
+    $row-expander-cell-spacing-after
+    max(floor(($grid-row-height - $row-expander-height) / 2), 0)
+    $row-expander-cell-spacing-before;
+
+/**
+ * @var {color}
+ * The color to use for the RowExpander icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$row-expander-glyph-color: $color !dynamic;
+
+/**
+ * @var {number}
+ * The font size for the RowExpander icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$row-expander-glyph-font-size: 16px !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the RowExpander's "expand" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$row-expander-expand-glyph: $fa-var-plus-square $row-expander-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the RowExpander's "collapse" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$row-expander-collapse-glyph: $fa-var-minus-square $row-expander-glyph-font-size $font-icon-font-family !dynamic;

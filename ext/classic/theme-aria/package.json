@@ -1,0 +1,23 @@
+{
+    "name": "theme-aria",
+    "toolkit": "classic",
+    "alternateName": ["ext-theme-aria"],
+    "type": "theme",
+    "requires": ["aria"],
+    "extend": "theme-neptune",
+
+    "creator": "Sencha",
+    "summary": "ARIA Theme",
+    "detailedDescription": "A high-contrast accessibility theme based on Neptune",
+
+    "version": "6.0.0.415",
+    "compatVersion": "5.0.0",
+    "format": "1",
+
+    "slicer": {
+        "js": []
+    },
+
+    "output": "${workspace.subpkg.prefix}/${package.name}",
+    "local": true
+}

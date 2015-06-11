@@ -1,0 +1,45 @@
+/**
+ * @class Ext.grid.selection.SelectionExtender
+ */
+
+/**
+ * @var {number}
+ * The height of the drag handle for extending a range in the
+ * {@link Ext.grid.selection.SpreadsheetModel spreadsheet grid selection model}.
+ */
+$spreadsheet-extender-handle-height: 7px !dynamic;
+
+/**
+ * @var {number}
+ * The width of the drag handle for extending a range in the
+ * {@link Ext.grid.selection.SpreadsheetModel spreadsheet grid selection model}.
+ */
+$spreadsheet-extender-handle-width: 7px !dynamic;
+
+/**
+ * @var {number}
+ * The color of the drag handle for extending a range in the
+ * {@link Ext.grid.selection.SpreadsheetModel spreadsheet grid selection model}.
+ */
+$spreadsheet-extender-handle-color: $base-color !dynamic;
+
+/**
+ * @var {number}
+ * The width of the dotted line indicating the dragged extension area when extending a range in the
+ * {@link Ext.grid.selection.SpreadsheetModel spreadsheet grid selection model}.
+ */
+$spreadsheet-extender-mask-border-width: 1px !dynamic;
+
+/**
+ * @var {string}
+ * The style of the dotted line indicating the dragged extension area when extending a range in the
+ * {@link Ext.grid.selection.SpreadsheetModel spreadsheet grid selection model}.
+ */
+$spreadsheet-extender-mask-border-style: dotted !dynamic;
+
+/**
+ * @var {color}
+ * The color of the dotted line indicating the dragged extension area when extending a range in the
+ * {@link Ext.grid.selection.SpreadsheetModel spreadsheet grid selection model}.
+ */
+$spreadsheet-extender-mask-border-color: $base-color !dynamic;

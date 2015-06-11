@@ -1,0 +1,51 @@
+/** @class Ext.button.Button */
+//
+
+$button-icon-spacing: 5px !dynamic;
+$button-small-font-size: 12px !dynamic;
+$button-small-font-weight: $font-weight-bold !dynamic;
+$button-small-padding: 3px !dynamic;
+$button-small-text-padding: 5px !dynamic;
+$button-medium-font-size: 14px !dynamic;
+$button-medium-line-height: 18px !dynamic;
+$button-medium-font-weight: $font-weight-bold !dynamic;
+$button-medium-padding: 3px !dynamic;
+$button-medium-text-padding: 8px !dynamic;
+$button-large-font-size: 16px !dynamic;
+$button-large-line-height: 20px !dynamic;
+$button-large-font-weight: $font-weight-bold !dynamic;
+$button-large-padding: 3px !dynamic;
+$button-large-text-padding: 10px !dynamic;
+
+$button-default-color: #fff !dynamic;
+$button-default-base-color: $base-highlight-color !dynamic;
+$button-default-border-color: $base-dark-color !dynamic;
+$button-default-inner-border-width-focus: 1px !dynamic;
+
+$button-include-ui-menu-arrows: true !dynamic;
+$button-include-ui-split-arrows: true !dynamic;
+
+$button-small-arrow-width: 16px !dynamic;
+$button-small-arrow-height: 13px !dynamic;
+$button-medium-arrow-width: 24px !dynamic;
+$button-medium-arrow-height: 18px !dynamic;
+$button-large-arrow-width: 28px !dynamic;
+$button-large-arrow-height: 20px !dynamic;
+
+$button-small-split-width: 20px !dynamic;
+$button-small-split-height: 15px !dynamic;
+$button-medium-split-width: 28px !dynamic;
+$button-medium-split-height: 24px !dynamic;
+$button-large-split-width: 35px !dynamic;
+$button-large-split-height: 29px !dynamic;
+
+$button-toolbar-color: #666 !dynamic;
+$button-toolbar-background-color: $neutral-light-color !dynamic;
+$button-toolbar-border-color: $neutral-color !dynamic;
+$button-toolbar-inner-border-width-focus: 1px !dynamic;
+$button-toolbar-inner-border-color-focus: mix($button-toolbar-background-color, $base-color, 20%) !dynamic;
+$button-toolbar-inner-border-color-focus-over: $button-toolbar-inner-border-color-focus !dynamic;
+$button-toolbar-inner-border-color-focus-pressed: $button-toolbar-inner-border-color-focus !dynamic;
+
+$button-toolbar-plain-border-color: transparent !dynamic;
+$button-toolbar-plain-background-color: transparent !dynamic;

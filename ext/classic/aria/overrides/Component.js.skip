@@ -1,0 +1,38 @@
+Ext.define('Ext.aria.Component', {
+    override: 'Ext.Component',
+    
+    onFocus: function(e, t, eOpts) {
+        var me = this,
+            mgr = Ext.aria.FocusManager,
+            tip, el;
+
+        me.callParent(arguments);
+        
+        if (me.tooltip && Ext.quickTipsActive) {
+            tip = Ext.tip.QuickTipManager.getQuickTip();
+            el  = me.ariaGetEl();
+            
+            tip.cancelShow(el);
+            tip.showByTarget(el);
+        }
+
+        if (me.hasFocus && mgr.enabled) {
+            return mgr.onComponentFocus(me);
+        }
+    },
+
+    onBlur: function(e, t, eOpts) {
+        var me = this,
+            mgr = Ext.aria.FocusManager;
+            
+        me.callParent(arguments);
+        
+        if (me.tooltip && Ext.quickTipsActive) {
+            Ext.tip.QuickTipManager.getQuickTip().cancelShow(me.ariaGetEl());
+        }
+        
+        if (!me.hasFocus && mgr.enabled) {
+            return mgr.onComponentBlur(me);
+        }
+    }
+});

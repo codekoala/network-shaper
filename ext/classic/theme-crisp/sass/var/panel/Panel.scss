@@ -1,0 +1,12 @@
+$panel-base-color: $neutral-light-color !dynamic;
+$panel-header-color: $base-color !dynamic;
+$panel-frame-border-width: 1px !dynamic;
+$panel-header-font-size: round($font-size * 1.15) !dynamic;
+$panel-body-border-color: $neutral-dark-color !dynamic;
+
+$panel-light-header-color: #000 !dynamic;
+$panel-light-header-background-color: #fff !dynamic;
+$panel-light-tool-background-image: 'tools/tool-sprites-dark' !dynamic;
+$panel-light-body-border-color: $neutral-dark-color !dynamic;
+$panel-ignore-frame-padding: true !dynamic;
+$panel-tool-focus-outline-color: $base-color !dynamic;

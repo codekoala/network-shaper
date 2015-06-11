@@ -1,0 +1,94 @@
+/**
+ * @class Ext.grid.column.Column
+ */
+
+/**
+ * @var {string}
+ * The font-family of grid column headers
+ */
+$grid-column-header-font-family: $font-family !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of grid column headers
+ */
+$grid-column-header-font-size: $font-size !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of grid column headers
+ */
+$grid-column-header-font-weight: $font-weight !dynamic;
+
+/**
+ * @var {number}
+ * The line-height of grid column headers
+ */
+$grid-column-header-line-height: round($grid-column-header-font-size * 1.15) !dynamic;
+
+// private
+$grid-column-header-font: $grid-column-header-font-weight #{$grid-column-header-font-size}/#{$grid-column-header-line-height} $grid-column-header-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The text-overflow of grid column headers
+ */
+$grid-column-text-overflow: ellipsis !dynamic;
+
+
+/**
+ * @var {color}
+ * The text color of grid column headers
+ */
+$grid-column-header-color: #000 !dynamic;
+
+/**
+ * @var {number}
+ * The border-width of grid column headers
+ */
+$grid-column-header-border-width: 1px !dynamic;
+
+/**
+ * @var {string}
+ * The border-style of grid column headers
+ */
+$grid-column-header-border-style: solid !dynamic;
+
+/**
+ * @var {color}
+ * The text color of focused grid column headers
+ */
+$grid-column-header-focus-color: $grid-column-header-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of focused grid column headers
+ */
+$grid-column-header-focus-background-color: 'none' !dynamic;
+
+/**
+ * @var {number}
+ * The border-width of focused grid column headers
+ */
+$grid-column-header-focus-border-width: 1px !dynamic;
+
+/**
+ * @var {string}
+ * The border-style of focused grid column headers
+ */
+$grid-column-header-focus-border-style: solid !dynamic;
+
+/**
+ * @var {number}
+ * The spacing between column header element border and inner focus border
+ */
+$grid-column-header-focus-border-inset: 0px !dynamic;
+
+/**
+ * @var {color}
+ * The border color of focused grid column headers
+ */
+$grid-column-header-focus-border-color: #333 !dynamic;
+
+// private
+$grid-header-height: $grid-column-header-line-height + vertical($grid-header-padding);

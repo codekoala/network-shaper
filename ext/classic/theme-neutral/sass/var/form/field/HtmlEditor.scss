@@ -1,0 +1,142 @@
+/**
+ * @class Ext.form.field.HtmlEditor
+ */
+
+/**
+ * @var {number}
+ * The border-width of the HtmlEditor
+ */
+$html-editor-border-width: 1px !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of the HtmlEditor
+ */
+$html-editor-border-color: $form-field-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of the HtmlEditor
+ */
+$html-editor-background-color: $form-field-background-color !dynamic;
+
+/**
+ * @var {number}
+ * The size of the HtmlEditor toolbar icons
+ */
+$html-editor-toolbar-icon-size: 16px !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of the HtmlEditor's font selection control
+ */
+$html-editor-font-select-font-size: $form-field-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The font-family of the HtmlEditor's font selection control
+ */
+$html-editor-font-select-font-family: inherit !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the HtmlEditor's icons when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-glyph-color: $color !dynamic;
+
+/**
+ * @var {number}
+ * The font size to use for the HtmlEditor's icons when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-glyph-font-size: 16px !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "bold" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-bold-glyph: $fa-var-bold $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "italic" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-italic-glyph: $fa-var-italic $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "underline" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-underline-glyph: $fa-var-underline $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "foreground color" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-forecolor-glyph: $fa-var-font $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "background color" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-backcolor-glyph: $fa-var-font $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "align left" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-alignleft-glyph: $fa-var-align-left $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "align center" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-aligncenter-glyph: $fa-var-align-center $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "align right" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-alignright-glyph: $fa-var-align-right $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "numbered list" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-numberedlist-glyph: $fa-var-list-ol $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "bullet list" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-bulletlist-glyph: $fa-var-list-ul $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "bullet list" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-bulletlist-glyph: $fa-var-list-ul $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "grow text" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-growtext-glyph: $fa-var-arrow-up $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "shrink text" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-shrinktext-glyph: $fa-var-arrow-down $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "source edit" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-sourceedit-glyph: $fa-var-pencil $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "hyperlink" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$html-editor-hyperlink-glyph: $fa-var-link $html-editor-glyph-font-size $font-icon-font-family !dynamic;
+

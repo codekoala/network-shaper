@@ -1,0 +1,60 @@
+$touch-theme-base: true;
+
+/**
+  Required by charts
+*/
+$prefix: 'x-' !dynamic;
+$font-size: 15px !dynamic;
+$font-weight: 300 !dynamic;
+$font-family: 'Helvetica' !dynamic;
+
+
+$default-text-contrast: 85% !dynamic;
+
+
+/**
+ * @var {color} $base-color
+ * The primary color variable from which most elements derive their color scheme.
+ */
+$base-color: #808080 !dynamic;
+
+/**
+ * @var {string} $image-extension
+ * default file extension to use for images (defaults to 'png').
+ */
+$image-extension: 'png' !dynamic;
+
+/**
+ * Default search path for images
+ */
+$image-search-path: '.' !default;
+
+/**
+ * @var {boolean/string} $relative-image-path-for-uis
+ * True to use a relative image path for all new UIs. If true, the path will be "../images/".
+ * It can also be a string of the path value.
+ * It defaults to false, which means it will look for the images in the ExtJS SDK folder.
+ */
+$relative-image-path-for-uis: false !default;
+
+/**
+ * @var {boolean} $include-not-found-images
+ * True to include files which are not found when compiling your SASS
+ */
+$include-missing-images: true !dynamic;
+
+/**
+ * @var {string}
+ * The base path relative to the CSS output directory to use for theme resources.  For example
+ * if the theme's images live one directory up from the generated CSS output in a directory
+ * named 'foo/images/', you would need to set this variable to '../foo/' in order for the image
+ * paths in the CSS output to be generated correctly. By default this is the same as the
+ * CSS output directory.
+ */
+$theme-resource-path: '' !dynamic;
+
+/**
+ * @var {number} $css-shadow-border-radius
+ * The border radius for CSS shadows
+ */
+$css-shadow-border-radius: 5px !dynamic;

@@ -1,0 +1,15 @@
+$tab-base-color: #616f8c !dynamic;
+$tab-base-color-over: lighten(#616f8c, 5) !dynamic;
+$tab-base-color-active: $orange !dynamic;
+$tab-color: #fff !dynamic;
+$tab-color-active: $tab-color !dynamic;
+$tab-inner-border-width: 0 !dynamic;
+$tab-border-color: #2e3746 !dynamic;
+$tab-border-color-active: #74400e !dynamic;
+$tab-background-gradient: null !dynamic;
+$tab-background-gradient-over: null !dynamic;
+$tab-background-gradient-active: null !dynamic;
+$tab-background-gradient-disabled: null !dynamic;
+$tab-closable-icon: 'tabs/tab-close' !dynamic;
+$tab-closable-background-position: top right !dynamic;
+$tab-closable-width: 16px !dynamic;

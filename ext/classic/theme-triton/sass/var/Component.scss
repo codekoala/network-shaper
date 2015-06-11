@@ -1,0 +1,20 @@
+$base-color: #5fa2dd !dynamic;
+$base-highlight-color: mix(#fff, $base-color, 20%) !dynamic;
+$base-light-color: mix(#fff, $base-color, 60%) !dynamic;
+$base-dark-color: mix(#000, $base-color, 20%) !dynamic;
+$neutral-color: #d0d0d0 !dynamic;
+$neutral-light-color: mix(#fff, $neutral-color, 80%) !dynamic;
+$neutral-highlight-color: mix(#fff, $neutral-color, 60%) !dynamic;
+$neutral-medium-dark-color: mix(#000, $neutral-color, 15.2%) !dynamic;
+$neutral-dark-color: mix(#000, $neutral-color, 30.4%) !dynamic;
+$font-weight: 300 !dynamic;
+$font-weight-bold: 400 !dynamic;
+$font-family: 'Open Sans', 'Helvetica Neue', helvetica, arial, verdana, sans-serif !dynamic;
+
+// text color
+$color: #404040 !dynamic;
+// lighter text color for use on light backgrounds
+$highlight-color: #606060 !dynamic;
+// light text color for use on dark backgrounds
+$light-color: #f0f0f0 !dynamic;
+$enable-font-icons: true !dynamic;

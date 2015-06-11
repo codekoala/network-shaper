@@ -1,0 +1,19 @@
+$panel-header-font-size: round($font-size * 1.2) !dynamic;
+$panel-header-line-height: 20px !dynamic;
+$panel-header-padding: 11px 15px 12px !dynamic;
+$panel-header-font-weight: $font-weight-bold !dynamic;
+$panel-frame-border-radius: 0 0 0 0 !dynamic;
+$panel-frame-border-width: 2px !dynamic;
+$panel-ignore-frame-padding: true !dynamic;
+
+$panel-header-color: $light-color !dynamic;
+
+$panel-light-header-font-size: $panel-header-font-size !dynamic;
+$panel-light-header-color: $highlight-color !dynamic;
+$panel-light-header-background-color: #fff !dynamic;
+$panel-light-border-color: $neutral-color !dynamic;
+$panel-light-tool-glyph-color: $neutral-dark-color !dynamic;
+$panel-header-icon-spacing: 8px !dynamic;
+
+$panel-header-glyph-opacity: 1 !dynamic;
+$panel-body-border-color: $neutral-color !dynamic;

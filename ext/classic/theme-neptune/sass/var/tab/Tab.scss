@@ -1,0 +1,47 @@
+/** @class Ext.tab.Tab */
+//
+
+$tab-base-color: mix(#fff, $base-highlight-color, 10%) !dynamic;
+$tab-base-color-focus: $tab-base-color !dynamic;
+$tab-base-color-over: mix(#fff, $base-highlight-color, 20%) !dynamic;
+$tab-base-color-active: $base-light-color !dynamic;
+$tab-base-color-focus-over: $tab-base-color-over !dynamic;
+$tab-base-color-focus-active: $tab-base-color-active !dynamic;
+
+$tab-border-color: $tab-base-color !dynamic;
+$tab-border-color-focus: $tab-base-color-focus !dynamic;
+$tab-border-color-over: $tab-base-color-over !dynamic;
+$tab-border-color-active: $tab-base-color-active !dynamic;
+$tab-border-color-disabled: $tab-border-color !dynamic;
+
+$tab-color: #fff !dynamic;
+$tab-color-focus: $tab-color !dynamic;
+$tab-color-over: $tab-color !dynamic;
+$tab-color-active: $base-color !dynamic;
+$tab-color-focus-over: $tab-color-over !dynamic;
+$tab-color-focus-active: $tab-color-active !dynamic;
+
+$tab-background-gradient: 'none' !dynamic;
+$tab-background-gradient-over: 'none' !dynamic;
+$tab-background-gradient-active: 'none' !dynamic;
+$tab-background-gradient-disabled: 'none' !dynamic;
+
+$tab-border-radius: 3px 3px 0 0 !dynamic;
+$tab-inner-border-width-focus: 1px !dynamic;
+$tab-inner-border-width-focus-over: $tab-inner-border-width-focus !dynamic;
+$tab-inner-border-width-focus-active: $tab-inner-border-width-focus !dynamic;
+$tab-inner-border-color-focus: tab-inner-border-color-focus($tab-base-color-focus, $tab-color-focus) !dynamic;
+$tab-inner-border-color-focus-over: tab-inner-border-color-focus-over($tab-base-color-focus-over, $tab-color-focus-over) !dynamic;
+$tab-inner-border-color-focus-active: tab-inner-border-color-focus-active($tab-base-color-focus-active, $tab-color-focus-active) !dynamic;
+
+$tab-padding: 7px 12px 6px !dynamic;
+
+$tab-margin: 0 1px 0 0 !dynamic;
+$tab-icon-spacing: 6px !dynamic;
+
+$tab-text-opacity-disabled: .3 !dynamic;
+$tab-closable-icon-width: 12px !dynamic;
+$tab-closable-icon-height: 12px !dynamic;
+$tab-closable-icon-include-hover-background-position: true !dynamic;
+$tab-closable-icon-include-pressed-background-position: true !dynamic;
+$tab-closable-icon-opacity-disabled: $tab-text-opacity-disabled !dynamic;

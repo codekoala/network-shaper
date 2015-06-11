@@ -1,0 +1,17 @@
+{
+    "name": "classic",
+    "type": "toolkit",
+    "creator": "Sencha",
+    "summary": "The Classic UI Toolkit",
+    "detailedDescription": "UI Components for Legacy Browsers",
+    "version": "6.0.0.415",
+    "compatVersion": "6.0.0",
+    "format": "1",
+    "output": "${framework.dir}/build",
+    "build":{
+      "dir": "${package.output}"
+    },
+    "requires": ["core"],
+    "framework": "ext",
+    "local": true
+}

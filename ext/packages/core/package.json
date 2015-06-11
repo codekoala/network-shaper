@@ -1,0 +1,17 @@
+{
+    "name": "core",
+    "alternateName": ["sencha-core"],
+    "type": "code",
+    "creator": "Sencha",
+    "summary": "Sencha Core",
+    "detailedDescription": "Sencha Core is the core package used by Sencha frameworks",
+    "version": "6.0.0.415",
+    "compatVersion": "5.0.0",
+    "format": "1",
+    "slicer": {
+        "js": []
+    },
+    "output": "${package.dir}/build",
+    "local": true,
+    "requires": []
+}

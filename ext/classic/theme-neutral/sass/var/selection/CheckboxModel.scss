@@ -1,0 +1,47 @@
+/**
+ * @class Ext.selection.CheckboxModel
+ */
+
+/**
+ * @var {number}
+ * The horizontal space before the checkbox
+ */
+$checkbox-selection-model-cell-spacing-before: 5px !dynamic;
+
+/**
+ * @var {number}
+ * The horizontal space after the checkbox
+ */
+$checkbox-selection-model-cell-spacing-after: 5px !dynamic;
+
+// private
+$checkbox-selection-model-column-header-padding:
+    max(ceil(($grid-header-height - $form-checkbox-size) / 2), 0)
+    $checkbox-selection-model-cell-spacing-after
+    max(floor(($grid-header-height - $form-checkbox-size) / 2), 0)
+    $checkbox-selection-model-cell-spacing-before;
+
+// private
+$checkbox-selection-model-cell-padding:
+    max(ceil(($grid-row-height - $form-checkbox-size) / 2), 0)
+    $checkbox-selection-model-cell-spacing-after
+    max(floor(($grid-row-height - $form-checkbox-size) / 2), 0)
+    $checkbox-selection-model-cell-spacing-before;
+
+/**
+ * @var {color}
+ * The color to use for the checkbox when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$checkbox-selection-model-glyph-color: $form-checkbox-glyph-color !dynamic;
+
+/**
+ * @var {string/list}
+ * The glyph for the checkbox when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$checkbox-selection-model-glyph: $form-checkbox-glyph !dynamic;
+
+/**
+ * @var {string/list}
+ * The glyph for the checkbox in "checked" state when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$checkbox-selection-model-checked-glyph: $form-checkbox-checked-glyph !dynamic;

@@ -1,0 +1,13 @@
+$grid-row-cell-font-size: 14px !dynamic;
+$grid-row-cell-line-height: 17px !dynamic;
+$grid-row-cell-color: #fff !dynamic;
+$grid-row-cell-background-color: #1f2933 !dynamic;
+$grid-row-cell-alt-background-color: #1a232b !dynamic;
+$grid-row-cell-over-background-color: #7e552f !dynamic;
+$grid-row-cell-focus-background-color: $grid-row-cell-over-background-color !dynamic;
+$grid-row-cell-over-border-color: #101010 !dynamic;
+$grid-row-cell-selected-color: #000 !dynamic;
+$grid-row-cell-selected-background-color: $focus-color !dynamic;
+$grid-row-cell-selected-border-color: #101010 !dynamic;
+$grid-row-cell-over-background-gradient: 'flat' !dynamic;
+$grid-row-cell-focus-background-gradient: 'flat' !dynamic;

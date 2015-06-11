@@ -1,0 +1,22 @@
+//Neptune cells
+$grid-cell-inner-padding: 5px 10px 4px !dynamic;
+$grid-row-cell-border-color: #ededed !dynamic;
+$grid-row-cell-background-color: #fff !dynamic;
+$grid-row-cell-font-size: $font-size !dynamic;
+
+$grid-row-cell-focus-border-style: solid !dynamic;
+
+// special cells
+$grid-cell-special-background-color: 'none' !dynamic;
+$grid-cell-special-background-gradient: 'none' !dynamic;
+$grid-cell-special-border-width: 1px !dynamic;
+
+//row cell over
+$grid-row-cell-over-background-color: mix(#fff, $base-light-color, 65%) !dynamic;
+$grid-row-cell-over-border-color: $grid-row-cell-over-background-color !dynamic;
+
+//row cell selected
+$grid-row-cell-selected-background-color: mix(#fff, $base-light-color, 25%) !dynamic;
+$grid-row-cell-selected-border-color: $grid-row-cell-selected-background-color !dynamic;
+
+$grid-row-cell-focus-border-color: mix(#ddd, $base-color, 20%) !dynamic;

@@ -1,0 +1,11 @@
+/** @class Ext.tab.Bar */
+//
+
+$tabbar-background-gradient: 'none' !dynamic;
+$tabbar-strip-height: 5px !dynamic;
+$tabbar-border-width: 0 !dynamic;
+$tabbar-strip-border-width: 0 0 !dynamic;
+$tabbar-strip-plain-border-width: $tabbar-strip-border-width !dynamic;
+$tabbar-scroller-include-plain-icon: true !dynamic;
+$tabbar-scroller-glyph-color: #fff !dynamic;
+$tabbar-plain-scroller-glyph-color: $neutral-dark-color !dynamic;

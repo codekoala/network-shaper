@@ -1,0 +1,1068 @@
+/**
+ * @class Ext.tab.Tab
+ */
+
+/**
+ * @var {color}
+ * The base color of Tabs
+ */
+$tab-base-color: $base-color !dynamic;
+
+/**
+ * @var {color}
+ * The base color of focused Tabs
+ */
+$tab-base-color-focus: $tab-base-color !dynamic;
+
+/**
+ * @var {color}
+ * The base color of hovered Tabs
+ */
+$tab-base-color-over: $tab-base-color !dynamic;
+
+/**
+ * @var {color}
+ * The base color of the active Tabs
+ */
+$tab-base-color-active: $tab-base-color !dynamic;
+
+/**
+ * @var {color}
+ * The base color of focused hovered Tabs
+ */
+$tab-base-color-focus-over: $tab-base-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The base color of the active Tab when focused
+ */
+$tab-base-color-focus-active: $tab-base-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The base color of disabled Tabs
+ */
+$tab-base-color-disabled: $tab-base-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-background-color: null !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of focused {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-background-color-focus: $tab-plain-background-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of hovered {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-background-color-over: $tab-plain-background-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of the active {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-background-color-active: $tab-plain-background-color !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of focused hovered {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-background-color-focus-over: $tab-plain-background-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of the active {@link Ext.tab.Bar#plain} Tab when focused
+ */
+$tab-plain-background-color-focus-active: $tab-plain-background-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of disabled {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-background-color-disabled: $tab-plain-background-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of Tabs
+ */
+$tab-color: $color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of focused Tabs
+ */
+$tab-color-focus: $tab-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of hovered Tabs
+ */
+$tab-color-over: $tab-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of the active Tab
+ */
+$tab-color-active: $tab-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of focused hovered Tabs
+ */
+$tab-color-focus-over: $tab-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The text color of the active Tab when focused
+ */
+$tab-color-focus-active: $tab-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The text color of disabled Tabs
+ */
+$tab-color-disabled: $tab-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-color: null !dynamic;
+
+/**
+ * @var {color}
+ * The text color of focused {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-color-focus: $tab-plain-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of hovered {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-color-over: $tab-plain-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of the active {@link Ext.tab.Bar#plain} Tab
+ */
+$tab-plain-color-active: $tab-plain-color !dynamic;
+
+/**
+ * @var {color}
+ * The text color of focused hovered {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-color-focus-over: $tab-plain-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The text color of the active {@link Ext.tab.Bar#plain} Tab when focused
+ */
+$tab-plain-color-focus-active: $tab-plain-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The text color of disabled {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-color-disabled: $tab-plain-color !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of Tabs
+ */
+$tab-font-size: $font-size !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of focused Tabs
+ */
+$tab-font-size-focus: $tab-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of hovered Tabs
+ */
+$tab-font-size-over: $tab-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of the active Tab
+ */
+$tab-font-size-active: $tab-font-size !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of focused hovered Tabs
+ */
+$tab-font-size-focus-over: $tab-font-size-over !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of the active Tab when focused
+ */
+$tab-font-size-focus-active: $tab-font-size-active !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of disabled Tabs
+ */
+$tab-font-size-disabled: $tab-font-size !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of Tabs
+ */
+$tab-font-family: $font-family !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of focused Tabs
+ */
+$tab-font-family-focus: $tab-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of hovered Tabs
+ */
+$tab-font-family-over: $tab-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of the active Tab
+ */
+$tab-font-family-active: $tab-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of focused hovered Tabs
+ */
+$tab-font-family-focus-over: $tab-font-family-over !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of the active Tab when focused
+ */
+$tab-font-family-focus-active: $tab-font-family-active !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of disabled Tabs
+ */
+$tab-font-family-disabled: $tab-font-family !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of Tabs
+ */
+$tab-font-weight: $font-weight-bold !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of focused Tabs
+ */
+$tab-font-weight-focus: $tab-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of hovered Tabs
+ */
+$tab-font-weight-over: $tab-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of the active Tab
+ */
+$tab-font-weight-active: $tab-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of focused hovered Tabs
+ */
+$tab-font-weight-focus-over: $tab-font-weight-over !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of the active Tab when focused
+ */
+$tab-font-weight-focus-active: $tab-font-weight-active !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of disabled Tabs
+ */
+$tab-font-weight-disabled: $tab-font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The Tab cursor
+ */
+$tab-cursor: pointer !dynamic;
+
+/**
+ * @var {string}
+ * The cursor of disabled Tabs
+ */
+$tab-cursor-disabled: default !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for Tabs. Can be either the name of a predefined gradient
+ * or a list of color stops. Used as the `$type` parameter for 
+ * {@link Global_CSS#background-gradient}.
+ */
+$tab-background-gradient: 'tab' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for focused Tabs. Can be either the name of a predefined gradient
+ * or a list of color stops. Used as the `$type` parameter for
+ * {@link Global_CSS#background-gradient}.
+ */
+$tab-background-gradient-focus: 'tab' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for hovered Tabs. Can be either the name of a predefined gradient
+ * or a list of color stops. Used as the `$type` parameter for 
+ * {@link Global_CSS#background-gradient}.
+ */
+$tab-background-gradient-over: 'tab-over' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the active Tab. Can be either the name of a predefined gradient
+ * or a list of color stops. Used as the `$type` parameter for 
+ * {@link Global_CSS#background-gradient}.
+ */
+$tab-background-gradient-active: 'tab-active' !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for focused hovered Tabs. Can be either the name of a
+ * predefined gradient or a list of color stops. Used as the `$type` parameter for
+ * {@link Global_CSS#background-gradient}.
+ */
+$tab-background-gradient-focus-over: $tab-background-gradient-over !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for the active Tab when focused. Can be either the name of a
+ * predefined gradient or a list of color stops. Used as the `$type` parameter for
+ * {@link Global_CSS#background-gradient}.
+ */
+$tab-background-gradient-focus-active: $tab-background-gradient-active !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient for disabled Tabs. Can be either the name of a predefined gradient
+ * or a list of color stops. Used as the `$type` parameter for 
+ * {@link Global_CSS#background-gradient}.
+ */
+$tab-background-gradient-disabled: 'tab-disabled' !dynamic;
+
+/**
+ * @var {list}
+ * The border-radius of Tabs
+ */
+$tab-border-radius: 4px 4px 0 0 !dynamic;
+
+/**
+ * @var {number/list}
+ * The border-width of Tabs
+ */
+$tab-border-width: 1px !dynamic;
+
+/**
+ * @var {number/list}
+ * The border-width of focused Tabs
+ */
+$tab-border-width-focus: $tab-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The border-width of hovered Tabs
+ */
+$tab-border-width-over: $tab-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The border-width of active Tabs
+ */
+$tab-border-width-active: $tab-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The border-width of focused hovered Tabs
+ */
+$tab-border-width-focus-over: $tab-border-width-over !dynamic;
+
+/**
+ * @var {number/list}
+ * The border-width of active Tabs when focused
+ */
+$tab-border-width-focus-active: $tab-border-width-active !dynamic;
+
+/**
+ * @var {number/list}
+ * The border-width of disabled Tabs
+ */
+$tab-border-width-disabled: $tab-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width of Tabs
+ */
+$tab-inner-border-width: 'none' !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width of focused Tabs
+ */
+$tab-inner-border-width-focus: $tab-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width of hovered Tabs
+ */
+$tab-inner-border-width-over: $tab-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width of active Tabs
+ */
+$tab-inner-border-width-active: $tab-inner-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width of focused hovered Tabs
+ */
+$tab-inner-border-width-focus-over: $tab-inner-border-width-over !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width of active Tabs when focused
+ */
+$tab-inner-border-width-focus-active: $tab-inner-border-width-active !dynamic;
+
+/**
+ * @var {number/list}
+ * The inner border-width of disabled Tabs
+ */
+$tab-inner-border-width-disabled: $tab-inner-border-width !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of Tabs
+ */
+$tab-inner-border-color: 'none' !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of focused Tabs
+ */
+$tab-inner-border-color-focus: $tab-inner-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of hovered Tabs
+ */
+$tab-inner-border-color-over: $tab-inner-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of active Tabs
+ */
+$tab-inner-border-color-active: $tab-inner-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of focused hovered Tabs
+ */
+$tab-inner-border-color-focus-over: $tab-inner-border-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of active Tabs when focused
+ */
+$tab-inner-border-color-focus-active: $tab-inner-border-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The inner border-color of disabled Tabs
+ */
+$tab-inner-border-color-disabled: $tab-inner-border-color !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to suppress the inner border of the tab on the side adjacent to the tab strip
+ */
+$tab-inner-border-collapse: false !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to suppress the inner border of the tab on the side adjacent to the tab strip
+ * when the tab is focused
+ */
+$tab-inner-border-collapse-focus: $tab-inner-border-collapse !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to suppress the inner border of the tab on the side adjacent to the tab strip
+ * when the tab is hovered
+ */
+$tab-inner-border-collapse-over: $tab-inner-border-collapse !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to suppress the inner border of the tab on the side adjacent to the tab strip
+ * when the tab is active
+ */
+$tab-inner-border-collapse-active: $tab-inner-border-collapse !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to suppress the inner border of the tab on the side adjacent to the tab strip
+ * when the tab is focused and hovered
+ */
+$tab-inner-border-collapse-focus-over: $tab-inner-border-collapse-over !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to suppress the inner border of the tab on the side adjacent to the tab strip
+ * when the tab is focused and active
+ */
+$tab-inner-border-collapse-focus-active: $tab-inner-border-collapse-active !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to suppress the inner border of the tab on the side adjacent to the tab strip
+ * when the tab is disabled
+ */
+$tab-inner-border-collapse-disabled: $tab-inner-border-collapse !dynamic;
+
+/**
+ * @var {number}
+ * The outline width of focused Tabs
+ */
+$tab-outline-width-focus: 0 !dynamic;
+
+/**
+ * @var {string}
+ * The outline-style of focused Tabs
+ */
+$tab-outline-style-focus: solid !dynamic;
+
+/**
+ * @var {color}
+ * The outline color of focused Tabs
+ */
+$tab-outline-color-focus: $tab-color !dynamic;
+
+/**
+ * @var {number}
+ * The outline offset of focused Tabs
+ */
+$tab-outline-offset-focus: -$tab-outline-width-focus !dynamic;
+
+/**
+ * @var {number}
+ * The body outline width of focused Tabs
+ */
+$tab-body-outline-width-focus: 0 !dynamic;
+
+/**
+ * @var {string}
+ * The body outline-style of focused Tabs
+ */
+$tab-body-outline-style-focus: dotted !dynamic;
+
+/**
+ * @var {color}
+ * The body outline color of focused Tabs
+ */
+$tab-body-outline-color-focus: $tab-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of Tabs
+ */
+$tab-border-color: $base-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of focused Tabs
+ */
+$tab-border-color-focus: $tab-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of hovered Tabs
+ */
+$tab-border-color-over: $tab-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of the active Tab
+ */
+$tab-border-color-active: $tab-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of focused hovered Tabs
+ */
+$tab-border-color-focus-over: $tab-border-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of the active Tab when focused
+ */
+$tab-border-color-focus-active: $tab-border-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of disabled Tabs
+ */
+$tab-border-color-disabled: $tab-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-border-color: null !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of focused {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-border-color-focus: $tab-plain-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of hovered {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-border-color-over: $tab-plain-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of the active {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-border-color-active: $tab-plain-border-color !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of focused hovered {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-border-color-focus-over: $tab-plain-border-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of the active {@link Ext.tab.Bar#plain} Tab when focused
+ */
+$tab-plain-border-color-focus-active: $tab-plain-border-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of disabled {@link Ext.tab.Bar#plain} Tabs
+ */
+$tab-plain-border-color-disabled: $tab-plain-border-color !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of Tabs
+ */
+$tab-padding: 3px 9px !dynamic;
+
+/**
+ * @var {number}
+ * The horizontal padding to add to the left and right of the Tab's text element
+ */
+$tab-text-padding: 0 !dynamic;
+
+/**
+ * @var {number/list}
+ * The margin of Tabs. Typically used to add horizontal space between the tabs.
+ */
+$tab-margin: 0 0 0 2px !dynamic;
+
+/**
+ * @var {number}
+ * The width of the Tab close icon
+ */
+$tab-closable-icon-width: 11px !dynamic;
+
+/**
+ * @var {number}
+ * The height of the Tab close icon
+ */
+$tab-closable-icon-height: 11px !dynamic;
+
+/**
+ * @var {number}
+ * The distance to offset the Tab close icon from the top of the tab
+ */
+$tab-closable-icon-top: 2px !dynamic;
+
+/**
+ * @var {number}
+ * The distance to offset the Tab close icon from the right of the tab
+ */
+$tab-closable-icon-right: 2px !dynamic;
+/**
+ * @var {number}
+ * the space in between the text and the close button
+ */
+$tab-closable-icon-spacing: 3px !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of the Tab close icon
+ */
+$tab-closable-icon-opacity: 1 !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of the Tab close icon when hovered
+ */
+$tab-closable-icon-opacity-over: 1 !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of the Tab close icon when the Tab is disabled
+ */
+$tab-closable-icon-opacity-disabled: 1 !dynamic;
+
+/**
+ * @var {color}
+ * The color of the Tab close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-closable-icon-glyph-color: $neutral-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of the focused Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-closable-icon-glyph-color-focus: $tab-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of the hovered Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-closable-icon-glyph-color-over: $tab-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of the active Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-closable-icon-glyph-color-active: $tab-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of a focused and hovered Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-closable-icon-glyph-color-focus-over: $tab-closable-icon-glyph-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The color of a focused and active Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-closable-icon-glyph-color-focus-active: $tab-closable-icon-glyph-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The color of a disabled Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-closable-icon-glyph-color-disabled: $tab-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of the Tab close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-plain-closable-icon-glyph-color: $tab-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of the focused {@link Ext.tab.Bar#plain} Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-plain-closable-icon-glyph-color-focus: $tab-plain-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of the hovered {@link Ext.tab.Bar#plain} Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-plain-closable-icon-glyph-color-over: $tab-plain-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of the active {@link Ext.tab.Bar#plain} Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-plain-closable-icon-glyph-color-active: $tab-plain-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of a focused and hovered {@link Ext.tab.Bar#plain} Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-plain-closable-icon-glyph-color-focus-over: $tab-plain-closable-icon-glyph-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The color of a focused and active {@link Ext.tab.Bar#plain} Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-plain-closable-icon-glyph-color-focus-active: $tab-plain-closable-icon-glyph-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The color of a disabled {@link Ext.tab.Bar#plain} Tab's close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-plain-closable-icon-glyph-color-disabled: $tab-plain-closable-icon-glyph-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the Tab close icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$tab-closable-icon-glyph: $fa-var-close 16px $font-icon-font-family !dynamic;
+
+/**
+ * @var {boolean}
+ * True to change the x background-postition of the close icon background image on hover
+ * to allow for a horizontally aligned background image sprite
+ */
+$tab-closable-icon-include-hover-background-position: false !dynamic;
+
+/**
+ * @var {boolean}
+ * True to change the x background-postition of the close icon background image on click
+ * to allow for a horizontally aligned background image sprite
+ */
+$tab-closable-icon-include-pressed-background-position: false !dynamic;
+
+/**
+ * @var {number}
+ * The width of Tab icons
+ */
+$tab-icon-width: 16px !dynamic;
+
+/**
+ * @var {number}
+ * The height of Tab icons
+ */
+$tab-icon-height: 16px !dynamic;
+
+/**
+ * @var {number}
+ * The line-height of Tabs
+ */
+$tab-line-height: $tab-icon-height !dynamic;
+
+/**
+ * @var {number}
+ * The space between the Tab icon and the Tab text
+ */
+$tab-icon-spacing: 4px !dynamic;
+
+/**
+ * @var {number}
+ * The background-position of Tab icons
+ */
+$tab-icon-background-position: center center !dynamic;
+
+/**
+ * @var {color}
+ * The color of Tab glyph icons
+ */
+$tab-glyph-color: $tab-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of a Tab glyph icon when the Tab is focused
+ */
+$tab-glyph-color-focus: $tab-color-focus !dynamic;
+
+/**
+ * @var {color}
+ * The color of a Tab glyph icon when the Tab is hovered
+ */
+$tab-glyph-color-over: $tab-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The color of a Tab glyph icon when the Tab is active
+ */
+$tab-glyph-color-active: $tab-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The color of a Tab glyph icon when the Tab is focused and hovered
+ */
+$tab-glyph-color-focus-over: $tab-color-focus-over !dynamic;
+
+/**
+ * @var {color}
+ * The color of a Tab glyph icon when the Tab is focused and active
+ */
+$tab-glyph-color-focus-active: $tab-color-focus-active !dynamic;
+
+/**
+ * @var {color}
+ * The color of a Tab glyph icon when the Tab is disabled
+ */
+$tab-glyph-color-disabled: $tab-color-disabled !dynamic;
+
+/**
+ * @var {color}
+ * The color of {@link Ext.tab.Bar#plain} Tab glyph icons
+ */
+$tab-plain-glyph-color: $tab-plain-color !dynamic;
+
+/**
+ * @var {color}
+ * The color of a {@link Ext.tab.Bar#plain} Tab glyph icon when the Tab is focused
+ */
+$tab-plain-glyph-color-focus: $tab-plain-color-focus !dynamic;
+
+/**
+ * @var {color}
+ * The color of a {@link Ext.tab.Bar#plain} Tab glyph icon when the Tab is hovered
+ */
+$tab-plain-glyph-color-over: $tab-plain-color-over !dynamic;
+
+/**
+ * @var {color}
+ * The color of a {@link Ext.tab.Bar#plain} Tab glyph icon when the Tab is active
+ */
+$tab-plain-glyph-color-active: $tab-plain-color-active !dynamic;
+
+/**
+ * @var {color}
+ * The color of a {@link Ext.tab.Bar#plain} Tab glyph icon when the Tab is focused and hovered
+ */
+$tab-plain-glyph-color-focus-over: $tab-plain-color-focus-over !dynamic;
+
+/**
+ * @var {color}
+ * The color of a {@link Ext.tab.Bar#plain} Tab glyph icon when the Tab is focused and active
+ */
+$tab-plain-glyph-color-focus-active: $tab-plain-color-focus-active !dynamic;
+
+/**
+ * @var {color}
+ * The color of a {@link Ext.tab.Bar#plain} Tab glyph icon when the Tab is disabled
+ */
+$tab-plain-glyph-color-disabled: $tab-plain-color-disabled !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of a Tab glyph icon
+ */
+$tab-glyph-opacity: .5 !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of a Tab glyph icon when the Tab is disabled
+ */
+$tab-glyph-opacity-disabled: .3 !dynamic;
+
+/**
+ * @var {number}
+ * Tab opacity
+ */
+$tab-opacity: 1 !dynamic;
+
+/**
+ * @var {number}
+ * Tab opacity when focused
+ */
+$tab-opacity-focus: $tab-opacity !dynamic;
+
+/**
+ * @var {number}
+ * Tab opacity when hovered
+ */
+$tab-opacity-over: $tab-opacity !dynamic;
+
+/**
+ * @var {number}
+ * Opacity of the active tab
+ */
+$tab-opacity-active: $tab-opacity !dynamic;
+
+/**
+ * @var {number}
+ * Tab opacity when focused and hovered
+ */
+$tab-opacity-focus-over: $tab-opacity-over !dynamic;
+
+/**
+ * @var {number}
+ * Opacity of the active tab when focused
+ */
+$tab-opacity-focus-active: $tab-opacity-active !dynamic;
+
+/**
+ * @var {number}
+ * Tab opacity when disabled
+ */
+$tab-opacity-disabled: $tab-opacity !dynamic;
+
+/**
+ * @var {number}
+ * Tab background opacity
+ */
+$tab-background-opacity: null !dynamic;
+
+/**
+ * @var {number}
+ * Tab background opacity when focused
+ */
+$tab-background-opacity-focus: $tab-opacity !dynamic;
+
+/**
+ * @var {number}
+ * Tab background opacity when hovered
+ */
+$tab-background-opacity-over: $tab-opacity !dynamic;
+
+/**
+ * @var {number}
+ * background opacity of the active tab
+ */
+$tab-background-opacity-active: $tab-opacity !dynamic;
+
+/**
+ * @var {number}
+ * Tab background opacity when focused and hovered
+ */
+$tab-background-opacity-focus-over: $tab-opacity-over !dynamic;
+
+/**
+ * @var {number}
+ * Background opacity of the active tab when focused
+ */
+$tab-background-opacity-focus-active: $tab-opacity-active !dynamic;
+
+/**
+ * @var {number}
+ * Tab background opacity when disabled
+ */
+$tab-background-opacity-disabled: $tab-opacity !dynamic;
+
+/**
+ * @var {number}
+ * opacity to apply to the tab's text element when the tab is disabled
+ */
+$tab-text-opacity-disabled: .3 !dynamic;
+
+/**
+ * @var {number}
+ * opacity to apply to the tab's icon element when the tab is disabled
+ */
+$tab-icon-opacity-disabled: .5 !dynamic;
+
+/**
+ * @var {boolean}
+ * True to include the "default" tab UI
+ */
+$include-tab-default-ui: $include-default-uis !dynamic;

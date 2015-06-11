@@ -1,0 +1,15 @@
+$horizontal-slider-thumb-width: 20px !dynamic;
+$horizontal-slider-thumb-height: 20px !dynamic;
+$vertical-slider-thumb-width: 20px !dynamic;
+$vertical-slider-thumb-height: 20px !dynamic;
+
+$slider-track-border-color: $neutral-color !dynamic;
+$slider-track-background-color: mix(#000, $neutral-light-color, 3%) !dynamic;
+$slider-thumb-background-color: $neutral-light-color !dynamic;
+$slider-thumb-background-color-over: mix(#fff, $slider-thumb-background-color, 70%) !dynamic;
+$slider-thumb-background-color-drag: mix(#000, $slider-thumb-background-color, 2%) !dynamic;
+$slider-thumb-border-color: $slider-track-border-color !dynamic;
+$slider-thumb-border-color-over: mix($base-highlight-color, $slider-thumb-border-color, 10%) !dynamic;
+$slider-thumb-border-color-drag: mix(#000, mix($base-highlight-color, $slider-thumb-border-color, 15%), 2%) !dynamic;
+$slider-thumb-border-color-focus: $base-color !dynamic;
+$slider-thumb-glyph-color-focus: mix($neutral-highlight-color, $slider-thumb-border-color-focus, 50%) !dynamic;

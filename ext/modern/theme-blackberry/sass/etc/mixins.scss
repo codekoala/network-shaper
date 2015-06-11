@@ -1,0 +1,21 @@
+//$default-gradient: null;
+
+///**
+// * @class Global_CSS
+// */
+
+
+@mixin bb-gradient($color, $offset: 2) {
+	background: $color;
+	@include background-image(linear-gradient(top, color-stops(lighten($color, $offset), darken($color, $offset))));
+}
+
+@mixin bb-icon($icon) {
+	.x-button-icon.#{$icon} {
+		background-image: get-image-url('icons/ic_#{$icon}');
+
+		&:before {
+			content: '' !important;
+		}
+	}
+}

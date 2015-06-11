@@ -1,0 +1,18 @@
+{
+    "name": "theme-neutral",
+    "toolkit": "classic",
+    "alternateName": ["ext-theme-neutral"],
+    "type": "theme",
+    "creator": "Sencha",
+    "summary": "Ext JS Neutral Theme",
+    "detailedDescription": "The neutral theme is a highly configurable, abstract base theme",
+    "version": "6.0.0.415",
+    "compatVersion": "5.0.0",
+    "format": "1",
+    "slicer": {
+        "js": []
+    },
+    "output": "${workspace.subpkg.prefix}/${package.name}",
+    "local": true,
+    "extend": "theme-base"
+}

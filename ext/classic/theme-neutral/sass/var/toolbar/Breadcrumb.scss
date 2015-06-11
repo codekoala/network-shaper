@@ -1,0 +1,238 @@
+/** @class Ext.toolbar.Breadcrumb */
+//
+
+// Some breadcrumb vars derive their values from toolbar vars, so make sure we have imported
+// the Toolbar vars first since there is no dependency at the class-level.  This means
+// Toolbar vars might get imported twice but that is not a problem since the variables
+// are !default - the second import will be effectively ignored.
+@import 'Toolbar';
+
+/**
+ * @var {string}
+ * The UI of buttons that are used in the "default" breadcrumb UI
+ */
+$breadcrumb-button-ui: 'default-toolbar' !dynamic;
+
+/**
+ * @var {number}
+ * The space between the breadcrumb buttons
+ */
+$breadcrumb-button-spacing: 0px !dynamic;
+
+/**
+ * @var {number}
+ * The width of breadcrumb arrows when {@link #useSplitButtons} is `false`
+ */
+$breadcrumb-arrow-width: $button-small-split-width !dynamic;
+
+/**
+ * @var {number}
+ * The width of breadcrumb arrows when {@link #useSplitButtons} is `true`
+ */
+$breadcrumb-split-width: $button-small-split-width !dynamic;
+
+/**
+ * @var {string}
+ * The background-image for the default "folder" icon
+ */
+$breadcrumb-folder-icon: 'tree/folder' !dynamic;
+
+/**
+ * @var {string}
+ * The background-image for the default "open folder" icon
+ */
+$breadcrumb-folder-open-icon: 'tree/folder-open' !dynamic;
+
+/**
+ * @var {string}
+ * The background-image for the default "leaf" icon
+ */
+$breadcrumb-leaf-icon: 'tree/leaf' !dynamic;
+
+/**
+ * @var {number}
+ * The font size to use for breadcrumb icons when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-glyph-font-size: 16px !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for breadcrumb icons when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-glyph-color: $button-toolbar-glyph-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "folder" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-folder-glyph: $fa-var-folder-o $breadcrumb-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "folder" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-folder-glyph-color: $breadcrumb-glyph-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "open folder" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-folder-open-glyph: $fa-var-folder-open-o $breadcrumb-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "open folder" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-folder-open-glyph-color: $breadcrumb-folder-glyph-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "leaf" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-leaf-glyph: $fa-var-file-o $breadcrumb-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "leaf" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-leaf-glyph-color: $breadcrumb-glyph-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "arrow" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-arrow-glyph: $fa-var-angle-right $breadcrumb-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "arrow" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-arrow-glyph-color: $breadcrumb-glyph-color !dynamic;
+
+/**
+ * @var {string/list}
+ * Glyph for the "expanded arrow" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-arrow-expanded-glyph: $fa-var-angle-down $breadcrumb-glyph-font-size $font-icon-font-family !dynamic;
+
+/**
+ * @var {color}
+ * The color to use for the "expanded arrow" icon when {@link Global_CSS#$enable-font-icons} is `true`.
+ */
+$breadcrumb-arrow-expanded-glyph-color: $breadcrumb-arrow-glyph-color !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to include a separate background-image for menu arrows when a breadcrumb button's
+ * menu is open
+ */
+$breadcrumb-include-menu-active-arrow: true !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to include a separate background-image for split arrows when a breadcrumb button's
+ * arrow is hovered
+ */
+$breadcrumb-include-split-over-arrow: true !dynamic;
+
+/**
+ * @var {number}
+ * The width of Breadcrumb scrollers
+ */
+$breadcrumb-scroller-width: $toolbar-scroller-width !dynamic;
+
+/**
+ * @var {number}
+ * The height of Breadcrumb scrollers
+ */
+$breadcrumb-scroller-height: $toolbar-scroller-height !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of Breadcrumb scrollers
+ */
+$breadcrumb-scroller-border-color: $toolbar-scroller-border-color !dynamic;
+
+/**
+ * @var {number}
+ * The border-width of Breadcrumb scrollers
+ */
+$breadcrumb-scroller-border-width: $toolbar-scroller-border-width !dynamic;
+
+/**
+ * @var {number/list}
+ * The margin of "top" Breadcrumb scroller buttons
+ */
+$breadcrumb-scroller-top-margin: $toolbar-scroller-top-margin !dynamic;
+
+/**
+ * @var {number/list}
+ * The margin of "right" Breadcrumb scroller buttons
+ */
+$breadcrumb-scroller-right-margin: $toolbar-scroller-right-margin !dynamic;
+
+/**
+ * @var {number/list}
+ * The margin of "bottom" Breadcrumb scroller buttons
+ */
+$breadcrumb-scroller-bottom-margin: $toolbar-scroller-bottom-margin !dynamic;
+
+/**
+ * @var {number/list}
+ * The margin of "left" Breadcrumb scroller buttons
+ */
+$breadcrumb-scroller-left-margin: $toolbar-scroller-left-margin !dynamic;
+
+/**
+ * @var {string}
+ * The cursor of Breadcrumb scrollers
+ */
+$breadcrumb-scroller-cursor: $toolbar-scroller-cursor !dynamic;
+
+/**
+ * @var {string}
+ * The cursor of disabled Breadcrumb scrollers
+ */
+$breadcrumb-scroller-cursor-disabled: $toolbar-scroller-cursor-disabled !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of Breadcrumb scroller buttons. Only applicable when
+ * {@link #$breadcrumb-classic-scrollers} is `false`.
+ */
+$breadcrumb-scroller-opacity: $toolbar-scroller-opacity !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of hovered Breadcrumb scroller buttons. Only applicable when
+ * {@link #$breadcrumb-classic-scrollers} is `false`.
+ */
+$breadcrumb-scroller-opacity-over: $toolbar-scroller-opacity-over !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of pressed Breadcrumb scroller buttons. Only applicable when
+ * {@link #$breadcrumb-classic-scrollers} is `false`.
+ */
+$breadcrumb-scroller-opacity-pressed: $toolbar-scroller-opacity-pressed !dynamic;
+
+/**
+ * @var {number}
+ * The opacity of disabled Breadcrumb scroller buttons. Only applicable when
+ * {@link #$breadcrumb-classic-scrollers} is `false`.
+ */
+$breadcrumb-scroller-opacity-disabled: $toolbar-scroller-opacity-disabled !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to use classic-style scroller buttons.  When `true` scroller buttons are given their
+ * hover state by changing their background-position,  When `false` scroller buttons are
+ * given their hover state by applying opacity.
+ */
+$breadcrumb-classic-scrollers: $toolbar-classic-scrollers !dynamic;
+
+/**
+ * @var {boolean}
+ * `true` to include the "default" breadcrumb UI
+ */
+$include-breadcrumb-default-ui: true !dynamic;

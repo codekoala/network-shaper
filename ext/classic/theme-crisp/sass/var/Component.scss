@@ -1,0 +1,15 @@
+// Source Sans Pro disabled temporarily for SenchaCon.  Revisit this in the future.
+//$font-family: "Source Sans Pro", helvetica, arial, verdana, sans-serif !dynamic;
+$font-family: helvetica, arial, verdana, sans-serif !dynamic;
+$font-weight: 300 !dynamic;
+$font-weight-bold: 300 !dynamic;
+$base-color: #157fcc !dynamic;
+$base-highlight-color: mix(#fff, $base-color, 15%) !dynamic;
+$base-light-color: mix(#fff, $base-color, 65%) !dynamic;
+$base-dark-color: mix(#000, $base-color, 14%) !dynamic;
+$neutral-color: #e1e1e1 !dynamic;
+$neutral-light-color: mix(#fff, $neutral-color, 68%) !dynamic;
+$neutral-medium-dark-color: mix(#000, $neutral-color, 4%) !dynamic;
+$neutral-dark-color: mix(#000, $neutral-color, 8%) !dynamic;
+$body-background-color: #fff !dynamic;
+$font-size: 13px !dynamic;

@@ -1,0 +1,14 @@
+$tag-field-padding: 3px 0 0 4px !dynamic;
+$tag-field-item-height: 24px !dynamic;
+$tag-field-item-margin: 0 4px 3px 0 !dynamic;
+
+$tag-field-item-close-icon-size: 16px !dynamic;
+$tag-field-item-close-icon-top: 1px !dynamic;
+$tag-field-item-close-icon-right: 3px !dynamic;
+$tag-field-item-close-icon-opacity: .85 !dynamic;
+$tag-field-item-close-icon-opacity-over: .93 !dynamic;
+$tag-field-item-close-icon-opacity-pressed: 1 !dynamic;
+$tag-field-item-background-color: $neutral-highlight-color !dynamic;
+$tag-field-item-over-background-color: mix(#000, $tag-field-item-background-color, 3%) !dynamic;
+$tag-field-item-close-icon-glyph-color: $neutral-dark-color !dynamic;
+$tag-field-item-over-close-icon-glyph-color: $tag-field-item-close-icon-glyph-color !dynamic;

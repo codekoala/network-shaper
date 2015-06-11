@@ -1,0 +1,172 @@
+/**
+ * @class Ext.LoadMask
+ */
+
+/**
+ * @var {number}
+ * Opacity of the LoadMask
+ */
+$loadmask-opacity: 0.5 !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of the LoadMask
+ */
+$loadmask-background-color: #ccc !dynamic;
+
+/**
+ * @var {number}
+ * Opacity of the LoadMask when applied to the document body element.
+ * Used for modal Windows and MessageBox
+ */
+$loadmask-page-opacity: $loadmask-opacity !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of the LoadMask when applied to the document body element.
+ * Used for modal Windows and MessageBox
+ */
+$loadmask-page-background-color: $loadmask-background-color !dynamic;
+
+/**
+ * @var {string}
+ * The type of cursor to dislay when the cursor is over the LoadMask
+ */
+$loadmask-cursor: default !dynamic;
+
+/**
+ * @var {string}
+ * The border-style of the LoadMask focus border
+ */
+$loadmask-border-style-focus: solid !dynamic;
+
+/**
+ * @var {string}
+ * The border-color of the LoadMask focus border
+ */
+$loadmask-border-color-focus: $base-color !dynamic;
+
+/**
+ * @var {string}
+ * The border-width of the LoadMask focus border
+ */
+$loadmask-border-width-focus: 1px !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding to apply to the LoadMask's message element
+ */
+$loadmask-msg-padding: 2px !dynamic;
+
+/**
+ * @var {string}
+ * The border-style of the LoadMask's message element
+ */
+$loadmask-msg-border-style: solid !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of the LoadMask's message element
+ */
+$loadmask-msg-border-color: $base-color !dynamic;
+
+/**
+ * @var {number}
+ * The border-width of the LoadMask's message element
+ */
+$loadmask-msg-border-width: 1px !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of the LoadMask's message element
+ */
+$loadmask-msg-background-color: $base-color !dynamic;
+
+/**
+ * @var {string/list}
+ * The background-gradient of the LoadMask's message element. Can be either the name
+ * of a predefined gradient or a list of color stops. Used as the `$type` parameter for
+ * {@link Global_CSS#background-gradient}.
+ */
+$loadmask-msg-background-gradient: 'none' !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of the message inner element
+ */
+$loadmask-msg-inner-padding: 0 5px !dynamic;
+
+/**
+ * @var {string}
+ * The icon to display in the message inner element
+ */
+$loadmask-msg-inner-icon: 'loadmask/loading' !dynamic;
+
+/**
+ * @var {list}
+ * The background-position of the icon
+ */
+$loadmask-msg-inner-icon-position: 0 center !dynamic;
+
+/**
+ * @var {string}
+ * The border-style of the message inner element
+ */
+$loadmask-msg-inner-border-style: solid !dynamic;
+
+/**
+ * @var {color}
+ * The border-color of the message inner element
+ */
+$loadmask-msg-inner-border-color: $base-color !dynamic;
+
+/**
+ * @var {number}
+ * The border-width of the message inner element
+ */
+$loadmask-msg-inner-border-width: 1px !dynamic;
+
+/**
+ * @var {color}
+ * The background-color of the message inner element
+ */
+$loadmask-msg-inner-background-color: #eee !dynamic;
+
+/**
+ * @var {color}
+ * The text color of the message inner element
+ */
+$loadmask-msg-inner-color: #222 !dynamic;
+
+/**
+ * @var {number}
+ * The font-size of the message inner element
+ */
+$loadmask-msg-inner-font-size: $font-size !dynamic;
+
+/**
+ * @var {string}
+ * The font-weight of the message inner element
+ */
+$loadmask-msg-inner-font-weight: $font-weight !dynamic;
+
+/**
+ * @var {string}
+ * The font-family of the message inner element
+ */
+$loadmask-msg-inner-font-family: $font-family !dynamic;
+
+// private
+$loadmask-msg-inner-font: $loadmask-msg-inner-font-weight $loadmask-msg-inner-font-size $loadmask-msg-inner-font-family !dynamic;
+
+/**
+ * @var {number/list}
+ * The padding of the message element
+ */
+$loadmask-msg-text-padding: 5px 5px 5px 20px !dynamic;
+
+/**
+ * @var {number}
+ * The border-radius of the message element
+ */
+$loadmask-msg-border-radius: 0 !dynamic;

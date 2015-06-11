@@ -1,0 +1,11 @@
+/** @class Global_CSS */
+//
+
+$base-color: #C0D4ED !dynamic;
+$neutral-color: #eeeeee !dynamic;
+$neutral-light-color: mix(#fff, $neutral-color, 68%) !dynamic;
+$neutral-dark-color: mix(#000, $neutral-color, 22%) !dynamic;
+$font-family: tahoma, arial, verdana, sans-serif !dynamic;
+$font-size: 12px !dynamic;
+$image-extension: 'gif' !dynamic;
+$include-default-uis: true !dynamic;
