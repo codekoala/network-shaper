@@ -2,7 +2,26 @@ Ext.define('NShape.view.main.Delay', {
   extend: 'NShape.view.TogglePanel',
   xtype: 'delaycfg',
 
-  viewModel: 'delaycfg',
+  viewModel: {
+    data: {
+      enabled: false,
+      time: 0,
+      jitter: 0,
+      correlation: 0
+    },
+
+    formulas: {
+      jitterEnabled: function(get) {
+        return get('time') > 0;
+      },
+      correlationEnabled: function(get) {
+        return get('jitterEnabled') && get('jitter') > 0;
+      },
+      reorderEnabled: function(get) {
+        return get('jitterEnabled');
+      }
+    }
+  },
 
   title: 'Delay',
   description: 'Adds the chosen delay to the packets outgoing to chosen network interface. The optional parameters allow to introduce a delay variation and a correlation. Delay and jitter values are expressed in ms while correlation is percentage.',

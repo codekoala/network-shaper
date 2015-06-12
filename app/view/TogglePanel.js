@@ -2,9 +2,7 @@ Ext.define('NShape.view.TogglePanel', {
   extend: 'Ext.form.Panel',
 
   requires: [
-    'Ext.form.field.Checkbox',
-
-    'NShape.view.TogglePanelModel'
+    'Ext.form.field.Checkbox'
   ],
 
   config: {
@@ -12,8 +10,6 @@ Ext.define('NShape.view.TogglePanel', {
     description: null,
     items: []
   },
-
-  viewModel: 'togglepanel',
 
   layout: {
     type: 'vbox',
@@ -26,19 +22,20 @@ Ext.define('NShape.view.TogglePanel', {
 
   initComponent: function() {
     var me = this,
+        desc = this.getDescription(),
         items = null;
 
     items = [{
       xtype: 'checkbox',
-      boxLabel: this.config.title,
+      boxLabel: this.getTitle(),
       cls: 'toggle-title',
       bind: '{enabled}'
     }];
 
-    if (this.config.description !== null) {
+    if (desc !== null) {
       items.push({
         padding: '0 0 10 0',
-        html: this.config.description
+        html: desc
       });
     }
 
@@ -53,7 +50,7 @@ Ext.define('NShape.view.TogglePanel', {
         align: 'stretch'
       },
 
-      items: this.config.items
+      items: this.getItems()
     })
 
     this.title = null;

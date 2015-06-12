@@ -2,15 +2,15 @@ Ext.define('NShape.view.Slider', {
   extend: 'Ext.form.FieldContainer',
   alias: 'widget.ns-slider',
 
-  //mixins: [
-  //  'Ext.mixin.Bindable'
-  //],
-
   requires: [
-    'Ext.form.field.Number',
-
-    'NShape.view.SliderModel'
+    'Ext.form.field.Number'
   ],
+
+  viewModel: {
+    data: {
+      innerValue: 0
+    }
+  },
 
   config: {
     fieldLabel: null,
@@ -24,17 +24,13 @@ Ext.define('NShape.view.Slider', {
     subtext: null
   },
 
-  publishes: {
-    value: true
-  },
-
   twoWayBindable: {
     value: true
   },
 
-  //viewModel: {
-  //  type: 'ns-slider'
-  //},
+  bind: {
+    value: '{innerValue}'
+  },
 
   layout: {
     type: 'table',
@@ -42,77 +38,52 @@ Ext.define('NShape.view.Slider', {
     columns: 3
   },
 
-  bind: {
-    value: '{value}'
-  },
-
-  width: '100%',
-
   initComponent: function() {
     var me = this;
 
-    this.sliderField = Ext.create('Ext.slider.Single', {
-      value: this.config.value,
-      minValue: this.config.minValue,
-      maxValue: this.config.maxValue,
-      increment: this.config.increment,
+    this.items = [{
+      xtype: 'slider',
+      bind: {
+        value: '{innerValue}'
+      },
+      minValue: this.getMinValue(),
+      maxValue: this.getMaxValue(),
+      increment: this.getIncrement(),
       width: '100%',
 
       listeners: {
         drag: function(s) {
-          //me.lookupViewModel().set('value', s.getValue());
           me.setValue(s.getValue());
         },
-        change: function(s) {
-          me.setValue(s.getValue());
+        change: function(s, val) {
+          me.setValue(val);
         }
       }
-    });
-
-    this.inputField = Ext.create('Ext.form.field.Number',{
-      name: this.config.name,
-      value: this.config.value,
-      margin: '0 10 0 10',
-      width: this.config.inputWidth,
-      step: this.config.increment,
-      minValue: this.config.minValue,
-      maxValue: this.config.maxValue,
-
-      listeners: {
-        change: function(f, v) {
-          me.setValue(v);
-        }
-      }
-    });
-
-    this.items = [this.sliderField, this.inputField, {
-      html: this.config.unit,
-      minWidth: 30
     }, {
-      html: this.config.subtext,
+      xtype: 'numberfield',
+      bind: {
+        value: '{innerValue}'
+      },
+      name: this.getName(),
+      margin: '0 10 0 10',
+      width: this.getInputWidth(),
+      step: this.getIncrement(),
+      minValue: this.getMinValue(),
+      maxValue: this.getMaxValue()
+    }, {
+      html: this.getUnit(),
+      maxWidth: 45,
+      minWidth: 35
+    }, {
+      html: this.getSubtext(),
       cls: 'subtext',
       colspan: 3
-    }];
+    }]
 
     this.callParent();
-  //},
-
-  //getValue: function() {
-  //  return this.getViewModel().get('value');
-  //},
-
-  //setValue: function(val) {
-  //  this.getViewModel().set('value', val);
   },
 
-  setValue: function(val) {
-    res = this.callParent([val]);
-
-    if (this.sliderField) {
-      this.sliderField.setValue(val);
-      this.inputField.setValue(val);
-    }
-
-    return res;
+  updateValue: function(value) {
+    this.lookupViewModel().set('innerValue', value);
   }
 });
