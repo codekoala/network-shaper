@@ -1,6 +1,6 @@
 OUT := network-shaper
 ASSETS := ../dist
-VERSION := 0.0.1
+VERSION := 0.0.2
 
 all:
 	go build -ldflags '-X main.VERSION $(VERSION)' -o $(OUT)

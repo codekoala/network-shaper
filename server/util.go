@@ -93,6 +93,7 @@ func RemoveNetemConfig(device string) error {
 	}
 
 	log.Println("Successfully removed netem settings")
+	SaveConfig(config, *cfgPath)
 
 	return nil
 }

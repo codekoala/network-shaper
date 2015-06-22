@@ -15,23 +15,11 @@ import (
 var (
 	VERSION = "dev"
 
-	// inDev (internal device) is the name of the network interface which
-	// connects to the same switch/router of the machines whose traffic shall
-	// be shaped
-	inDev = flag.String("int", "", "Name of NIC on internal network")
+	// cfgPath is the path to the file containing configuration values for this
+	// application
+	cfgPath = flag.String("c", "/etc/network-shaper.toml", "Path to configuration file")
 
-	// exDev (external device) is the name of the network interface which
-	// connects the restricted devices to other services, such as the Internet
-	exDev = flag.String("ext", "", "Name of NIC on external network")
-
-	// host is the interface that will accept web requests. Use the default
-	// "0.0.0.0" to bind to all interfaces
-	host = flag.String("bind", "0.0.0.0", "Bind to this address for the web UI")
-
-	// port is the port which shall accept web requests on the interface
-	// specified above. The default is port 81 as a cheap check for root
-	// privileges (which you need in order to use netem itself)
-	port = flag.Int("port", 80, "Bind to this port")
+	config *ShaperConfig
 )
 
 func init() {
@@ -40,26 +28,27 @@ func init() {
 	log.Println("Starting Network Shaper", VERSION)
 
 	flag.Parse()
+	config = GetConfig(*cfgPath)
 
 	nics, _ := net.Interfaces()
 	for _, nic := range nics {
-		if nic.Name == *inDev {
+		if nic.Name == config.Inbound.Device {
 			inValid = true
 		}
-		if nic.Name == *exDev {
+		if nic.Name == config.Outbound.Device {
 			exValid = true
 		}
 	}
 
 	if !inValid {
-		log.Fatalln("Invalid internal network interface name:", *inDev)
+		log.Fatalln("Invalid internal network interface name:", config.Inbound.Device)
 	}
 
 	if !exValid {
-		log.Fatalln("Invalid external network interface name:", *exDev)
+		log.Fatalln("Invalid external network interface name:", config.Outbound.Device)
 	}
 
-	if *inDev == *exDev {
+	if config.Inbound.Device == config.Outbound.Device {
 		log.Fatalln("You must specify different NICs for your internal and external networks")
 	}
 }
@@ -67,26 +56,26 @@ func init() {
 func main() {
 	// allow netem configuration to be removed
 	http.HandleFunc("/remove/internal", func(w http.ResponseWriter, req *http.Request) {
-		removeConfig(*inDev, w, req)
+		removeConfig(config.Inbound.Device, w, req)
 	})
 	http.HandleFunc("/remove/external", func(w http.ResponseWriter, req *http.Request) {
-		removeConfig(*exDev, w, req)
+		removeConfig(config.Outbound.Device, w, req)
 	})
 
 	// allow netem configuration to be updated
 	http.HandleFunc("/apply/internal", func(w http.ResponseWriter, req *http.Request) {
-		applyConfig(*inDev, w, req)
+		applyConfig(config.Inbound.Device, w, req)
 	})
 	http.HandleFunc("/apply/external", func(w http.ResponseWriter, req *http.Request) {
-		applyConfig(*exDev, w, req)
+		applyConfig(config.Outbound.Device, w, req)
 	})
 
 	// expose the current netem configuration
 	http.HandleFunc("/refresh/internal", func(w http.ResponseWriter, req *http.Request) {
-		refreshConfig(*inDev, w, req)
+		refreshConfig(config.Inbound.Device, w, req)
 	})
 	http.HandleFunc("/refresh/external", func(w http.ResponseWriter, req *http.Request) {
-		refreshConfig(*exDev, w, req)
+		refreshConfig(config.Outbound.Device, w, req)
 	})
 
 	// allow the user to select from the NICs available on this system
@@ -100,10 +89,16 @@ func main() {
 	}))
 
 	// begin accepting web requests
-	bind := fmt.Sprintf("%s:%d", *host, *port)
+	bind := fmt.Sprintf("%s:%d", config.Host, config.Port)
 	log.Printf("Listening at http://%s\n", bind)
-	log.Println("Internal NIC:", *inDev)
-	log.Println("External NIC:", *exDev)
+	log.Println("Internal NIC:", config.Inbound.Device)
+	log.Println("External NIC:", config.Outbound.Device)
+
+	log.Println("Restoring inbound shaping...")
+	config.Inbound.Netem.Apply(config.Inbound.Device)
+
+	log.Println("Restoring outbound shaping...")
+	config.Outbound.Netem.Apply(config.Outbound.Device)
 
 	if err := http.ListenAndServe(bind, nil); err != nil {
 		log.Fatalln(err)
@@ -169,6 +164,7 @@ func applyConfig(device string, w http.ResponseWriter, req *http.Request) {
 		msg = "Failed to apply settings: " + err.Error()
 	} else {
 		msg = "Settings applied successfully"
+		SaveConfig(config, *cfgPath)
 	}
 
 	log.Println(msg)
