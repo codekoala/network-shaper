@@ -49,47 +49,107 @@
 
 <body unresolved class="fullbleed layout vertical">
   <template is="dom-bind" id="app">
-    <paper-header-panel main>
-      <!-- Main Toolbar -->
-      <paper-toolbar id="mainToolbar">
-        <span class="flex"></span>
+    <paper-drawer-panel id="paperDrawerPanel">
+      <div drawer>
 
-        <!-- Toolbar icons -->
-        <paper-icon-button icon="close" onclick="app.onReset(event)"></paper-icon-button>
-        <paper-icon-button icon="refresh" onclick="app.onRefresh(event)"></paper-icon-button>
-        <paper-icon-button icon="done" onclick="app.onApply(event)"></paper-icon-button>
-        <div class="middle"></div>
+        <!-- Drawer Toolbar -->
+        <paper-toolbar id="drawerToolbar">
+          <span class="paper-font-title">Menu</span>
+        </paper-toolbar>
 
-        <!-- Application name -->
-        <div class="appname bottom paper-font-display2">Network Shaper</div>
-      </paper-toolbar>
+        <!-- Drawer Content -->
+        <paper-menu class="list" attr-for-selected="data-route" selected="{{route}}" on-iron-select="onMenuSelect">
+          <a data-route="inbound" href="/inbound">
+            <iron-icon icon="cloud-download"></iron-icon>
+            <span>Inbound</span>
+          </a>
 
-      <!-- Main Content -->
-      <iron-pages attr-for-selected="data-route" selected="{{route}}">
-        <section data-route="home">
-          <paper-material elevation="1">
-            <delay-cfg></delay-cfg>
-          </paper-material>
+          <a data-route="outbound" href="/outbound">
+            <iron-icon icon="cloud-upload"></iron-icon>
+            <span>Outbound</span>
+          </a>
 
-          <paper-material elevation="1">
-            <rate-cfg></rate-cfg>
-          </paper-material>
+          <hr/>
 
-          <paper-material elevation="1">
-            <corruption-cfg></corruption-cfg>
-          </paper-material>
+          <a href="#">
+            <iron-icon icon="done"></iron-icon>
+            <span>Apply Settings</span>
+          </a>
 
-          <paper-material elevation="1">
-            <duplication-cfg></duplication-cfg>
-          </paper-material>
+          <a href="#">
+            <iron-icon icon="refresh"></iron-icon>
+            <span>Reload Settings</span>
+          </a>
 
-          <paper-material elevation="1">
-            <loss-cfg></loss-cfg>
-          </paper-material>
-        </section>
-      </iron-pages>
+          <a href="#">
+            <iron-icon icon="highlight-off"></iron-icon>
+            <span>Disable Shaping</span>
+          </a>
+        </paper-menu>
+      </div>
 
-    </paper-header-panel>
+      <paper-header-panel main mode="standard">
+        <!-- Main Toolbar -->
+        <paper-toolbar id="mainToolbar">
+          <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
+          <span class="flex"></span>
+
+          <!-- Application name -->
+          <div class="middle paper-font-display2 app-name">Network Shaper</div>
+
+          <!-- Application sub title -->
+          <div class="bottom title"></div>
+        </paper-toolbar>
+
+        <!-- Main Content -->
+        <iron-pages attr-for-selected="data-route" selected="{{route}}">
+          <section data-route="outbound">
+            <paper-material elevation="1">
+              <delay-cfg></delay-cfg>
+            </paper-material>
+
+            <paper-material elevation="1">
+              <rate-cfg></rate-cfg>
+            </paper-material>
+
+            <paper-material elevation="1">
+              <corruption-cfg></corruption-cfg>
+            </paper-material>
+
+            <paper-material elevation="1">
+              <duplication-cfg></duplication-cfg>
+            </paper-material>
+
+            <paper-material elevation="1">
+              <loss-cfg></loss-cfg>
+            </paper-material>
+          </section>
+
+          <section data-route="inbound">
+            <paper-material elevation="1">
+              <delay-cfg></delay-cfg>
+            </paper-material>
+
+            <paper-material elevation="1">
+              <rate-cfg></rate-cfg>
+            </paper-material>
+
+            <paper-material elevation="1">
+              <corruption-cfg></corruption-cfg>
+            </paper-material>
+
+            <paper-material elevation="1">
+              <duplication-cfg></duplication-cfg>
+            </paper-material>
+
+            <paper-material elevation="1">
+              <loss-cfg></loss-cfg>
+            </paper-material>
+          </section>
+        </iron-pages>
+
+      </paper-header-panel>
+    </paper-drawer-panel>
 
     <paper-toast id="caching-complete"
                  duration="6000"
