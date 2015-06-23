@@ -1,0 +1,36 @@
+<dom-module id="dev-cfg">
+  <style>
+  paper-material {
+    padding: 20px;
+    margin: 0px auto 20px;
+  }
+  </style>
+
+  <template>
+    <paper-material elevation="1">
+      <delay-cfg></delay-cfg>
+    </paper-material>
+
+    <paper-material elevation="1">
+      <rate-cfg></rate-cfg>
+    </paper-material>
+
+    <paper-material elevation="1">
+      <corruption-cfg></corruption-cfg>
+    </paper-material>
+
+    <paper-material elevation="1">
+      <duplication-cfg></duplication-cfg>
+    </paper-material>
+
+    <paper-material elevation="1">
+      <loss-cfg></loss-cfg>
+    </paper-material>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'dev-cfg'
+});
+</script>

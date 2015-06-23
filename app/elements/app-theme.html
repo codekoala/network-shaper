@@ -109,6 +109,12 @@ paper-menu a {
   height: 900px;
 }
 
+div.fabs {
+  position: fixed;
+  bottom: 10px;
+}
+
+
 /* Breakpoints */
 
 /* Small */
@@ -141,6 +147,17 @@ paper-menu a {
     background: white;
   }
 
+  iron-pages {
+    padding: 10px;
+  }
+
+  iron-pages section > div {
+    margin: 0px auto 75px;
+  }
+
+  div.fabs {
+    left: calc((100% - 176px) / 2);
+  }
 }
 
 /* Tablet+ */
@@ -158,7 +175,11 @@ paper-menu a {
   }
 
   iron-pages {
-    padding: 48px 62px;
+    padding: 20px;
+  }
+
+  div.fabs {
+    left: calc((100% + (256px - 176px)) / 2);
   }
 
 }

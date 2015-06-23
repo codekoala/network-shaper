@@ -138,6 +138,8 @@
         app.showToast(msg.responseText);
       }
     });
+
+    return false;
   };
 })(document);
 

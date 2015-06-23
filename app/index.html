@@ -54,7 +54,7 @@
 
         <!-- Drawer Toolbar -->
         <paper-toolbar id="drawerToolbar">
-          <span class="paper-font-title">Menu</span>
+          <span class="paper-font-title">Options</span>
         </paper-toolbar>
 
         <!-- Drawer Content -->
@@ -69,21 +69,9 @@
             <span>Outbound</span>
           </a>
 
-          <hr/>
-
-          <a href="#">
-            <iron-icon icon="done"></iron-icon>
-            <span>Apply Settings</span>
-          </a>
-
-          <a href="#">
-            <iron-icon icon="refresh"></iron-icon>
-            <span>Reload Settings</span>
-          </a>
-
-          <a href="#">
-            <iron-icon icon="highlight-off"></iron-icon>
-            <span>Disable Shaping</span>
+          <a data-route="devices" href="/devices">
+            <iron-icon icon="settings-ethernet"></iron-icon>
+            <span>Devices</span>
           </a>
         </paper-menu>
       </div>
@@ -104,49 +92,48 @@
         <!-- Main Content -->
         <iron-pages attr-for-selected="data-route" selected="{{route}}">
           <section data-route="outbound">
-            <paper-material elevation="1">
-              <delay-cfg></delay-cfg>
-            </paper-material>
+            <div>
+              <h2>Outbound Traffic Shaping</h2>
 
-            <paper-material elevation="1">
-              <rate-cfg></rate-cfg>
-            </paper-material>
+              <p>
+                These settings apply to traffic leaving the network controlled by
+                the network shaper.
+              </p>
 
-            <paper-material elevation="1">
-              <corruption-cfg></corruption-cfg>
-            </paper-material>
-
-            <paper-material elevation="1">
-              <duplication-cfg></duplication-cfg>
-            </paper-material>
-
-            <paper-material elevation="1">
-              <loss-cfg></loss-cfg>
-            </paper-material>
+              <dev-cfg></dev-cfg>
+            </div>
           </section>
 
           <section data-route="inbound">
-            <paper-material elevation="1">
-              <delay-cfg></delay-cfg>
-            </paper-material>
+            <div>
+              <h2>Inbound Traffic Shaping</h2>
 
-            <paper-material elevation="1">
-              <rate-cfg></rate-cfg>
-            </paper-material>
+              <p>
+                These settings apply to traffic entering the network controlled
+                by the network shaper.
+              </p>
 
-            <paper-material elevation="1">
-              <corruption-cfg></corruption-cfg>
-            </paper-material>
+              <dev-cfg></dev-cfg>
+            </div>
+          </section>
 
-            <paper-material elevation="1">
-              <duplication-cfg></duplication-cfg>
-            </paper-material>
+          <section data-route="devices">
+            <div>
+              <h2>Device configuration</h2>
 
-            <paper-material elevation="1">
-              <loss-cfg></loss-cfg>
-            </paper-material>
+              <p>
+                You may select which network interface connects to the external
+                network and which connects to the internal network.
+              </p>
+            </div>
           </section>
         </iron-pages>
+
+        <div class="fabs">
+          <paper-fab on-tap="{{ onReset }}" class="disable" icon="highlight-off"></paper-fab>
+          <paper-fab on-tap="{{ onRefresh }}" class="reload" icon="refresh"></paper-fab>
+          <paper-fab on-tap="{{ onApply }}" class="apply" icon="done"></paper-fab>
+        </div>
 
       </paper-header-panel>
     </paper-drawer-panel>
