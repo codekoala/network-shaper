@@ -50,23 +50,28 @@
 
   // Populate the form with configuration values
   app.restoreSettings = function(data) {
-    var sliders = {
-      delay: ['jitter', 'corr'],
-      reorder: ['pct', 'corr', 'gap'],
-      rate: ['pkt_overhead', 'cell_size', 'cell_overhead'],
-      corrupt: ['pct', 'corr'],
-      dupe: ['pct', 'corr'],
-      loss: ['pct', 'corr']
-    };
+    var payload = {},
+        sliders = {
+          delay: ['jitter', 'corr'],
+          reorder: ['pct', 'corr', 'gap'],
+          rate: ['pkt_overhead', 'cell_size', 'cell_overhead'],
+          corrupt: ['pct', 'corr'],
+          dupe: ['pct', 'corr'],
+          loss: ['pct', 'corr']
+        };
 
-    _.each(sliders, function(sub, section) {
-      _.each(sub, function(name) {
-        var sName  = section + '_' + name,
-            slider = $('float-slider[name=' + sName + ']');
+    _.each(['inbound', 'outbound'], function(dir) {
+      dirEl = $('section[data-route=' + dir + ']')[0];
 
-        if (!_.isEmpty(slider)) {
-          slider[0].set('value', data[sName]);
-        }
+      _.each(sliders, function(sub, section) {
+        _.each(sub, function(name) {
+          var sName  = section + '_' + name,
+              slider = dirEl.find('float-slider[name=' + sName + ']');
+
+          if (!_.isEmpty(slider)) {
+            slider[0].set('value', data[sName]);
+          }
+        });
       });
     });
 

@@ -71,16 +71,16 @@ device = "eth1"
 `
 
 type ShaperConfig struct {
-	Host    string
-	Port    int
+	Host    string `json:"host"`
+	Port    int    `json:"port"`
 	Inbound struct {
-		Device string
-		Netem  Netem
-	}
+		Device string `json:"device"`
+		Netem  Netem  `json:"netem"`
+	} `json:"inbound"`
 	Outbound struct {
-		Device string
-		Netem  Netem
-	}
+		Device string `json:"device"`
+		Netem  Netem  `json:"netem"`
+	} `json:"outbound"`
 }
 
 // GetConfig attempts to read configuration from a file, falling back to the

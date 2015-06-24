@@ -130,9 +130,9 @@
         </iron-pages>
 
         <div class="fabs">
-          <paper-fab on-tap="{{ onReset }}" class="disable" icon="highlight-off"></paper-fab>
-          <paper-fab on-tap="{{ onRefresh }}" class="reload" icon="refresh"></paper-fab>
-          <paper-fab on-tap="{{ onApply }}" class="apply" icon="done"></paper-fab>
+          <paper-fab onclick="app.onReset()" class="disable" icon="highlight-off"></paper-fab>
+          <paper-fab onclick="app.onRefresh()" class="reload" icon="refresh"></paper-fab>
+          <paper-fab onclick="app.onApply()" data-fnname="app" class="apply" icon="done"></paper-fab>
         </div>
 
       </paper-header-panel>

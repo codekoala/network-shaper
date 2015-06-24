@@ -48,35 +48,20 @@ func init() {
 		log.Fatalln("Invalid external network interface name:", config.Outbound.Device)
 	}
 
-	if config.Inbound.Device == config.Outbound.Device {
-		log.Fatalln("You must specify different NICs for your internal and external networks")
-	}
+	//if config.Inbound.Device == config.Outbound.Device {
+	//	log.Fatalln("You must specify different NICs for your internal and external networks")
+	//}
 }
 
 func main() {
 	// allow netem configuration to be removed
-	http.HandleFunc("/remove/internal", func(w http.ResponseWriter, req *http.Request) {
-		removeConfig(config.Inbound.Device, w, req)
-	})
-	http.HandleFunc("/remove/external", func(w http.ResponseWriter, req *http.Request) {
-		removeConfig(config.Outbound.Device, w, req)
-	})
+	http.HandleFunc("/remove", removeConfig)
 
 	// allow netem configuration to be updated
-	http.HandleFunc("/apply/internal", func(w http.ResponseWriter, req *http.Request) {
-		applyConfig(config.Inbound.Device, w, req)
-	})
-	http.HandleFunc("/apply/external", func(w http.ResponseWriter, req *http.Request) {
-		applyConfig(config.Outbound.Device, w, req)
-	})
+	http.HandleFunc("/apply", applyConfig)
 
 	// expose the current netem configuration
-	http.HandleFunc("/refresh/internal", func(w http.ResponseWriter, req *http.Request) {
-		refreshConfig(config.Inbound.Device, w, req)
-	})
-	http.HandleFunc("/refresh/external", func(w http.ResponseWriter, req *http.Request) {
-		refreshConfig(config.Outbound.Device, w, req)
-	})
+	http.HandleFunc("/refresh", refreshConfig)
 
 	// allow the user to select from the NICs available on this system
 	http.HandleFunc("/nics", getValidNics)
@@ -105,12 +90,13 @@ func main() {
 	}
 }
 
-// refreshConfig queries the current netem configuration for the specified
-// device and returns it as JSON to the client. Configuration may be requested
-// using any HTTP method.
-func refreshConfig(device string, w http.ResponseWriter, req *http.Request) {
-	n := ParseCurrentNetem(device)
-	j, err := json.Marshal(n)
+// refreshConfig queries the current netem configuration and returns it as JSON
+// to the client. Configuration may be requested using any HTTP method.
+func refreshConfig(w http.ResponseWriter, req *http.Request) {
+	config.Inbound.Netem = *ParseCurrentNetem(config.Inbound.Device)
+	config.Outbound.Netem = *ParseCurrentNetem(config.Outbound.Device)
+
+	j, err := json.Marshal(config)
 	if err != nil {
 		msg := "Failed to parse netem configuration: " + err.Error()
 		log.Println(msg)
@@ -124,17 +110,15 @@ func refreshConfig(device string, w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
-// applyConfig tries to update netem configuration for the specified device.
-// Changes must be submitted as an HTTP POST request.
-func applyConfig(device string, w http.ResponseWriter, req *http.Request) {
+// applyConfig tries to update netem configuration. Changes must be submitted
+// as an HTTP POST request.
+func applyConfig(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		w.WriteHeader(405)
 		return
 	}
 
 	var msg string
-	log.Println("Updating netem for", device)
-
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		msg = "Failed to read request: " + err.Error()
@@ -146,8 +130,8 @@ func applyConfig(device string, w http.ResponseWriter, req *http.Request) {
 	}
 
 	// parse the new netem settings sent by the client
-	var netem Netem
-	err = json.Unmarshal(body, &netem)
+	var newConfig ShaperConfig
+	err = json.Unmarshal(body, &newConfig)
 	if err != nil {
 		msg = "Failed to parse request: " + err.Error()
 		log.Println(msg)
@@ -158,32 +142,39 @@ func applyConfig(device string, w http.ResponseWriter, req *http.Request) {
 	}
 
 	// apply the new settings
-	err = netem.Apply(device)
+	err = newConfig.Inbound.Netem.Apply(newConfig.Inbound.Device)
 	if err != nil {
 		w.WriteHeader(400)
-		msg = "Failed to apply settings: " + err.Error()
+		msg = "Failed to apply inbound settings: " + err.Error()
 	} else {
-		msg = "Settings applied successfully"
-		SaveConfig(config, *cfgPath)
+		err = newConfig.Outbound.Netem.Apply(newConfig.Outbound.Device)
+		if err != nil {
+			w.WriteHeader(400)
+			msg = "Failed to apply outbound settings: " + err.Error()
+		} else {
+			msg = "Settings applied successfully"
+			SaveConfig(config, *cfgPath)
+		}
 	}
 
 	log.Println(msg)
 	w.Write([]byte(msg))
 }
 
-// removeConfig will remove our netem settings from the specified device,
-// reverting back to the default configuration. Once complete, the device's
-// netem settings are sent back to the client.
-func removeConfig(device string, w http.ResponseWriter, req *http.Request) {
+// removeConfig will remove our netem settings, reverting back to the default
+// configuration. Once complete, the new netem settings are sent back to the
+// client.
+func removeConfig(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		w.WriteHeader(405)
 		return
 	}
 
-	log.Println("Removing netem configuration for", device)
-	RemoveNetemConfig(device)
+	log.Println("Removing netem configuration")
+	RemoveNetemConfig(config.Inbound.Device)
+	RemoveNetemConfig(config.Outbound.Device)
 
-	refreshConfig(device, w, req)
+	refreshConfig(w, req)
 }
 
 // getValidNics offers a list of NICs that are present on this system
