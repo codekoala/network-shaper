@@ -50,8 +50,7 @@
 
   // Populate the form with configuration values
   app.restoreSettings = function(data) {
-    var payload = {},
-        sliders = {
+    var sliders = {
           delay: ['jitter', 'corr'],
           reorder: ['pct', 'corr', 'gap'],
           rate: ['pkt_overhead', 'cell_size', 'cell_overhead'],
@@ -61,7 +60,7 @@
         };
 
     _.each(['inbound', 'outbound'], function(dir) {
-      dirEl = $('section[data-route=' + dir + ']')[0];
+      var dirEl = $('section[data-route=' + dir + ']');
 
       _.each(sliders, function(sub, section) {
         _.each(sub, function(name) {
@@ -100,40 +99,52 @@
     };
 
     var payload = {
-      delay_unit: 'ms',
-      delay_jitter_unit: 'ms',
-      rate_unit: 'kbit'
+      inbound: {
+        delay_unit: 'ms',
+        delay_jitter_unit: 'ms',
+        rate_unit: 'kbit'
+      },
+      outbound: {
+        delay_unit: 'ms',
+        delay_jitter_unit: 'ms',
+        rate_unit: 'kbit'
+      }
     };
 
-    _.each(sliders, function(sub, section) {
-      if (!$('paper-checkbox[name=chk-' + section + ']')[0].checked) {
-        return;
+    _.each(['inbound', 'outbound'], function(dir) {
+      var dirEl = $('section[data-route=' + dir + ']');
+
+      _.each(sliders, function(sub, section) {
+        if (!dirEl.find('paper-checkbox[name=chk-' + section + ']')[0].checked) {
+          return;
+        }
+
+        _.each(sub, function(name) {
+          var sName  = section + '_' + name,
+              slider = dirEl.find('float-slider[name=' + sName + ']');
+
+          if (!_.isEmpty(slider)) {
+            payload[dir][sName] = slider[0].value;
+          }
+        });
+      });
+
+      var dist = $('paper-radio-group[name=distribution]');
+      if (!_.isEmpty(dist)) {
+        payload[dir].distribution = dist[0].selected;
       }
 
-      _.each(sub, function(name) {
-        var sName  = section + '_' + name,
-            slider = $('float-slider[name=' + sName + ']');
+      payload[dir].delay = payload[dir].delay_time;
+      delete payload[dir].delay_time;
 
-        if (!_.isEmpty(slider)) {
-          payload[sName] = slider[0].value;
-        }
-      });
+      payload[dir].rate = payload[dir].rate_speed;
+      delete payload[dir].rate_speed;
     });
-
-    var dist = $('paper-radio-group[name=distribution]');
-    if (!_.isEmpty(dist)) {
-      payload.distribution = dist[0].selected;
-    }
-
-    payload.delay = payload.delay_time;
-    delete payload.delay_time;
-
-    payload.rate = payload.rate_speed;
-    delete payload.rate_speed;
 
     $.ajax({
       url: '/apply',
       dataType: 'json',
+      contentType: 'application/json',
       method: 'POST',
       data: JSON.stringify(payload),
       success: function() {
