@@ -125,13 +125,15 @@
                 You may select which network interface connects to the external
                 network and which connects to the internal network.
               </p>
+
+              <device-cfg></device-cfg>
             </div>
           </section>
         </iron-pages>
 
         <div class="fabs">
           <paper-fab onclick="app.onReset()" class="disable" icon="highlight-off"></paper-fab>
-          <paper-fab onclick="app.onRefresh()" class="reload" icon="refresh"></paper-fab>
+          <paper-fab style="margin: 0px 10px" onclick="app.onRefresh()" class="reload" icon="refresh"></paper-fab>
           <paper-fab onclick="app.onApply()" data-fnname="app" class="apply" icon="done"></paper-fab>
         </div>
 

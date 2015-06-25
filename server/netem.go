@@ -10,7 +10,7 @@ import (
 
 var (
 	// DELAY_RE is used to parse packet delay configuration from tc
-	DELAY_RE = regexp.MustCompile(`delay\s+(?P<delay>\d+(?:\.\d+)?)(?P<delay_unit>(?:m|u)s)(?:\s+(?P<delay_jitter>\d+(?:\.\d+)?)(?P<delay_jitter_unit>(?:m|u)s)(?:\s+(?P<delay_corr>\d+(?:\.\d+)?)%)?)?`)
+	DELAY_RE = regexp.MustCompile(`delay\s+(?P<delay>\d+(?:\.\d+)?)(?P<delay_unit>(?:m|u)?s)(?:\s+(?P<delay_jitter>\d+(?:\.\d+)?)(?P<delay_jitter_unit>(?:m|u)?s)(?:\s+(?P<delay_corr>\d+(?:\.\d+)?)%)?)?`)
 
 	// LOSS_RE is used to parse packet loss configuration from tc
 	LOSS_RE = regexp.MustCompile(`loss\s+(?P<loss_pct>\d+(?:\.\d+)?)%(?:\s+(?P<loss_corr>\d+(?:\.\d+)?)%)?`)
@@ -178,12 +178,10 @@ func (n *Netem) Apply(device string) error {
 func (n *Netem) ParseDelay(rule string) {
 	match := DELAY_RE.FindStringSubmatch(rule)
 	if len(match) >= 3 {
-		n.Delay = str2f(match[1])
-		n.DelayUnit = match[2]
+		n.Delay, n.DelayUnit = UnitToMs(str2f(match[1]), match[2])
 
 		if len(match) >= 5 {
-			n.DelayJitter = str2f(match[3])
-			n.DelayJitterUnit = match[4]
+			n.DelayJitter, n.DelayJitterUnit = UnitToMs(str2f(match[3]), match[4])
 
 			if len(match) == 6 {
 				n.DelayCorr = str2f(match[5])

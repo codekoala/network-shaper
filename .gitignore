@@ -7,3 +7,4 @@ test/bower_components/
 server/network-shaper
 server/bindata*.go
 *.rpm
+*.tar.xz*

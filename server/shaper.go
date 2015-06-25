@@ -10,6 +10,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 
 	// cfgPath is the path to the file containing configuration values for this
 	// application
-	cfgPath = flag.String("c", "/etc/network-shaper.toml", "Path to configuration file")
+	cfgPath = flag.String("c", "/etc/network-shaper.json", "Path to configuration file")
 
 	config *ShaperConfig
 )
@@ -48,9 +49,9 @@ func init() {
 		log.Fatalln("Invalid external network interface name:", config.Outbound.Device)
 	}
 
-	//if config.Inbound.Device == config.Outbound.Device {
-	//	log.Fatalln("You must specify different NICs for your internal and external networks")
-	//}
+	if config.Inbound.Device == config.Outbound.Device {
+		log.Fatalln("You must specify different NICs for your internal and external networks")
+	}
 }
 
 func main() {
@@ -141,6 +142,16 @@ func applyConfig(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// sanity check!
+	if newConfig.Inbound.Device == newConfig.Outbound.Device {
+		msg = "Inbound and outbound devices must not be the same"
+		log.Println(msg)
+
+		w.WriteHeader(400)
+		w.Write([]byte(msg))
+		return
+	}
+
 	// apply the new settings
 	err = newConfig.Inbound.Netem.Apply(newConfig.Inbound.Device)
 	if err != nil {
@@ -153,6 +164,8 @@ func applyConfig(w http.ResponseWriter, req *http.Request) {
 			msg = "Failed to apply outbound settings: " + err.Error()
 		} else {
 			msg = "Settings applied successfully"
+			config.Inbound = newConfig.Inbound
+			config.Outbound = newConfig.Outbound
 			SaveConfig(config, *cfgPath)
 		}
 	}
@@ -177,6 +190,12 @@ func removeConfig(w http.ResponseWriter, req *http.Request) {
 	refreshConfig(w, req)
 }
 
+type SimpleNic struct {
+	Name  string `json:"name"`
+	Ip    string `json:"ip"`
+	Label string `json:"label"`
+}
+
 // getValidNics offers a list of NICs that are present on this system
 func getValidNics(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "GET" {
@@ -184,8 +203,28 @@ func getValidNics(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var allNics []SimpleNic
 	nics, _ := net.Interfaces()
-	nicsJson, err := json.Marshal(nics)
+	for _, nic := range nics {
+		addrs, _ := nic.Addrs()
+		for _, addrO := range addrs {
+			addr := strings.Split(addrO.String(), "/")[0]
+			ip := net.ParseIP(addr)
+			if ip.To4() == nil {
+				continue
+			}
+
+			// we have a good NIC!
+			allNics = append(allNics, SimpleNic{
+				Name:  nic.Name,
+				Ip:    addr,
+				Label: fmt.Sprintf("%s: %s", nic.Name, addr),
+			})
+			break
+		}
+	}
+
+	nicsJson, err := json.Marshal(allNics)
 	if err != nil {
 		msg := "Failed to serialize NICs: " + err.Error()
 		log.Println(msg)

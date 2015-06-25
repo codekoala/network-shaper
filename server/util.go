@@ -86,13 +86,13 @@ func ParseNetem(rule string) *Netem {
 func RemoveNetemConfig(device string) error {
 	cmd := exec.Command("tc", "qdisc", "del", "dev", device, "root")
 	out, err := cmd.CombinedOutput()
-	if err != nil {
+	if err != nil && err.Error() != "exit status 2" {
 		log.Println("Failed to remove netem settings: " + err.Error())
 		log.Println(string(out))
 		return err
 	}
 
-	log.Println("Successfully removed netem settings")
+	log.Println("Successfully removed netem settings for", device)
 	SaveConfig(config, *cfgPath)
 
 	return nil
@@ -110,4 +110,15 @@ func str2i(val string) int64 {
 
 func f2str(val float64) string {
 	return strconv.FormatFloat(val, 'f', 2, 32)
+}
+
+func UnitToMs(value float64, unit string) (float64, string) {
+	if unit == "us" {
+		value /= 1000
+	} else if unit == "s" {
+		value *= 1000
+	}
+
+	unit = "ms"
+	return value, unit
 }

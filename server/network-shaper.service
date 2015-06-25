@@ -2,8 +2,7 @@
 Description=Network Traffic Shaper
 
 [Service]
-EnvironmentFile=/etc/network-shaper
-ExecStart=/usr/sbin/network-shaper $OPTIONS
+ExecStart=/usr/bin/network-shaper -c /etc/network-shaper.json
 Restart=always
 RestartSec=5
 

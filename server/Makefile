@@ -21,3 +21,7 @@ rpm: dist
 		-t rpm \
 		./network-shaper=/usr/sbin/network-shaper \
 		./network-shaper.service=/usr/lib/systemd/system/network-shaper.service
+
+arch:
+	sed -i 's/^\(pkgver=\).*/\1$(VERSION)/' PKGBUILD
+	makepkg --clean
