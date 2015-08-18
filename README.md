@@ -35,6 +35,11 @@ because of it.
   This tool has only been tested on a machine with two physical Gigabit network
   interfaces.
 
+Screenshots
+-----------
+
+[All sections](/codekoala/network-shaper/raw/develop/screenshots/network-shaper-1.png?raw=true "All sections")
+
 Building
 --------
 
