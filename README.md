@@ -35,6 +35,15 @@ because of it.
   This tool has only been tested on a machine with two physical Gigabit network
   interfaces.
 
+Screenshots
+-----------
+
+[All sections](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-1.png "All sections")
+[Delay/Reorder packets](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-2.png "Delay/Reorder packets")
+[Rate limiting](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-3.png "Rate limiting")
+[Packet corruption, duplication, and loss](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-4.png "Packet corruption, duplication, and loss")
+[Devices](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-5.png "Devices")
+
 Building
 --------
 
