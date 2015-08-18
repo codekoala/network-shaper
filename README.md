@@ -38,7 +38,7 @@ because of it.
 Screenshots
 -----------
 
-[All sections](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-1.png "All sections")
+[All sections](screenshots/network-shaper-1.png?raw=true "All sections")
 [Delay/Reorder packets](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-2.png "Delay/Reorder packets")
 [Rate limiting](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-3.png "Rate limiting")
 [Packet corruption, duplication, and loss](https://raw.githubusercontent.com/codekoala/network-shaper/develop/screenshots/network-shaper-4.png "Packet corruption, duplication, and loss")
