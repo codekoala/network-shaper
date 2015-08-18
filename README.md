@@ -53,6 +53,10 @@ The requirements for building this project are:
 * [gulp](http://gulpjs.com/) as a build tool
 * [bower](http://bower.io/), a package manager
 * Go 1.x (currently built with 1.4.2)
+* [go-bindata](https://github.com/jteeuwen/go-bindata) to bundle static assets
+  into the Go binary
+* [go-bindata-assetfs](https://github.com/elazarl/go-bindata-assetfs) to easily
+  serve the web UI
 * [upx](http://upx.sourceforge.net/) to compress binaries
 * [goupx](https://github.com/pwaller/goupx) to fix a bug in upx to handle
   64-bit Go binaries
@@ -60,11 +64,13 @@ The requirements for building this project are:
 The steps to build this tool are:
 
 ```sh
-$ npm install -g gulp   # install gulp
-$ npm install -g bower  # install bower
-$ bower install         # install UI dependencies
-$ make build            # compile UI
-$ make dist             # build executable
+$ npm install gulp                                  # install gulp
+$ npm install bower                                 # install bower
+$ npm install                                       # install polymer starter kit dependencies
+$ bower install                                     # install UI dependencies
+$ go get github.com/jteeuwen/go-bindata/...         # for bundling the UI
+$ go get github.com/elazarl/go-bindata-assetfs/...  # for serving the UI
+$ make dist                                         # compile UI and executable
 ```
 
 At this point, the ``network-shaper`` binary should appear in the ``server/``
