@@ -1,135 +1,182 @@
-![](https://cloud.githubusercontent.com/assets/110953/7877439/6a69d03e-0590-11e5-9fac-c614246606de.png) 
-## Polymer Starter Kit
+Network Shaper
+==============
 
-> A starting point for building web applications with Polymer 1.0
+This project is a very simplistic user interface for
+[netem](http://www.linuxfoundation.org/collaborate/workgroups/networking/netem).
+It is designed to allow users to apply basic traffic shaping rules to simulate
+poor network conditions without being required to learn the ``netem`` command
+line interface.
 
-### Included out of the box:
+The UI is written using [polymer](https://www.polymer-project.org/1.0/), mostly
+as an excuse for me to become familiar with polymer. The backend is written
+in [Go](https://golang.org), and should have no external dependencies when
+built (aside from ``tc``, of course).
 
-* [Polymer](http://polymer-project.org), Paper and Iron elements
-* [Material Design](http://www.google.com/design/spec/material-design/introduction.html) layout 
-* Routing with [Page.js](https://visionmedia.github.io/page.js/)
-* Unit testing with Web Component Tester
-* Offline-first setup through Service Worker elements
-* End-to-end Build Tooling (including [Vulcanize](https://github.com/Polymer/vulcanize))
+I'm sure there are plenty of things that can be done to improve both the UI and
+backend of this project. Contributions are more than welcome, particularly in
+the area of cleaning out cruft from this repository (which was created using
+the contents of the [polymer starter kit](https://github.com/PolymerElements/polymer-starter-kit/releases).
 
-## Getting Started
+Assumptions
+-----------
 
-To take advantage of Polymer Starter Kit you need to:
+This tool was built for a particular scenario, and some assumptions are made
+because of it.
 
-1. Get a copy of the code.
-2. Install the dependencies if you don't already have them.
-3. Modify the application to your liking.
-4. Deploy your production code.
+* It is assumed that the service will run as root in order to apply changes to
+  the network interfaces. No special logic currently exists to ensure that the
+  executable can do what it needs to before starting to handle requests from
+  the UI.
+* It is assumed that the server will reside on a machine with two physical
+  network interfaces, one for "external" traffic coming into the network
+  controlled by this tool, and another interface for "internal" traffic leaving
+  the controlled network.
 
-## Getting the code
+  This tool has only been tested on a machine with two physical Gigabit network
+  interfaces.
 
-[Download](https://github.com/polymerelements/polymer-starter-kit/releases/latest) and extract Polymer Starter Kit to where you want to work.
+Building
+--------
 
-### Install dependencies
+The requirements for building this project are:
 
-With [Node.js](http://nodejs.org) and npm installed, run the following one liner from the root of your Polymer Starter Kit download:
+* [nodejs](https://nodejs.org) for npm, to install other dependencies
+* [gulp](http://gulpjs.com/) as a build tool
+* [bower](http://bower.io/), a package manager
+* Go 1.x (currently built with 1.4.2)
+* [upx](http://upx.sourceforge.net/) to compress binaries
+* [goupx](https://github.com/pwaller/goupx) to fix a bug in upx to handle
+  64-bit Go binaries
 
-```sh
-$ npm install -g gulp && npm install -g bower && npm install && bower install
-```
-
-This will install the element sets (Paper, Iron, Platinum) and tools
-we will use to serve and build apps.
-
-### Serve / watch
-
-```sh
-$ gulp serve
-```
-
-This outputs an IP address you can use to locally test and another that can be used on devices connected to your network.
-
-### Run tests
-
-```sh
-$ gulp test:local
-```
-
-This runs the unit tests defined in the `app/test` directory through [web-component-tester](https://github.com/Polymer/web-component-tester).
-
-### Build & Vulcanize
+The steps to build this tool are:
 
 ```sh
-$ gulp
+$ npm install -g gulp   # install gulp
+$ npm install -g bower  # install bower
+$ bower install         # install UI dependencies
+$ make build            # compile UI
+$ make dist             # build executable
 ```
 
-Build and optimize the current project, ready for deployment. This includes linting as well as vulcanization, image, script, stylesheet and HTML optimization and minification.
+At this point, the ``network-shaper`` binary should appear in the ``server/``
+directory. This is the final executable.
 
-## Application Theming
+You can proceed to build an RPM using the following command:
 
-Polymer 1.0 introduces a shim for CSS custom properties. We take advantage of this in `app/elements/app-theme.html` to provide theming for your application. You can also find our presets for Material Design breakpoints in this file.
+```sh
+$ make rpm
+```
 
-## Unit Testing
+Or you may build an ArchLinux package:
 
-Web apps built with Polymer Starter Kit come configured with support for [Web Component Tester](https://github.com/Polymer/web-component-tester) - Polymer's preferred tool for authoring and running unit tests. This makes testing your element based applications a pleasant experience.
+```sh
+$ make arch
+```
 
-## Dependency Management
+Using This Tool
+---------------
 
-Polymer uses [Bower](http://bower.io) for package management. This makes it easy to keep your elements up to date and versioned. For tooling, we use NPM to manage Node-based dependencies.
+Once you have the ``network-shaper`` binary, you may invoke it using the
+command line as such:
 
-## Service Worker
+```sh
+# network-shaper -c config.json
+```
 
-Polymer Starter Kit offers an offline-first experience thanks to Service Worker and the [Platinum Service Worker elements](https://github.com/PolymerElements/platinum-sw). New to Service Worker? Read the following [introduction](http://www.html5rocks.com/en/tutorials/service-worker/introduction/) to understand how it works.
+A sample configuration file can be found in the repository as ``sample.json``
+and looks like this:
 
-Our default offline setup should work well for relatively simple applications. For more complex apps, we recommend learning how Service Worker works so that you can make the most of the Platinum Service Worker element abstractions. 
+```json
+{
+  "host": "0.0.0.0",
+  "port": 80,
+  "inbound": {
+    "device": "enp2s0",
+    "netem": {
+      "delay": 0,
+      "delay_unit": "ms",
+      "delay_jitter": 0,
+      "delay_jitter_unit": "ms",
+      "delay_corr": 0,
+      "loss_pct": 0,
+      "loss_corr": 0,
+      "dupe_pct": 0,
+      "dupe_corr": 0,
+      "corrupt_pct": 0,
+      "corrupt_corr": 0,
+      "reorder_pct": 0,
+      "reorder_corr": 0,
+      "reorder_gap": 0,
+      "rate": 0,
+      "rate_unit": "kbit",
+      "rate_pkt_overhead": 0,
+      "rate_cell_size": 0,
+      "rate_cell_overhead": 0
+    }
+  },
+  "outbound": {
+    "device": "enp4s0",
+    "netem": {
+      "delay": 0,
+      "delay_unit": "ms",
+      "delay_jitter": 0,
+      "delay_jitter_unit": "ms",
+      "delay_corr": 0,
+      "loss_pct": 0,
+      "loss_corr": 0,
+      "dupe_pct": 0,
+      "dupe_corr": 0,
+      "corrupt_pct": 0,
+      "corrupt_corr": 0,
+      "reorder_pct": 0,
+      "reorder_corr": 0,
+      "reorder_gap": 0,
+      "rate": 0,
+      "rate_unit": "kbit",
+      "rate_pkt_overhead": 0,
+      "rate_cell_size": 0,
+      "rate_cell_overhead": 0
+    }
+  }
+}
+```
 
-#### Filing bugs in the right place
+The most basic configuration file would look like this:
 
-If you experience an issue with Service Worker support in your application, check the origin of the issue and use the appropriate issue tracker:
+```json
+{
+  "host": "0.0.0.0",
+  "port": 80,
+  "inbound": {
+    "device": "enp2s0"
+  },
+  "outbound": {
+    "device": "enp4s0"
+  }
+}
+```
 
-* [sw-toolbox](https://github.com/GoogleChrome/sw-toolbox/issues)
-* [platinum-sw](https://github.com/PolymerElements/platinum-sw/issues)
-* [platinum-push-notifications-manager](https://github.com/PolymerElements/push-notification-manager/)
-* For all other issues, feel free to file them [here](https://github.com/polymerelements/polymer-starter-kit/issues).
+The rest of the configuration file is generated by the tool once you apply
+settings.
 
-#### I get an error message about "Only secure origins are allowed"
+The purpose of these configuration values are:
 
-Service Workers are only available to "secure origins" (HTTPS sites, basically) in line with a policy to prefer secure origins for powerful new features. However http://localhost is also considered a secure origin, so if you can, developing on localhost is an easy way to avoid this error. For production, your site will need to support HTTPS. 
+* ``host``: the IP to bind the web UI to. ``0.0.0.0`` means that the server
+  will accept requests on any interface on the host machine. ``127.0.0.1``
+  means the server will only accept requests made from the host itself.
+* ``port``: the TCP port on which the server will accept requests. Note that
+  if you have any other web server software installed and running, such as
+  Apache or Nginx, port 80 will likely conflict with their default
+  configuration.
+* ``inbound.device``: the name of the network interface connected to the
+  "internal" network, or the network that *is* influenced by the rules set
+  by this tool.
+* ``outbound.device``: the name of the network interface connected to the
+  "external" network, or the network that *is not* influenced by the rules set
+  by this tool.
 
-#### How do I debug Service Worker?
+Contributing
+------------
 
-If you need to debug the event listener wire-up use `chrome://serviceworker-internals`.
-
-#### What are those buttons on chrome://serviceworker-internals?
-
-This page shows your registered workers and provides some basic operations.
-
-* Unregister: Unregisters the worker.
-* Start: Starts the worker. This would happen automatically when you navigate to a page in the worker's scope.
-* Stop: Stops the worker.
-* Sync: Dispatches a 'sync' event to the worker. If you don't handle this event, nothing will happen.
-* Push: Dispatches a 'push' event to the worker. If you don't handle this event, nothing will happen.
-* Inspect: Opens the worker in the Inspector.
-
-#### Development flow 
-
-In order to guarantee that the latest version of your Service Worker script is being used, follow these instructions:
-
-* After you made changes to your service worker script, close all but one of the tabs pointing to your web application
-* Hit shift-reload to bypass the service worker as to ensure that the remaining tab isn't under the control of a service worker
-* Hit reload to let the newer version of the Service Worker control the page.
-
-If you find anything to still be stale, you can also try navigating to `chrome:serviceworker-internals` (in Chrome), finding the relevant Service Worker entry for your application and clicking 'Unregister' before refreshing your app. This will (of course) only clear it from the local development machine. If you have already deployed to production then further work will be necessary to remove it from your user's machines.
-
-#### Not yet ready for Service Worker support?
-
-If for any reason you decide that Service Worker support isn't for you, you can disable it from your Polymer Starter Kit project using these 3 steps:
-
-* Remove 'precache' from the list in the 'default' gulp task ([gulpfile.js](https://github.com/PolymerElements/polymer-starter-kit/blob/master/gulpfile.js)) 
-* Remove the two Platinum Service Worker elements (platinum-sw/..) in [app/elements/elements.html](https://github.com/PolymerElements/polymer-starter-kit/blob/master/app/elements/elements.html)
-* Remove references to the platinum-sw elements from your application [index](https://github.com/PolymerElements/polymer-starter-kit/blob/master/app/index.html). 
-
-You will also want to navigate to `chrome://serviceworker-internals` and unregister any Service Workers registered by Polymer Starter Kit for your app just in case there's a copy of it cached. 
-
-## Yeoman support
-
-[generator-polymer](https://github.com/yeoman/generator-polymer/releases) now includes support for Polymer Starter Kit out of the box.
-
-## Contributing
-
-Polymer Starter Kit is a new project and is an ongoing effort by the Web Component community. We welcome your bug reports, PRs for improvements, docs and anything you think would improve the experience for other Polymer developers.
+We welcome your bug reports, PRs for improvements, docs and anything you think
+would improve the experience for other developers.
