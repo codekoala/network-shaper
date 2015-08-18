@@ -1,0 +1,52 @@
+{
+  "host": "0.0.0.0",
+  "port": 8080,
+  "inbound": {
+    "device": "br0",
+    "netem": {
+      "delay": 0,
+      "delay_unit": "ms",
+      "delay_jitter": 0,
+      "delay_jitter_unit": "ms",
+      "delay_corr": 0,
+      "loss_pct": 0,
+      "loss_corr": 0,
+      "dupe_pct": 0,
+      "dupe_corr": 0,
+      "corrupt_pct": 0,
+      "corrupt_corr": 0,
+      "reorder_pct": 0,
+      "reorder_corr": 0,
+      "reorder_gap": 0,
+      "rate": 0,
+      "rate_unit": "kbit",
+      "rate_pkt_overhead": 0,
+      "rate_cell_size": 0,
+      "rate_cell_overhead": 0
+    }
+  },
+  "outbound": {
+    "device": "lxcbr0",
+    "netem": {
+      "delay": 0,
+      "delay_unit": "ms",
+      "delay_jitter": 0,
+      "delay_jitter_unit": "ms",
+      "delay_corr": 0,
+      "loss_pct": 0,
+      "loss_corr": 0,
+      "dupe_pct": 0,
+      "dupe_corr": 0,
+      "corrupt_pct": 0,
+      "corrupt_corr": 0,
+      "reorder_pct": 0,
+      "reorder_corr": 0,
+      "reorder_gap": 0,
+      "rate": 0,
+      "rate_unit": "kbit",
+      "rate_pkt_overhead": 0,
+      "rate_cell_size": 0,
+      "rate_cell_overhead": 0
+    }
+  }
+}

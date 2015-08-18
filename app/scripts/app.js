@@ -49,36 +49,51 @@
   };
 
   // Populate the form with configuration values
-  app.restoreSettings = function(data) {
+  app.restoreSettings = function(allData) {
     var sliders = {
-      delay: ['jitter', 'corr'],
-      reorder: ['pct', 'corr', 'gap'],
-      rate: ['pkt_overhead', 'cell_size', 'cell_overhead'],
-      corrupt: ['pct', 'corr'],
-      dupe: ['pct', 'corr'],
-      loss: ['pct', 'corr']
-    };
+          delay: ['jitter', 'corr'],
+          reorder: ['pct', 'corr', 'gap'],
+          rate: ['pkt_overhead', 'cell_size', 'cell_overhead'],
+          corrupt: ['pct', 'corr'],
+          dupe: ['pct', 'corr'],
+          loss: ['pct', 'corr']
+        };
 
-    _.each(sliders, function(sub, section) {
-      _.each(sub, function(name) {
-        var sName  = section + '_' + name,
-            slider = $('float-slider[name=' + sName + ']');
+    _.each(['inbound', 'outbound'], function(dir) {
+      var dirEl = $('section[data-route=' + dir + ']'),
+          dev = $('paper-menu#' + dir + '-device')[0],
+          data = allData[dir].netem;
 
-        if (!_.isEmpty(slider)) {
-          slider[0].set('value', data[sName]);
+      _.find(dev.items, function(item, i) {
+        if (!_.isEqual(item.name, allData[dir].device)) {
+          return false;
         }
+
+        dev.select(i);
+        return true;
       });
+
+      _.each(sliders, function(sub, section) {
+        _.each(sub, function(name) {
+          var sName  = section + '_' + name,
+              slider = dirEl.find('float-slider[name=' + sName + ']');
+
+          if (!_.isEmpty(slider)) {
+            slider[0].set('value', data[sName]);
+          }
+        });
+      });
+
+      dirEl.find('float-slider[name=delay_time]')[0].set('value', data.delay);
+      dirEl.find('float-slider[name=rate_speed]')[0].set('value', data.rate);
+
+      dirEl.find('paper-checkbox[name=chk-delay]')[0].set('checked', data.delay > 0);
+      dirEl.find('paper-checkbox[name=chk-reorder]')[0].set('checked', data.reorder_pct > 0);
+      dirEl.find('paper-checkbox[name=chk-rate]')[0].set('checked', data.rate > 0);
+      dirEl.find('paper-checkbox[name=chk-corrupt]')[0].set('checked', data.corrupt_pct > 0);
+      dirEl.find('paper-checkbox[name=chk-dupe]')[0].set('checked', data.dupe_pct > 0);
+      dirEl.find('paper-checkbox[name=chk-loss]')[0].set('checked', data.loss_pct > 0);
     });
-
-    $('float-slider[name=delay_time]')[0].set('value', data.delay);
-    $('float-slider[name=rate_speed]')[0].set('value', data.rate);
-
-    $('paper-checkbox[name=chk-delay]')[0].set('checked', data.delay > 0);
-    $('paper-checkbox[name=chk-reorder]')[0].set('checked', data.reorder_pct > 0);
-    $('paper-checkbox[name=chk-rate]')[0].set('checked', data.rate > 0);
-    $('paper-checkbox[name=chk-corrupt]')[0].set('checked', data.corrupt_pct > 0);
-    $('paper-checkbox[name=chk-dupe]')[0].set('checked', data.dupe_pct > 0);
-    $('paper-checkbox[name=chk-loss]')[0].set('checked', data.loss_pct > 0);
 
     app.showToast('Settings restored successfully');
   };
@@ -94,43 +109,81 @@
       loss: ['pct', 'corr']
     };
 
-    var payload = {
-      delay_unit: 'ms',
-      delay_jitter_unit: 'ms',
-      rate_unit: 'kbit'
-    };
+    var inDev = $('paper-menu#inbound-device')[0],
+        outDev = $('paper-menu#outbound-device')[0];
 
-    _.each(sliders, function(sub, section) {
-      if (!$('paper-checkbox[name=chk-' + section + ']')[0].checked) {
-        return;
-      }
-
-      _.each(sub, function(name) {
-        var sName  = section + '_' + name,
-            slider = $('float-slider[name=' + sName + ']');
-
-        if (!_.isEmpty(slider)) {
-          payload[sName] = slider[0].value;
-        }
-      });
-    });
-
-    var dist = $('paper-radio-group[name=distribution]');
-    if (!_.isEmpty(dist)) {
-      payload.distribution = dist[0].selected;
+    if (!inDev.selectedItem) {
+      app.showToast('Please select an inbound device');
+      return;
+    } else {
+      inDev = inDev.selectedItem.name;
     }
 
-    payload.delay = payload.delay_time;
-    delete payload.delay_time;
+    if (!outDev.selectedItem) {
+      app.showToast('Please select an outbound device');
+      return;
+    } else {
+      outDev = outDev.selectedItem.name;
+    }
 
-    payload.rate = payload.rate_speed;
-    delete payload.rate_speed;
+    var payload = {
+      inbound: {
+        delay_unit: 'ms',
+        delay_jitter_unit: 'ms',
+        rate_unit: 'kbit'
+      },
+      outbound: {
+        delay_unit: 'ms',
+        delay_jitter_unit: 'ms',
+        rate_unit: 'kbit'
+      }
+    };
+
+    _.each(['inbound', 'outbound'], function(dir) {
+      var dirEl = $('section[data-route=' + dir + ']');
+
+      _.each(sliders, function(sub, section) {
+        if (!dirEl.find('paper-checkbox[name=chk-' + section + ']')[0].checked) {
+          return;
+        }
+
+        _.each(sub, function(name) {
+          var sName  = section + '_' + name,
+              slider = dirEl.find('float-slider[name=' + sName + ']');
+
+          if (!_.isEmpty(slider)) {
+            payload[dir][sName] = slider[0].value;
+          }
+        });
+      });
+
+      var dist = $('paper-radio-group[name=distribution]');
+      if (!_.isEmpty(dist)) {
+        payload[dir].distribution = dist[0].selected;
+      }
+
+      payload[dir].delay = payload[dir].delay_time;
+      delete payload[dir].delay_time;
+
+      payload[dir].rate = payload[dir].rate_speed;
+      delete payload[dir].rate_speed;
+    });
 
     $.ajax({
       url: '/apply',
       dataType: 'json',
+      contentType: 'application/json',
       method: 'POST',
-      data: JSON.stringify(payload),
+      data: JSON.stringify({
+        inbound: {
+          device: inDev,
+          netem: payload.inbound
+        },
+        outbound: {
+          device: outDev,
+          netem: payload.outbound
+        }
+      }),
       success: function() {
         app.showToast('Settings applied successfully');
       },
@@ -138,6 +191,8 @@
         app.showToast(msg.responseText);
       }
     });
+
+    return false;
   };
 })(document);
 

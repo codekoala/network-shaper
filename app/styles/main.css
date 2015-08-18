@@ -16,6 +16,38 @@ subtitle {
   font-size: 0.86em;
 }
 
-iron-pages section > paper-material {
+paper-menu paper-button {
+  width: calc(100% - 20px);
+  margin: inherit auto;
+}
+
+iron-pages section > div {
   max-width: 800px;
+  margin: 0px auto 65px;
+}
+
+iron-pages section dev-cfg > paper-material {
+  max-width: 800px;
+  background-color: #fff;
+  border-radius: 5px;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background-color: #bbb;
+}
+
+.fabs paper-fab { color: #444; }
+
+paper-fab.disable {
+  background-color: pink;
+}
+
+paper-fab.reload {
+  background-color: lightblue;
+}
+
+paper-fab.apply {
+  background-color: lightgreen;
 }

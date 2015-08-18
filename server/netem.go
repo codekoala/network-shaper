@@ -9,126 +9,60 @@ import (
 )
 
 var (
-	LIMIT_RE = regexp.MustCompile(`limit\s+(?P<limit>\d+)`)
+	// DELAY_RE is used to parse packet delay configuration from tc
+	DELAY_RE = regexp.MustCompile(`delay\s+(?P<delay>\d+(?:\.\d+)?)(?P<delay_unit>(?:m|u)?s)(?:\s+(?P<delay_jitter>\d+(?:\.\d+)?)(?P<delay_jitter_unit>(?:m|u)?s)(?:\s+(?P<delay_corr>\d+(?:\.\d+)?)%)?)?`)
 
-	DELAY_RE = regexp.MustCompile(`delay\s+(?P<delay>\d+(?:\.\d+)?)(?P<delay_unit>(?:m|u)s)(?:\s+(?P<delay_jitter>\d+(?:\.\d+)?)(?P<delay_jitter_unit>(?:m|u)s)(?:\s+(?P<delay_corr>\d+(?:\.\d+)?)%)?)?`)
-
+	// LOSS_RE is used to parse packet loss configuration from tc
 	LOSS_RE = regexp.MustCompile(`loss\s+(?P<loss_pct>\d+(?:\.\d+)?)%(?:\s+(?P<loss_corr>\d+(?:\.\d+)?)%)?`)
 
+	// DUPE_RE is used to parse packet duplication configuration from tc
 	DUPE_RE = regexp.MustCompile(`duplicate\s+(?P<dup_pct>\d+(?:\.\d+)?)%(?:\s+(?P<dup_corr>\d+(?:\.\d+)?)%)?`)
 
+	// REORDER_RE is used to parse packet reordering configuration from tc
 	REORDER_RE = regexp.MustCompile(`reorder\s+(?P<reorder_pct>\d+(?:\.\d+)?)%(?:\s+(?P<reorder_corr>\d+(?:\.\d+)?)%)?`)
-	GAP_RE     = regexp.MustCompile(`gap\s+(?P<reorder_gap>\d+)`)
 
+	// GAP_RE is used to parse packet reordering gap configuration from tc
+	GAP_RE = regexp.MustCompile(`gap\s+(?P<reorder_gap>\d+)`)
+
+	// CORRUPT_RE is used to parse packet corruption configuration from tc
 	CORRUPT_RE = regexp.MustCompile(`corrupt\s+(?P<corrupt_pct>\d+(?:\.\d+)?)%(?:\s+(?P<corrupt_corr>\d+(?:\.\d+)?)%)?`)
 
+	// RATE_RE is used to parse rate limiting configuration from tc
 	RATE_RE = regexp.MustCompile(`rate\s+(?P<rate>\d+(?:\.\d+)?)(?P<rate_unit>bit|kbit|mbit|gbit|tbit|bps|kbps|mbps|gbps|tbps)(?:\s+packetoverhead\s+(?P<rate_packet_overhead>\d+)(?:\s+cellsize\s+(?P<rate_cell_size>\d+)(?:\s+celloverhead\s+(?P<rate_cell_overhead>\d+))?)?)?`)
-
-	PARSERS = []*regexp.Regexp{LIMIT_RE, DELAY_RE, LOSS_RE, DUPE_RE, REORDER_RE, GAP_RE, CORRUPT_RE, RATE_RE}
-
-	VALID_TIME_UNITS = map[string]string{
-		"usecs": "us",
-		"usec":  "us",
-		"us":    "us",
-		"msecs": "ms",
-		"msec":  "ms",
-		"ms":    "ms",
-		"secs":  "s",
-		"sec":   "s",
-		"s":     "s",
-	}
-
-	VALID_RATE_UNITS = map[string]string{
-		"bit":  "bit",
-		"kbit": "kbit",
-		"mbit": "mbit",
-		"gbit": "gbit",
-		"tbit": "tbit",
-		"bps":  "bps",
-		"kbps": "kbps",
-		"mbps": "mbps",
-		"gbps": "gbps",
-		"tbps": "tbps",
-	}
 )
 
+// Netem represents the netem configuration of a specific network interface
 type Netem struct {
+	// packet delay configuration
 	Delay           float64 `json:"delay"`
 	DelayUnit       string  `json:"delay_unit"`
 	DelayJitter     float64 `json:"delay_jitter"`
 	DelayJitterUnit string  `json:"delay_jitter_unit"`
 	DelayCorr       float64 `json:"delay_corr"`
 
+	// packet loss configuration
 	LossPct  float64 `json:"loss_pct"`
 	LossCorr float64 `json:"loss_corr"`
 
+	// packet duplication configuration
 	DupePct  float64 `json:"dupe_pct"`
 	DupeCorr float64 `json:"dupe_corr"`
 
+	// packet corruption configuration
 	CorruptPct  float64 `json:"corrupt_pct"`
 	CorruptCorr float64 `json:"corrupt_corr"`
 
+	// packet reordering configuration
 	ReorderPct  float64 `json:"reorder_pct"`
 	ReorderCorr float64 `json:"reorder_corr"`
 	ReorderGap  int64   `json:"reorder_gap"`
 
+	// rate limiting configuration
 	Rate             float64 `json:"rate"`
 	RateUnit         string  `json:"rate_unit"`
 	RatePktOverhead  int64   `json:"rate_pkt_overhead"`
 	RateCellSize     int64   `json:"rate_cell_size"`
 	RateCellOverhead int64   `json:"rate_cell_overhead"`
-}
-
-func GetTimeUnit(unit, def string) string {
-	u, ok := VALID_TIME_UNITS[unit]
-	if !ok {
-		u = def
-	}
-
-	return u
-}
-
-func GetRateUnit(unit, def string) string {
-	u, ok := VALID_RATE_UNITS[unit]
-	if !ok {
-		u = def
-	}
-
-	return u
-}
-
-func ParseCurrentNetem(device string) *Netem {
-	out, err := exec.Command("tc", "qdisc", "show", "dev", device).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rules := strings.ToLower(string(out))
-	//log.Printf("Found rules: %s\n", rules)
-
-	return ParseNetem(rules)
-}
-
-func ParseNetem(rule string) *Netem {
-	netem := Netem{}
-
-	netem.Parse(rule)
-
-	return &netem
-}
-
-func RemoveNetemConfig(nic string) error {
-	cmd := exec.Command("tc", "qdisc", "del", "dev", nic, "root")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Println("Failed to remove netem settings: " + err.Error())
-		log.Println(string(out))
-		return err
-	}
-
-	log.Println("Successfully removed netem settings")
-
-	return nil
 }
 
 func (n *Netem) Parse(rule string) {
@@ -138,20 +72,6 @@ func (n *Netem) Parse(rule string) {
 	n.ParseCorruption(rule)
 	n.ParseReorder(rule)
 	n.ParseRate(rule)
-}
-
-func str2f(val string) float64 {
-	fval, _ := strconv.ParseFloat(val, 32)
-	return fval
-}
-
-func str2i(val string) int64 {
-	ival, _ := strconv.ParseInt(val, 10, 0)
-	return ival
-}
-
-func f2str(val float64) string {
-	return strconv.FormatFloat(val, 'f', 2, 32)
 }
 
 func (n *Netem) Apply(device string) error {
@@ -174,6 +94,7 @@ func (n *Netem) Apply(device string) error {
 			}
 		}
 
+		// packet reordering requires a delay to be specified
 		if n.ReorderPct > 0 {
 			args = append(args, "reorder")
 			args = append(args, f2str(n.ReorderPct)+"%")
@@ -218,12 +139,15 @@ func (n *Netem) Apply(device string) error {
 		unit = GetRateUnit(n.RateUnit, "kbit")
 		args = append(args, f2str(n.Rate)+unit)
 
+		// packet overhead can be negative or positive
 		if n.RatePktOverhead != 0 {
 			args = append(args, strconv.FormatInt(n.RatePktOverhead, 10))
 
+			// cell size is unsigned
 			if n.RateCellSize > 0 {
 				args = append(args, strconv.FormatInt(n.RateCellSize, 10))
 
+				// cell overhead can be negative or positive
 				if n.RateCellOverhead != 0 {
 					args = append(args, strconv.FormatInt(n.RateCellOverhead, 10))
 				}
@@ -231,6 +155,7 @@ func (n *Netem) Apply(device string) error {
 		}
 	}
 
+	// try to apply the settings if we have any to set
 	if len(args) > 0 {
 		defArgs := []string{"qdisc", "replace", "dev", device, "root", "netem"}
 		args = append(defArgs, args...)
@@ -245,18 +170,18 @@ func (n *Netem) Apply(device string) error {
 		return nil
 	}
 
+	// if we don't have any valid netem configuration, we're effectively
+	// removing our netem policy
 	return RemoveNetemConfig(device)
 }
 
 func (n *Netem) ParseDelay(rule string) {
 	match := DELAY_RE.FindStringSubmatch(rule)
 	if len(match) >= 3 {
-		n.Delay = str2f(match[1])
-		n.DelayUnit = match[2]
+		n.Delay, n.DelayUnit = UnitToMs(str2f(match[1]), match[2])
 
 		if len(match) >= 5 {
-			n.DelayJitter = str2f(match[3])
-			n.DelayJitterUnit = match[4]
+			n.DelayJitter, n.DelayJitterUnit = UnitToMs(str2f(match[3]), match[4])
 
 			if len(match) == 6 {
 				n.DelayCorr = str2f(match[5])

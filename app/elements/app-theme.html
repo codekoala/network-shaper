@@ -23,7 +23,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 :root {
   --dark-primary-color: #303F9F;
-  --default-primary-color:#3F81B5;
+  --default-primary-color: #3F81B5;
   --light-primary-color: #C5CAE9;
   --text-primary-color: #ffffff; /*text/icons*/
   --accent-color: #FF4081;
@@ -40,26 +40,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   --drawer-border-color: 1px solid #ccc;
   --drawer-toolbar-border-color: 1px solid rgba(0, 0, 0, 0.22);
 
-    /* paper-menu */
+  /* paper-menu */
   --paper-menu-background-color: #fff;
   --menu-link-color: #111111;
 }
 
 /* General styles */
 
+#drawerToolbar {
+  color: var(--secondary-text-color);
+  background-color: var(--drawer-menu-color);
+  border-bottom: var(--drawer-toolbar-border-color);
+  height: 64px;
+}
+
 paper-material {
   border-radius: 2px;
   height: 100%;
-  padding: 16px 0px 16px 0px;
+  padding: 16px 0 16px 0;
   width: calc(98.66% - 16px);
   margin: 16px auto;
   background: white;
-}
-
-#mainToolbar {
-  box-shadow: 0 4px 5px 0 rgba(0,0,0,.14),
-  0 2px 9px 1px rgba(0,0,0,.12),
-  0 4px 2px -2px rgba(0,0,0,.2);
 }
 
 paper-menu iron-icon {
@@ -69,11 +70,6 @@ paper-menu iron-icon {
 
 .paper-menu > .iron-selected {
   color: var(--default-primary-color);
-}
-
-#mainToolbar .bottom {
-  padding-bottom: 120px;
-  margin-left: 30px;
 }
 
 paper-menu a {
@@ -95,47 +91,48 @@ paper-menu a {
   font-weight: 400;
   line-height: 24px;
   min-height: 48px;
-  padding: 0px 16px;
+  padding: 0 16px;
 }
 
-#drawerToolbar {
-  border-bottom: var(--drawer-toolbar-border-color);
-  height: 120px;
+#mainToolbar .middle {
+  margin-left: 48px;
 }
 
-#paperToggle {
-  width: 45px;
-  height: 45px;
-  border: none;
-  color: var(--drawer-menu-color);
-  background-color: transparent;
-  margin-right: 16px;
-  padding: 8px;
+#mainToolbar.has-shadow .middle {
+  font-size: 20px;
+  padding-bottom: 0;
+  margin-left: 48px;
 }
+
+/* Height of the scroll area */
+.content {
+  height: 900px;
+}
+
+div.fabs {
+  position: fixed;
+  bottom: 10px;
+}
+
 
 /* Breakpoints */
 
 /* Small */
-
 @media (max-width: 600px) {
-
-  paper-toolbar.has-shadow {
-    height: 56px;
-  }
-
-  .paper-font-display2 {
-    font-size: 30px;
-  }
-
-  .paper-font-display1 {
-    font-size: 12px;
-  }
 
   paper-material {
     --menu-container-display: none;
     width: calc(97.33% - 32px);
     padding-left: 16px;
     padding-right: 16px;
+  }
+
+  .paper-font-display1 {
+    font-size: 12px;
+  }
+
+  .app-name {
+    font-size: 26px;
   }
 
   #drawer .paper-toolbar {
@@ -150,35 +147,40 @@ paper-menu a {
     background: white;
   }
 
-  #mainToolbar .bottom {
-    margin-left: 50px;
-    padding-bottom: 24px;
+  iron-pages {
+    padding: 10px;
   }
 
-  #mainToolbar.has-shadow .bottom {
-    padding-bottom: 0px;
+  iron-pages section > div {
+    margin: 0px auto 75px;
   }
 
-  .appname {
-    font-size: 24px;
-    padding-bottom: 0px;
+  div.fabs {
+    left: calc((100% - 176px) / 2);
   }
 }
 
+/* Tablet+ */
 @media (min-width: 601px) {
 
   paper-material {
     width: calc(98% - 46px);
+    margin-bottom: 32px;
     padding-left: 30px;
     padding-right: 30px;
   }
 
-    #mainToolbar.has-shadow .bottom {
-        margin-left: 50px;
-        padding-bottom: 0;
-        padding-left: 0;
-        font-size: 24px;
-    }
+  #drawer.paper-drawer-panel > [drawer] {
+    border-right: 1px solid rgba(0, 0, 0, 0.14);
+  }
+
+  iron-pages {
+    padding: 20px;
+  }
+
+  div.fabs {
+    left: calc((100% + (256px - 196px)) / 2);
+  }
 
 }
 
@@ -192,11 +194,11 @@ paper-menu a {
  */
 
 /* mobile-small */
-@media all and (min-width: 0px) and (max-width: 360px) and (orientation: portrait) { }
+@media all and (min-width: 0) and (max-width: 360px) and (orientation: portrait) { }
 /* mobile-large */
 @media all and (min-width: 361px) and (orientation: portrait) { }
 /* mobile-small-landscape */
-@media all and (min-width: 0px) and (max-width: 480px) and (orientation: landscape) { }
+@media all and (min-width: 0) and (max-width: 480px) and (orientation: landscape) { }
 /* mobile-large-landscape */
 @media all and (min-width: 481px) and (orientation: landscape) { }
 /* tablet-small-landscape */
@@ -208,9 +210,9 @@ paper-menu a {
 /* tablet-large */
 @media all and (min-width: 601px) and (max-width: 840px) and (orientation : portrait) { }
 /* desktop-x-small-landscape */
-@media all and (min-width: 0px) and (max-width: 480px) and (orientation: landscape) { }
+@media all and (min-width: 0) and (max-width: 480px) and (orientation: landscape) { }
 /* desktop-x-small */
-@media all and (min-width: 0px) and (max-width: 480px) and (max-aspect-ratio: 4/3) { }
+@media all and (min-width: 0) and (max-width: 480px) and (max-aspect-ratio: 4/3) { }
 /* desktop-small-landscape */
 @media all and (min-width: 481px) and (max-width: 840px) and (orientation: landscape) { }
 /* desktop-small */

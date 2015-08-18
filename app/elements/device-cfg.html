@@ -1,0 +1,67 @@
+<dom-module id="device-cfg">
+  <style>
+  .horizontal-section {
+    background-color: white;
+    padding: 0;
+    margin-right: 24px;
+    min-width: 200px;
+
+    @apply(--shadow-elevation-2dp);
+  }
+  </style>
+
+  <template>
+    <div class="horizontal center-justified layout">
+      <div>
+        <h4>Inbound Device</h4>
+        <div class="horizontal-section">
+          <paper-menu id="inbound-device" class="list" selected="0">
+            <template is="dom-repeat" items="{{allDevices}}">
+            <paper-item name="{{item.name}}">{{item.label}}</paper-item>
+            </template>
+          </paper-menu>
+        </div>
+      </div>
+
+      <div>
+        <h4>Outbound Device</h4>
+        <div class="horizontal-section">
+          <paper-menu id="outbound-device" class="list">
+            <template is="dom-repeat" items="{{allDevices}}">
+            <paper-item name="{{item.name}}">{{item.label}}</paper-item>
+            </template>
+          </paper-menu>
+        </div>
+      </div>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'device-cfg',
+
+  properties: {
+    allDevices: {
+      type: Object,
+      notify: true
+    }
+  },
+
+  ready: function() {
+    var me = this;
+
+    $.ajax({
+      url: '/nics',
+      dataType: 'json',
+      method: 'GET',
+      success: function(data) {
+        me.set('allDevices', data);
+      },
+      error: function(msg) {
+        app.showToast(msg.responseText);
+      }
+    });
+  }
+});
+</script>
