@@ -3,7 +3,7 @@
      * The application's namespace.
      */
     "name": "NShape",
-    
+
     /**
      * The version of the application.
      */
@@ -35,16 +35,16 @@
      * The Sencha Framework for this application: "ext" or "touch".
      */
     "framework": "ext",
-    
+
     /**
      * The toolkit to use. Select either "classic" or "modern".
      */
-    
-    
+
+
     /**
      * The name of the theme for this application.
      */
-    
+
     /**
      * The list of required packages (with optional versions; default is "latest").
      *
@@ -265,12 +265,12 @@
      */
     "production": {
         "output": {
-            
+
             "appCache": {
                 "enable": true,
                 "path": "../cache.appcache"
             }
-            
+
         },
         "loader": {
             "cache": "${build.timestamp}"
@@ -279,13 +279,13 @@
             "enable": true
         }
     },
-    
+
     /**
      * Settings specific to testing builds.
      */
     "testing": {
     },
-    
+
     /**
      * Settings specific to development builds.
      */
@@ -321,9 +321,9 @@
      */
     "bootstrap": {
         "base": "${app.dir}",
-        
+
         "manifest": "${build.id}.json",
-        
+
         "microloader": "bootstrap.js",
         "css": "bootstrap.css"
     },
@@ -368,7 +368,7 @@
      *      }
      *
      */
-    
+
     "output": {
         "base": "${workspace.build.dir}/${build.environment}/${app.name}/${build.id}",
         "page": "../index.html",
@@ -377,8 +377,8 @@
             "enable": false
         }
     },
-    
-    
+
+
     /**
     * Controls for localStorage caching
     *   "cache": {
@@ -505,19 +505,21 @@
      *     }
      *
      */
-    
+
     "builds": {
         "classic": {
             "toolkit": "classic",
             "theme": "theme-triton"
+        /**
         },
 
         "modern": {
             "toolkit": "modern",
             "theme": "theme-neptune"
+        **/
         }
     },
-    
+
 
     /**
      * Uniquely generated id for this application, used as prefix for localStorage keys.

@@ -1,8 +1,21 @@
+UID := $(shell id -u)
+GID := $(shell id -g)
+
 server:
 	$(MAKE) -C server
 
+sencha:
+	docker run $(EX) --rm \
+		-e TGT_UID=$(UID) \
+		-e TGT_GID=$(GID) \
+		--user 0:0 \
+		-v `pwd`:/project \
+		--entrypoint /project/entrypoint.sh \
+		herloct/sencha-cmd \
+		$(THECMD)
+
 build:
-	gulp
+	$(MAKE) THECMD="app build production" sencha
 
 assets:
 	$(MAKE) -C server assets
@@ -17,4 +30,4 @@ clean:
 	find . -type f -iname "*.rpm" -delete
 	gulp clean
 
-.PHONY: server
+.PHONY: server build
