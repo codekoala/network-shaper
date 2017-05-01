@@ -110,7 +110,8 @@
     };
 
     var inDev = $('paper-menu#inbound-device')[0],
-        outDev = $('paper-menu#outbound-device')[0];
+        outDev = $('paper-menu#outbound-device')[0],
+        allowNoIP = $('paper-checkbox#allow-no-ip')[0].checked;
 
     if (!inDev.selectedItem) {
       app.showToast('Please select an inbound device');
@@ -175,6 +176,7 @@
       contentType: 'application/json',
       method: 'POST',
       data: JSON.stringify({
+        allow_no_ip: allowNoIP,
         inbound: {
           device: inDev,
           netem: payload.inbound

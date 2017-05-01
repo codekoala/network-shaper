@@ -56,7 +56,7 @@ Polymer({
       dataType: 'json',
       method: 'GET',
       success: function(data) {
-        me.set('allDevices', data);
+        me.set('allDevices', data.allow_no_ip);
       },
       error: function(msg) {
         app.showToast(msg.responseText);

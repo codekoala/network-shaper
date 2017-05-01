@@ -11,6 +11,9 @@ var merge = require('merge-stream');
 var path = require('path');
 var fs = require('fs');
 var glob = require('glob');
+var plumber = require('gulp-plumber');
+var uglify = require('gulp-uglify');
+var pump = require('pump');
 
 var AUTOPREFIXER_BROWSERS = [
   'ie >= 10',
@@ -109,16 +112,25 @@ gulp.task('fonts', function () {
     .pipe($.size({title: 'fonts'}));
 });
 
+gulp.task('uglify', function (cb) {
+  pump([
+    gulp.src('*.js'),
+    uglify(),
+    gulp.dest('dist')
+  ], cb);
+});
+
 // Scan Your HTML For Assets & Optimize Them
 gulp.task('html', function () {
   var assets = $.useref.assets({searchPath: ['.tmp', 'app', 'dist']});
 
   return gulp.src(['app/**/*.html', '!app/{elements,test}/**/*.html'])
+    .pipe(plumber())
     // Replace path for vulcanized assets
     .pipe($.if('*.html', $.replace('elements/elements.html', 'elements/elements.vulcanized.html')))
     .pipe(assets)
     // Concatenate And Minify JavaScript
-    .pipe($.if('*.js', $.uglify({preserveComments: 'some'})))
+    //.pipe($.if('*.js', $.uglify()))
     // Concatenate And Minify Styles
     // In case you are still using useref build blocks
     .pipe($.if('*.css', $.cssmin()))
@@ -214,7 +226,7 @@ gulp.task('default', ['clean'], function (cb) {
   runSequence(
     ['copy', 'styles'],
     'elements',
-    ['jshint', 'images', 'fonts', 'html'],
+    ['jshint', 'images', 'fonts', 'uglify', 'html'],
     'vulcanize', 'precache',
     cb);
 });

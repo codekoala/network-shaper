@@ -21,4 +21,4 @@ clean:
 	find . -type f \( -iname "*.rpm" -o -iname "*.tar.xz*" \) -delete
 	gulp clean
 
-.PHONY: server
+.PHONY: server build
