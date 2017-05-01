@@ -8,7 +8,6 @@ Ext.define('NShape.view.main.Main', {
 
     'NShape.view.main.MainController',
     'NShape.view.main.MainModel',
-    'NShape.view.main.List',
     'NShape.view.main.Delay',
     'NShape.view.main.Rate',
     'NShape.view.main.Corruption',
@@ -95,7 +94,15 @@ Ext.define('NShape.view.main.Main', {
     iconCls: 'fa-arrow-up',
 
     items: [{
-        xtype: 'mainlist'
+      xtype: 'delaycfg'
+    }, {
+      xtype: 'ratecfg'
+    }, {
+      xtype: 'corruptcfg'
+    }, {
+      xtype: 'dupecfg'
+    }, {
+      xtype: 'losscfg'
     }]
   }, {
     title: 'Settings',

@@ -14,6 +14,9 @@ sencha:
 build:
 	$(MAKE) THECMD="app build production" sencha
 
+dev:
+	$(MAKE) THECMD="app watch classic" EX="-p 0.0.0.0:1841:1841" sencha
+
 assets:
 	$(MAKE) -C server assets
 
