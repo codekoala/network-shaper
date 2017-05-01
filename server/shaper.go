@@ -1,16 +1,17 @@
 package main
 
 import (
-	"github.com/elazarl/go-bindata-assetfs"
-
 	"encoding/json"
 	"flag"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"strings"
+
+	"github.com/elazarl/go-bindata-assetfs"
 )
 
 var (
@@ -52,9 +53,45 @@ func init() {
 	if config.Inbound.Device == config.Outbound.Device {
 		log.Fatalln("You must specify different NICs for your internal and external networks")
 	}
+
+	if config.Inbound.Label == "" {
+		config.Inbound.Label = "Inbound"
+	}
+
+	if config.Outbound.Label == "" {
+		config.Outbound.Label = "Outbound"
+	}
 }
 
+var (
+	templateFuncs = template.FuncMap{
+		"route": func() string {
+			return `{{route}}`
+		},
+	}
+
+	staticFs = http.FileServer(&assetfs.AssetFS{
+		Asset:    Asset,
+		AssetDir: AssetDir,
+		Prefix:   "../dist",
+	})
+)
+
 func main() {
+	var (
+		tpl   []byte
+		index *template.Template
+		err   error
+	)
+
+	if tpl, err = Asset("../dist/index.html"); err != nil {
+		log.Fatalf("unable to load index template: %s", err)
+	}
+
+	if index, err = template.New("index").Funcs(templateFuncs).Parse(string(tpl)); err != nil {
+		log.Fatalf("unable to parse index template: %s", err)
+	}
+
 	// allow netem configuration to be removed
 	http.HandleFunc("/remove", removeConfig)
 
@@ -68,11 +105,13 @@ func main() {
 	http.HandleFunc("/nics", getValidNics)
 
 	// serve static files for the web UI
-	http.Handle("/", http.FileServer(&assetfs.AssetFS{
-		Asset:    Asset,
-		AssetDir: AssetDir,
-		Prefix:   "../dist",
-	}))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			index.Execute(w, config)
+		} else {
+			staticFs.ServeHTTP(w, r)
+		}
+	})
 
 	// begin accepting web requests
 	bind := fmt.Sprintf("%s:%d", config.Host, config.Port)
@@ -163,9 +202,19 @@ func applyConfig(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(400)
 			msg = "Failed to apply outbound settings: " + err.Error()
 		} else {
+			w.WriteHeader(202)
 			msg = "Settings applied successfully"
-			config.Inbound = newConfig.Inbound
-			config.Outbound = newConfig.Outbound
+
+			config.AllowNoIp = newConfig.AllowNoIp
+
+			config.Inbound.Device = newConfig.Inbound.Device
+			config.Inbound.Label = newConfig.Inbound.Label
+			config.Inbound.Netem = newConfig.Inbound.Netem
+
+			config.Outbound.Device = newConfig.Outbound.Device
+			config.Outbound.Label = newConfig.Outbound.Label
+			config.Outbound.Netem = newConfig.Outbound.Netem
+
 			SaveConfig(config, *cfgPath)
 		}
 	}
@@ -196,6 +245,13 @@ type SimpleNic struct {
 	Label string `json:"label"`
 }
 
+type ValidNicResponse struct {
+	AllowNoIp     bool        `json:"allow_no_ip"`
+	InboundLabel  string      `json:"inbound_label"`
+	OutboundLabel string      `json:"outbound_label"`
+	AllNics       []SimpleNic `json:"all_devices"`
+}
+
 // getValidNics offers a list of NICs that are present on this system
 func getValidNics(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "GET" {
@@ -203,7 +259,12 @@ func getValidNics(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var allNics []SimpleNic
+	body := ValidNicResponse{
+		AllowNoIp:     config.AllowNoIp,
+		InboundLabel:  config.Inbound.Label,
+		OutboundLabel: config.Outbound.Label,
+	}
+
 	nics, _ := net.Interfaces()
 	for _, nic := range nics {
 		added := false
@@ -216,7 +277,7 @@ func getValidNics(w http.ResponseWriter, req *http.Request) {
 			}
 
 			// we have a good NIC!
-			allNics = append(allNics, SimpleNic{
+			body.AllNics = append(body.AllNics, SimpleNic{
 				Name:  nic.Name,
 				Ip:    addr,
 				Label: fmt.Sprintf("%s: %s", nic.Name, addr),
@@ -226,21 +287,21 @@ func getValidNics(w http.ResponseWriter, req *http.Request) {
 		}
 
 		if !added && config.AllowNoIp {
-			allNics = append(allNics, SimpleNic{
+			body.AllNics = append(body.AllNics, SimpleNic{
 				Name:  nic.Name,
 				Label: nic.Name,
 			})
 		}
 	}
 
-	nicsJson, err := json.Marshal(allNics)
+	nicsJson, err := json.Marshal(body)
 	if err != nil {
 		msg := "Failed to serialize NICs: " + err.Error()
 		log.Println(msg)
 
 		w.WriteHeader(500)
-		w.Write([]byte(msg))
+		fmt.Fprintf(w, msg)
 	} else {
-		w.Write(nicsJson)
+		fmt.Fprintf(w, "%s", nicsJson)
 	}
 }

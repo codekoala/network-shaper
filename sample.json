@@ -4,6 +4,7 @@
   "allow_no_ip": true,
   "inbound": {
     "device": "br0",
+    "label": "br0",
     "netem": {
       "delay": 0,
       "delay_unit": "ms",
@@ -28,6 +29,7 @@
   },
   "outbound": {
     "device": "lxcbr0",
+    "label": "Outbound",
     "netem": {
       "delay": 0,
       "delay_unit": "ms",

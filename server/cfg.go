@@ -14,6 +14,7 @@ const DEFAULT_CFG = `
   "allow_no_ip": false,
   "inbound": {
     "device": "eth0",
+    "label": "Inbound",
     "netem": {
       "delay": 0,
       "delay_unit": "",
@@ -38,6 +39,7 @@ const DEFAULT_CFG = `
   },
   "outbound": {
     "device": "eth1",
+    "label": "Outbound",
     "netem": {
       "delay": 50,
       "delay_unit": "ms",
@@ -63,19 +65,21 @@ const DEFAULT_CFG = `
 }
 `
 
-type ShaperConfig struct {
-	Host      string `json:"host"`
-	Port      int    `json:"port"`
-	AllowNoIp bool   `json:"allow_no_ip"`
-	Inbound   struct {
+type (
+	ShaperConfig struct {
+		Host      string      `json:"host"`
+		Port      int         `json:"port"`
+		AllowNoIp bool        `json:"allow_no_ip"`
+		Inbound   NetemConfig `json:"inbound"`
+		Outbound  NetemConfig `json:"outbound"`
+	}
+
+	NetemConfig struct {
 		Device string `json:"device"`
+		Label  string `json:"label"`
 		Netem  Netem  `json:"netem"`
-	} `json:"inbound"`
-	Outbound struct {
-		Device string `json:"device"`
-		Netem  Netem  `json:"netem"`
-	} `json:"outbound"`
-}
+	}
+)
 
 // GetConfig attempts to read configuration from a file, falling back to the
 // default config if no such file is present and/or readable
