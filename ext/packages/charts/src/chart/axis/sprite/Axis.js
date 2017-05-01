@@ -122,11 +122,15 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
 
                 /**
                  * @cfg {Number} min The minimum value of the axis.
+                 * `min` and {@link #max} attributes represent the effective range of the axis
+                 * after segmentation, layout, and range reconciliation between axes.
                  */
                 min: 'number',
 
                 /**
                  * @cfg {Number} max The maximum value of the axis.
+                 * {@link #min} and `max` attributes represent the effective range of the axis
+                 * after segmentation, layout, and range reconciliation between axes.
                  */
                 max: 'number',
 
@@ -207,6 +211,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                 majorTickSize: 'bbox',
                 position: 'bbox,layout',
                 axisLine: 'bbox,layout',
+                minorTicks: 'layout',
                 min: 'layout',
                 max: 'layout',
                 length: 'layout',
@@ -220,9 +225,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                 enlargeEstStepSizeByText: 'layout'
             },
             updaters: {
-                layout: function () {
-                    this.doLayout();
-                }
+                layout: 'layoutUpdater'
             }
         }
     },
@@ -237,6 +240,13 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
          * returns a new string with the modified values.
          */
         label: null,
+
+        /**
+         * @cfg {Number} labelOffset
+         * The distance between the label and the edge of a major tick.
+         * Only applicable for 'gauge' and 'angular' axes.
+         */
+        labelOffset: 10,
 
         /**
          * @cfg {Object|Ext.chart.axis.layout.Layout} layout The layout configuration used by the axis.
@@ -271,29 +281,32 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
 
     getBBox: function () { return null; },
 
-    doDefaultRender: function (v) {
+    defaultRenderer: function (v) {
         // 'this' pointer in this case is a layoutContext
         return this.segmenter.renderer(v, this);
     },
 
-    doLayout: function () {
+    layoutUpdater: function () {
         var me = this,
             chart = me.getAxis().getChart();
+
         if (chart.isInitializing) {
             return;
         }
+
         var attr = me.attr,
             layout = me.getLayout(),
             isRtl = chart.getInherited().rtl,
             min = attr.dataMin + (attr.dataMax - attr.dataMin) * attr.visibleMin,
             max = attr.dataMin + (attr.dataMax - attr.dataMin) * attr.visibleMax,
+            position = attr.position,
             context = {
                 attr: attr,
                 segmenter: me.getSegmenter(),
-                renderer: me.doDefaultRender
+                renderer: me.defaultRenderer
             };
 
-        if (attr.position === 'left' || attr.position === 'right') {
+        if (position === 'left' || position === 'right') {
             attr.translationX = 0;
             attr.translationY = max * attr.length / (max - min);
             attr.scalingX = 1;
@@ -301,7 +314,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
             attr.scalingCenterY = 0;
             attr.scalingCenterX = 0;
             me.applyTransformations(true);
-        } else if (attr.position === 'top' || attr.position === 'bottom') {
+        } else if (position === 'top' || position === 'bottom') {
             if (isRtl) {
                 attr.translationX = attr.length + min * attr.length / (max - min) + 1;
             } else {
@@ -327,7 +340,8 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
             some = Ext.Array.some,
             abs = Math.abs,
             threshold;
-        if (snaps.getLabel) {
+
+        if (snaps.getLabel) { // Discrete layout.
             if (snaps.min < snaps.from) {
                 fn.call(this, snaps.min, snaps.getLabel(snaps.min), -1, snaps);
             }
@@ -460,7 +474,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
         }
     },
 
-    renderLabels: function (surface, ctx, layout, clipRect) {
+    renderLabels: function (surface, ctx, layoutContext, clipRect) {
         var me = this,
             attr = me.attr,
             halfLineWidth = 0.5 * attr.lineWidth,
@@ -472,24 +486,27 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
             yy = matrix.getYY(),
             dy = matrix.getDY(),
             thickness = 0,
-            majorTicks = layout.majorTicks,
+            majorTicks = layoutContext.majorTicks,
             tickPadding = Math.max(attr.majorTickSize, attr.minorTickSize) + attr.lineWidth,
-            label = me.getLabel(), font, labelOffset,
+            isBBoxIntersect = Ext.draw.Draw.isBBoxIntersect,
+            label = me.getLabel(), font,
+            labelOffset = me.getLabelOffset(),
             lastLabelText = null,
             textSize = 0, textCount = 0,
-            segmenter = layout.segmenter,
+            segmenter = layoutContext.segmenter,
             renderer = me.getRenderer(),
-            title = me.getAxis().getTitle(),
+            axis = me.getAxis(),
+            title = axis.getTitle(),
             titleBBox = title && title.attr.text !== '' && title.getBBox(),
             labelInverseMatrix, lastBBox = null, bbox, fly, text, titlePadding,
-            translation;
+            translation, gaugeAngles;
 
         if (majorTicks && label && !label.attr.hidden) {
             font = label.attr.font;
             if (ctx.font !== font) {
                 ctx.font = font;
             } // This can profoundly improve performance.
-            label.setAttributes({translationX: 0, translationY: 0}, true, true);
+            label.setAttributes({translationX: 0, translationY: 0}, true);
             label.applyTransformations();
             labelInverseMatrix = label.attr.inverseMatrix.elements.slice(0);
             switch (docked) {
@@ -507,7 +524,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                     }
                     label.setAttributes({
                         translationX: translation
-                    }, true, true);
+                    }, true);
                     break;
                 case 'right':
                     titlePadding = titleBBox ? clipRect[2] - titleBBox.x : 0;
@@ -523,34 +540,34 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                     }
                     label.setAttributes({
                         translationX: translation
-                    }, true, true);
+                    }, true);
                     break;
                 case 'top':
                     titlePadding = titleBBox ? titleBBox.y + titleBBox.height: 0;
                     label.setAttributes({
                         translationY: surface.roundPixel(titlePadding + (clipRect[3] - titlePadding - tickPadding) / 2) - halfLineWidth
-                    }, true, true);
+                    }, true);
                     break;
                 case 'bottom':
                     titlePadding = titleBBox ? clipRect[3] - titleBBox.y : 0;
                     label.setAttributes({
                         translationY: surface.roundPixel(tickPadding + (clipRect[3] - tickPadding - titlePadding) / 2) + halfLineWidth
-                    }, true, true);
+                    }, true);
                     break;
                 case 'radial' :
                     label.setAttributes({
                         translationX: attr.centerX
-                    }, true, true);
+                    }, true);
                     break;
                 case 'angular':
                     label.setAttributes({
                         translationY: attr.centerY
-                    }, true, true);
+                    }, true);
                     break;
                 case 'gauge':
                     label.setAttributes({
                         translationY: attr.centerY
-                    }, true, true);
+                    }, true);
                     break;
             }
 
@@ -560,18 +577,25 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                     if (labelText === undefined) {
                         return;
                     }
-                    text = renderer ? renderer.call(me, labelText, layout, lastLabelText) : segmenter.renderer(labelText, layout, lastLabelText);
+                    if (renderer) {
+                        text = Ext.callback(renderer, null,
+                            [axis, labelText, layoutContext, lastLabelText], 0, axis);
+                    } else {
+                        text = segmenter.renderer(labelText, layoutContext, lastLabelText);
+                    }
                     lastLabelText = labelText;
                     label.setAttributes({
                         text: String(text),
                         translationY: surface.roundPixel(position * yy + dy)
-                    }, true, true);
+                    }, true);
                     label.applyTransformations();
                     thickness = Math.max(thickness, label.getBBox().width + tickPadding);
                     if (thickness <= me.thickness) {
                         fly = Ext.draw.Matrix.fly(label.attr.matrix.elements.slice(0));
-                        bbox = fly.prepend.apply(fly, labelInverseMatrix).transformBBox(label.getBBox(true));
-                        if (lastBBox && !Ext.draw.Draw.isBBoxIntersect(bbox, lastBBox, textPadding)) {
+                        bbox = fly.prepend.apply(fly, labelInverseMatrix).transformBBox(
+                            label.getBBox(true)
+                        );
+                        if (lastBBox && !isBBoxIntersect(bbox, lastBBox, textPadding)) {
                             return;
                         }
                         surface.renderSprite(label);
@@ -585,18 +609,23 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                     if (labelText === undefined) {
                         return;
                     }
-                    text = renderer ? renderer.call(this, labelText, layout, lastLabelText) : segmenter.renderer(labelText, layout, lastLabelText);
+                    if (renderer) {
+                        text = Ext.callback(renderer, null,
+                            [axis, labelText, layoutContext, lastLabelText], 0, axis);
+                    } else {
+                        text = segmenter.renderer(labelText, layoutContext, lastLabelText);
+                    }
                     lastLabelText = labelText;
                     label.setAttributes({
                         text: String(text),
                         translationX: surface.roundPixel(position * xx + dx)
-                    }, true, true);
+                    }, true);
                     label.applyTransformations();
                     thickness = Math.max(thickness, label.getBBox().height + tickPadding);
                     if (thickness <= me.thickness) {
                         fly = Ext.draw.Matrix.fly(label.attr.matrix.elements.slice(0));
                         bbox = fly.prepend.apply(fly, labelInverseMatrix).transformBBox(label.getBBox(true));
-                        if (lastBBox && !Ext.draw.Draw.isBBoxIntersect(bbox, lastBBox, textPadding)) {
+                        if (lastBBox && !isBBoxIntersect(bbox, lastBBox, textPadding)) {
                             return;
                         }
                         surface.renderSprite(label);
@@ -610,17 +639,24 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                     if (labelText === undefined) {
                         return;
                     }
-                    text = renderer ? renderer.call(me, labelText, layout, lastLabelText) : segmenter.renderer(labelText, layout, lastLabelText);
+                    if (renderer) {
+                        text = Ext.callback(renderer, null,
+                            [axis, labelText, layoutContext, lastLabelText], 0, axis);
+                    } else {
+                        text = segmenter.renderer(labelText, layoutContext, lastLabelText);
+                    }
                     lastLabelText = labelText;
                     if (typeof text !== 'undefined') {
                         label.setAttributes({
                             text: String(text),
-                            translationX: attr.centerX - surface.roundPixel(position) / attr.max * attr.length * Math.cos(attr.baseRotation + Math.PI / 2),
-                            translationY: attr.centerY - surface.roundPixel(position) / attr.max * attr.length * Math.sin(attr.baseRotation + Math.PI / 2)
-                        }, true, true);
+                            translationX: attr.centerX - surface.roundPixel(position) /
+                            attr.max * attr.length * Math.cos(attr.baseRotation + Math.PI / 2),
+                            translationY: attr.centerY - surface.roundPixel(position) /
+                            attr.max * attr.length * Math.sin(attr.baseRotation + Math.PI / 2)
+                        }, true);
                         label.applyTransformations();
                         bbox = label.attr.matrix.transformBBox(label.getBBox(true));
-                        if (lastBBox && !Ext.draw.Draw.isBBoxIntersect(bbox, lastBBox)) {
+                        if (lastBBox && !isBBoxIntersect(bbox, lastBBox)) {
                             return;
                         }
                         surface.renderSprite(label);
@@ -630,24 +666,32 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                     }
                 });
             } else if (docked === 'angular') {
-                labelOffset = attr.majorTickSize + attr.lineWidth * 0.5 + (parseInt(label.attr.fontSize, 10) || 10) / 2;
+                labelOffset += attr.majorTickSize + attr.lineWidth * 0.5;
                 me.iterate(majorTicks, function (position, labelText, i) {
                     if (labelText === undefined) {
                         return;
                     }
-                    text = renderer ? renderer.call(me, labelText, layout, lastLabelText) : segmenter.renderer(labelText, layout, lastLabelText);
+                    if (renderer) {
+                        text = Ext.callback(renderer, null,
+                            [axis, labelText, layoutContext, lastLabelText], 0, axis);
+                    } else {
+                        text = segmenter.renderer(labelText, layoutContext, lastLabelText);
+                    }
                     lastLabelText = labelText;
-                    thickness = Math.max(thickness, Math.max(attr.majorTickSize, attr.minorTickSize) + (attr.lineCap !== 'butt' ? attr.lineWidth * 0.5 : 0));
+                    thickness = Math.max(thickness,
+                        Math.max(attr.majorTickSize, attr.minorTickSize) +
+                        (attr.lineCap !== 'butt' ? attr.lineWidth * 0.5 : 0)
+                    );
                     if (typeof text !== 'undefined') {
                         var angle = position / (attr.max + 1) * Math.PI * 2 + attr.baseRotation;
                         label.setAttributes({
                             text: String(text),
                             translationX: attr.centerX + (attr.length + labelOffset) * Math.cos(angle),
                             translationY: attr.centerY + (attr.length + labelOffset) * Math.sin(angle)
-                        }, true, true);
+                        }, true);
                         label.applyTransformations();
                         bbox = label.attr.matrix.transformBBox(label.getBBox(true));
-                        if (lastBBox && !Ext.draw.Draw.isBBoxIntersect(bbox, lastBBox)) {
+                        if (lastBBox && !isBBoxIntersect(bbox, lastBBox)) {
                             return;
                         }
                         surface.renderSprite(label);
@@ -657,24 +701,31 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                     }
                 });
             } else if (docked === 'gauge') {
-                var gaugeAngles = me.getGaugeAngles();
+                gaugeAngles = me.getGaugeAngles();
+                labelOffset += attr.majorTickSize + attr.lineWidth * 0.5;
                 me.iterate(majorTicks, function (position, labelText, i) {
                     if (labelText === undefined) {
                         return;
                     }
-                    text = renderer ? renderer.call(me, labelText, layout, lastLabelText) : segmenter.renderer(labelText, layout, lastLabelText);
+                    if (renderer) {
+                        text = Ext.callback(renderer, null,
+                            [axis, labelText, layoutContext, lastLabelText], 0, axis);
+                    } else {
+                        text = segmenter.renderer(labelText, layoutContext, lastLabelText);
+                    }
                     lastLabelText = labelText;
 
                     if (typeof text !== 'undefined') {
-                        var angle = (position - attr.min) / (attr.max - attr.min + 1) * attr.totalAngle - attr.totalAngle + gaugeAngles.start;
+                        var angle = (position - attr.min) / (attr.max - attr.min + 1) * attr.totalAngle -
+                            attr.totalAngle + gaugeAngles.start;
                         label.setAttributes({
                             text: String(text),
-                            translationX: attr.centerX + (attr.length + 10) * Math.cos(angle),
-                            translationY: attr.centerY + (attr.length + 10) * Math.sin(angle)
-                        }, true, true);
+                            translationX: attr.centerX + (attr.length + labelOffset) * Math.cos(angle),
+                            translationY: attr.centerY + (attr.length + labelOffset) * Math.sin(angle)
+                        }, true);
                         label.applyTransformations();
                         bbox = label.attr.matrix.transformBBox(label.getBBox(true));
-                        if (lastBBox && !Ext.draw.Draw.isBBoxIntersect(bbox, lastBBox)) {
+                        if (lastBBox && !isBBoxIntersect(bbox, lastBBox)) {
                             return;
                         }
                         surface.renderSprite(label);
@@ -715,11 +766,11 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                 case 'left':
                     position = surface.roundPixel(clipRect[2]) - halfLineWidth;
                     ctx.moveTo(position, -attr.endGap);
-                    ctx.lineTo(position, attr.length + attr.startGap);
+                    ctx.lineTo(position, attr.length + attr.startGap + 1);
                     break;
                 case 'right':
                     ctx.moveTo(halfLineWidth, -attr.endGap);
-                    ctx.lineTo(halfLineWidth, attr.length + attr.startGap);
+                    ctx.lineTo(halfLineWidth, attr.length + attr.startGap + 1);
                     break;
                 case 'bottom':
                     ctx.moveTo(-attr.startGap, halfLineWidth);
@@ -848,9 +899,11 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
         }
     },
 
-    renderLimits: function () {
+    renderLimits: function (clipRect) {
         var me = this,
             axis = me.getAxis(),
+            chart = axis.getChart(),
+            innerPadding = chart.getInnerPadding(),
             limits = Ext.Array.from(axis.getLimits());
 
         if (!limits.length) {
@@ -876,11 +929,11 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                 !limit.line && (limit.line = {});
                 value = Ext.isString(limit.value) ? axis.getCoordFor(limit.value) : limit.value;
                 value = value * matrix.getYY() + matrix.getDY();
-                limit.line.y = value;
+                limit.line.y = value + innerPadding.top;
                 limit.line.strokeStyle = limit.line.strokeStyle || attr.strokeStyle;
                 me.putMarker('horizontal-limit-lines', limit.line, i, true);
                 if (limit.line.title) {
-                    titles.createInstance(limit.line.title);
+                    titles.add(limit.line.title);
                     titleBBox = titles.getBBoxFor(titles.position - 1);
                     titlePosition = limit.line.title.position || (position === 'left' ? 'start' : 'end');
                     switch (titlePosition) {
@@ -896,7 +949,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                     }
                     titles.setAttributesFor(titles.position - 1, {
                         x: x,
-                        y: value - titleBBox.height / 2,
+                        y: limit.line.y - titleBBox.height / 2,
                         textAlign: titlePosition,
                         fillStyle: limit.line.title.fillStyle || limit.line.strokeStyle
                     });
@@ -908,11 +961,11 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                 !limit.line && (limit.line = {});
                 value = Ext.isString(limit.value) ? axis.getCoordFor(limit.value) : limit.value;
                 value = value * matrix.getXX() + matrix.getDX();
-                limit.line.x = value;
+                limit.line.x = value + innerPadding.left;
                 limit.line.strokeStyle = limit.line.strokeStyle || attr.strokeStyle;
                 me.putMarker('vertical-limit-lines', limit.line, i, true);
                 if (limit.line.title) {
-                    titles.createInstance(limit.line.title);
+                    titles.add(limit.line.title);
                     titleBBox = titles.getBBoxFor(titles.position - 1);
                     titlePosition = limit.line.title.position || (position === 'top' ? 'end' : 'start');
                     switch (titlePosition) {
@@ -927,7 +980,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                             break;
                     }
                     titles.setAttributesFor(titles.position - 1, {
-                        x: value + titleBBox.height / 2,
+                        x: limit.line.x + titleBBox.height / 2,
                         y: y,
                         fillStyle: limit.line.title.fillStyle || limit.line.strokeStyle,
                         rotationRads: Math.PI / 2
@@ -950,7 +1003,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                 limit.line.strokeStyle = limit.line.strokeStyle || attr.strokeStyle;
                 me.putMarker('circular-limit-lines', limit.line, i, true);
                 if (limit.line.title) {
-                    titles.createInstance(limit.line.title);
+                    titles.add(limit.line.title);
                     titleBBox = titles.getBBoxFor(titles.position - 1);
                     titles.setAttributesFor(titles.position - 1, {
                         x: attr.centerX,
@@ -975,7 +1028,7 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
                 limit.line.strokeStyle = limit.line.strokeStyle || attr.strokeStyle;
                 me.putMarker('radial-limit-lines', limit.line, i, true);
                 if (limit.line.title) {
-                    titles.createInstance(limit.line.title);
+                    titles.add(limit.line.title);
                     titleBBox = titles.getBBoxFor(titles.position - 1);
                     titleFlip = ((value > -0.5 * Math.PI && value < 0.5 * Math.PI) || (value > 1.5 * Math.PI && value < 2 * Math.PI)) ? 1 : -1;
                     titles.setAttributesFor(titles.position - 1, {
@@ -998,18 +1051,19 @@ Ext.define('Ext.chart.axis.sprite.Axis', {
         }
     },
 
-    render: function (surface, ctx, clipRect) {
+    render: function (surface, ctx, rect) {
         var me = this,
-            layout = me.getLayoutContext();
-        if (layout) {
-            if (false === me.renderLabels(surface, ctx, layout, clipRect)) {
+            layoutContext = me.getLayoutContext();
+
+        if (layoutContext) {
+            if (false === me.renderLabels(surface, ctx, layoutContext, rect)) {
                 return false;
             }
             ctx.beginPath();
-            me.renderTicks(surface, ctx, layout, clipRect);
-            me.renderAxisLine(surface, ctx, layout, clipRect);
-            me.renderGridLines(surface, ctx, layout, clipRect);
-            me.renderLimits();
+            me.renderTicks(surface, ctx, layoutContext, rect);
+            me.renderAxisLine(surface, ctx, layoutContext, rect);
+            me.renderGridLines(surface, ctx, layoutContext, rect);
+            me.renderLimits(rect);
             ctx.stroke();
         }
     }

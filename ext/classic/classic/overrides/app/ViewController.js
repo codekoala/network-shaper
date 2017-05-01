@@ -1,5 +1,5 @@
 /**
- * @override Ext.app.ViewController
+ * @class Ext.app.ViewController
  */
 
 /**

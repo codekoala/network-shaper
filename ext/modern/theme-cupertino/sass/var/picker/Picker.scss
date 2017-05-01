@@ -6,19 +6,19 @@
  * @var {measurement} $picker-row-height
  * The height of each picker item
  */
-$picker-row-height: 2.5em !dynamic;
+$picker-row-height: dynamic(2.5em);
 
 /**
  * @var {measurement} $picker-active-border-color
  * The height of each picker item
  */
-$picker-active-border-color: red !dynamic;
+$picker-active-border-color: dynamic(red);
 
 /**
  * @var {measurement} $picker-sheet-radius
  * The border radius size for the picker sheet
  */
-$picker-sheet-radius: .4em !dynamic;
+$picker-sheet-radius: dynamic(.4em);
 
 /**
  * @var {color} $picker-title-color

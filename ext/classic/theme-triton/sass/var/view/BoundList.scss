@@ -1,6 +1,6 @@
-$boundlist-item-height: 32px !dynamic;
-$boundlist-item-padding: 0 10px !dynamic;
-$boundlist-item-over-text-color: #fff !dynamic;
-$boundlist-item-selected-text-color: #fff !dynamic;
-$boundlist-item-over-background-color: $base-highlight-color !dynamic;
-$boundlist-item-selected-background-color: $base-color !dynamic;
+$boundlist-item-height: dynamic(32px);
+$boundlist-item-padding: dynamic(0 10px);
+$boundlist-item-over-text-color: dynamic(#fff);
+$boundlist-item-selected-text-color: dynamic(#fff);
+$boundlist-item-over-background-color: dynamic($base-highlight-color);
+$boundlist-item-selected-background-color: dynamic($base-color);

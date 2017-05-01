@@ -5,29 +5,28 @@
 .x-panel,
 .x-msgbox {
     position: relative;
+
+    // Override base Container's overflow setting.
+    // This allows a Panel's anchor element to be visible.
+    overflow: visible;
 }
 
 .x-panel.x-floating,
-.x-msgbox,
-.x-form.x-floating {
-    padding: 6px;
-    background-color: #ccc;
-
+.x-msgbox {
     .x-panel-inner,
     > .x-body {
         z-index: 1;
-        background-color: #fff;
     }
 }
 
 .x-panel.x-floating > .x-dock,
-.x-msgbox > .x-dock,
-.x-form.x-floating > .x-dock {
+.x-msgbox > .x-dock {
     z-index: 1;
 }
 
-.x-panel.x-floating > .x-dock.x-sized,
-.x-msgbox > .x-dock.x-sized,
-.x-form.x-floating > .x-dock.x-sized {
-    margin: 6px;
+.x-anchor, .x-anchor:after {
+    position: absolute;
+    height: 0;
+    width: 0;
+    content: "";
 }

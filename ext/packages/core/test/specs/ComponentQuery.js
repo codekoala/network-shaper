@@ -112,13 +112,15 @@ describe("Ext.ComponentQuery", function() {
                 id: 'child1',
                 cls: 'child1-cls',
                 type: 'B/G/Z',
-                foo: 'bar,baz'
+                foo: 'bar,baz',
+                scrollable: false
             }, child2 = {
                 $className: 'Bar.Baz.Qux',
                 id: 'child2',
                 cls: 'child2-cls',
                 type: 'B/G/Z',
-                bar: 'foo,bar,baz'
+                bar: 'foo,bar,baz',
+                scrollable: true
             }, child3 = {
                 $className: 'Foo',
                 id: 'child3',
@@ -137,11 +139,13 @@ describe("Ext.ComponentQuery", function() {
                         items: [child7 = {
                             id: 'child7',
                             cls: 'child7-cls',
-                            type: 'B/G/H'
+                            type: 'B/G/H',
+                            scrollable: null
                         }, child8 = {
                             id: 'child8',
                             cls: 'child8-cls',
-                            type: 'B/G/I'
+                            type: 'B/G/I',
+                            scrollable: 'x'
                         }, child9 = {
                             id: 'child9',
                             cls: 'child9-cls',
@@ -159,7 +163,8 @@ describe("Ext.ComponentQuery", function() {
                     }, child11 = {
                         id   : 'child.11',
                         cls  : 'child11-cls my-foo-cls-test',
-                        type : 'B'
+                        type : 'B',
+                        scrollable: 'y'
                     }, child12 = {
                         id: 'child.12',
                         itemId: 'bobby.brown.goes.down',
@@ -173,7 +178,7 @@ describe("Ext.ComponentQuery", function() {
         };
         setup(root);
     });
-    
+
     afterEach(function() {
         cm.all = {};
     });
@@ -274,15 +279,6 @@ describe("Ext.ComponentQuery", function() {
             expect(comp.is('[foo]:not([bar])')).toBe(true);
         });
         
-        it("should be able to run on destroyed components", function(){
-            var comp = new Ext.Component({
-                foo: 1
-            });
-            
-            comp.destroy();
-            expect(comp.is('[foo]:not([bar])')).toBe(true);
-        });
-        
         describe("hierarchy selectors", function() {
             it("should match a direct child", function(){
                 expect(cq.is(child6, '#child4 > #child6')).toBe(true);    
@@ -298,6 +294,40 @@ describe("Ext.ComponentQuery", function() {
             
             it("should match an upward selector", function() {
                 expect(cq.is(child3, '#child6 ^ #child3')).toBe(true);  
+            });
+        });
+
+        describe("rooted selectors", function() {
+            describe("valid matches", function() {
+                it("should match an xtype selector", function() {
+                    expect(cq.is(child8, 'I', child4)).toBe(true);
+                });
+
+                it("should match an id selector", function() {
+                    expect(cq.is(child10, '#child10', root));
+                });
+
+                it("should match a direct child", function() {
+                    expect(cq.is(child1, '> #child1', root)).toBe(true);
+                });
+
+                it("should match a deep child", function() {
+                    expect(cq.is(child5, '[cls=child5-cls]', child3)).toBe(true);
+                });
+
+                it("should match an upward selector", function() {
+                    expect(cq.is(child3, '#child6 ^ #child3', root)).toBe(true);
+                });
+            });
+
+            describe("invalid matches", function() {
+                it("should not match if the item doesn't contain the child", function() {
+                    expect(cq.is(child3, '#child3', child5)).toBe(false);
+                });
+
+                it("should not match if the item is not a direct child", function() {
+                    expect(cq.is(child5, '> #child5', child3)).toBe(false);
+                });
             });
         });
     });
@@ -689,8 +719,40 @@ describe("Ext.ComponentQuery", function() {
                 });
             });
         });
+
+        describe(':scrollable', function () {
+            it('should find all valid scrollable items no matter how deeply nested', function () {
+                expect(cq.query(':scrollable', root).length).toBe(3);
+            });
+
+            it('should only find non-valid scrollable items (with a null or false value) if explicitly specified', function () {
+                expect(cq.query('[scrollable=null]', root).length).toBe(1);
+                expect(cq.query('[scrollable=false]', root).length).toBe(1);
+            });
+
+            it('should return an empty array if no items match', function () {
+                expect(cq.query(':scrollable[type=B/C/D]', root)).toEqual([]);
+            });
+
+            it('should return an a single item if it matches', function () {
+                expect(cq.query(':scrollable:first', root)[0]).toEqual(Ext.getCmp('child2'));
+            });
+
+            it('should not blow up when card item is not a component', function () {
+                var container = new Ext.container.Container({
+                    renderTo: Ext.getBody(),
+                    items: [new Ext.Widget()]
+                });
+
+                expect(function () {
+                    container.query(':scrollable');
+                }).not.toThrow();
+
+                container.destroy();
+            });
+        });
     });
-    
+
     describe('attribute value coercion', function() {
         var candidates = [{
             att1: 0,
@@ -733,14 +795,21 @@ describe("Ext.ComponentQuery", function() {
                 bletch: 0
             }),
             candidates;
-
-         // Only candidates[1] has *ownProperties* foo and bletch
-         // And the value of bletch is zero, so by [bletch] will never match.
-         // Test that [?bletch] tests for just *presence* of property in object.
-        candidates = [new TestClass(), new TestClass({
-            foo: 'bar',
-            bletch: 0
-        })];
+            
+        beforeEach(function() {
+            // Only candidates[1] has *ownProperties* foo and bletch
+            // And the value of bletch is zero, so by [bletch] will never match.
+            // Test that [?bletch] tests for just *presence* of property in object.
+            candidates = [new TestClass(), new TestClass({
+                foo: 'bar',
+                bletch: 0
+            })];
+        });
+        
+        afterEach(function() {
+            Ext.destroy(candidates[0], candidates[1]);
+            candidates = null;
+        });
 
         it('should only match candidates [@foo=bar] with ownProperty "foo" equal to "bar"', function() {
             expect(Ext.ComponentQuery.query('[@foo=bar]', candidates).length).toBe(1);
@@ -1004,7 +1073,7 @@ describe("Ext.ComponentQuery", function() {
 
     describe("selecting by attribute", function(){
 
-        var foo, bar;
+        var foo, bar, bletch;
         beforeEach(function(){
             Ext.define('spec.Foo', {
                 extend: 'Ext.Component',
@@ -1029,11 +1098,26 @@ describe("Ext.ComponentQuery", function() {
             bar = new spec.Bar({
                 jaz: 6
             });
+
+            Ext.define('spec.Bletch', {
+                extend: 'Ext.Component',
+                config: {
+                    bar: 4
+                },
+                baz: 5,
+                getBar: function() {
+                    return 'customBarGetter';
+                }
+            });
+            
+            bletch = new spec.Bletch();
+
         });
 
         afterEach(function() {
             Ext.undefine('spec.Foo');
             Ext.undefine('spec.Bar');
+            Ext.undefine('spec.Bletch');
         });
         it("should match instance config", function(){
             result = cq.query('[bar=1]');
@@ -1051,6 +1135,22 @@ describe("Ext.ComponentQuery", function() {
             result = cq.query('[jaz=3]');
             expect(result.length).toBe(1);
             expect(result[0]).toBe(foo);
+        });
+
+        it("should match instance config when there's a custom getter", function(){
+            result = cq.query('[bar=customBarGetter]');
+            expect(result.length).toBe(1);
+            expect(result[0]).toBe(bletch);
+        });
+
+});
+    
+    describe('querying non Ext classes', function() {
+        it('should be able to query on raw objects', function() {
+            var target = {foo: 'bar'},
+                candidates = [{foo: 'ik'}, {foo: 'screeble'}, target, {foo: 'razz'}, {foo: 'poot'}];
+
+            expect(Ext.ComponentQuery.query('[foo=bar]', candidates)[0]).toBe(target);
         });
     });
 });

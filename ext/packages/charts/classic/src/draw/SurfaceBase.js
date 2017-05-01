@@ -1,6 +1,6 @@
 /**
  * @private
- * @class Ext.draw.SurfaceBase
+ * @class Ext.draw.SurfaceBase (Classic)
  */
 Ext.define('Ext.draw.SurfaceBase', {
     extend: 'Ext.Widget',
@@ -8,4 +8,5 @@ Ext.define('Ext.draw.SurfaceBase', {
     getOwnerBody: function() {
         return this.ownerCt.body;
     }
+
 });

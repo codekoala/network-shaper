@@ -1,6 +1,6 @@
-$btn-group-border-color: $panel-light-border-color !dynamic;
-$btn-group-framed-border-width: 1px !dynamic;
-$btn-group-framed-border-radius: 2px !dynamic;
-$btn-group-header-font-size: round($font-size * 1.1) !dynamic;
-$btn-group-header-padding: 8px 8px 7px !dynamic;
-$btn-group-border-spacing: 6px !dynamic;
+$btn-group-border-color: dynamic($panel-light-border-color);
+$btn-group-framed-border-width: dynamic(1px);
+$btn-group-framed-border-radius: dynamic(2px);
+$btn-group-header-font-size: dynamic(round($font-size * 1.1));
+$btn-group-header-padding: dynamic(8px 8px 7px);
+$btn-group-border-spacing: dynamic(6px);

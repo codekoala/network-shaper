@@ -22,8 +22,7 @@ $default-gradient: null;
     }
 
     &.x-button-pressing,
-    &.x-button-pressed,
-    &.x-button-active {
+    &.x-button-pressed {
       &,
       &:after {
         color: $bg-color;

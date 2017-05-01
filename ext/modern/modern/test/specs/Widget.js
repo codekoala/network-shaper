@@ -1,4 +1,4 @@
-describe("Ext.Widget", function() {
+describe("Modern Ext.Widget", function() {
 
     var w;
 
@@ -391,6 +391,17 @@ describe("Ext.Widget", function() {
                 ct.destroy();
             });
         });
+
+        describe("destruction", function() {
+            it("should destroy the viewModel when the component is destroyed", function() {
+                makeWidget({
+                    viewModel: {}
+                });
+                var vm = w.getViewModel();
+                w.destroy();
+                expect(vm.destroyed).toBe(true);
+            }); 
+        });
     });
 
     describe("session", function() {
@@ -449,6 +460,8 @@ describe("Ext.Widget", function() {
                     }
                 });
                 expect(ct.items.first().lookupSession()).toBe(session);
+                
+                ct.destroy();
             });
 
             it("should spawn a session from the parent if specifying session: true", function() {
@@ -464,6 +477,8 @@ describe("Ext.Widget", function() {
 
                 var child = ct.items.first().getSession();
                 expect(child.getParent()).toBe(session);
+                
+                ct.destroy();
             });
         });
     });
@@ -471,7 +486,6 @@ describe("Ext.Widget", function() {
     describe("bind", function() {
         it("should be able to bind to multiple properties", function() {
             makeWidget({
-                renderTo: Ext.getBody(),
                 viewModel: {
                     data: {
                         width: 200,
@@ -510,7 +524,6 @@ describe("Ext.Widget", function() {
 
             function makeCls(cfg) {
                 w = new Cls(Ext.apply({
-                    renderTo: Ext.getBody()
                 }, cfg));
                 viewModel = w.getViewModel();
             }
@@ -684,6 +697,52 @@ describe("Ext.Widget", function() {
                     w.setCustomD('baz');
                     expect(viewModel.get('d')).toBe('baz');
                 });
+            });
+        });
+
+        describe("on destruction", function() {
+            beforeEach(function() {
+                Ext.define('spec.BindCls', {
+                    extend: 'Ext.Component',
+                    xtype: 'bindcls',
+                    config: {
+                        test: null
+                    }
+                })
+            });
+
+            afterEach(function() {
+                Ext.undefine('spec.BindCls');
+            });
+
+            it("should remove bindings when children are destroyed", function() {
+                var ct = new Ext.Container({
+                    viewModel: {
+                        data: {
+                            foo: 1
+                        }
+                    },
+                    renderTo: Ext.getBody(),
+                    items: {
+                        xtype: 'bindcls',
+                        bind: {
+                            test: '{foo}'
+                        }
+                    }
+                }), vm = ct.getViewModel();
+
+                var c = ct.items.first();
+                spyOn(c, 'setTest');
+                vm.notify();
+                expect(c.setTest.callCount).toBe(1);
+                c.setTest.reset();
+                vm.set('foo', 2);
+                // The bind is queued up
+                c.destroy();
+                vm.notify();
+                expect(c.setTest).not.toHaveBeenCalled();
+
+                ct.destroy();
             });
         });
     });

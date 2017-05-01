@@ -213,5 +213,15 @@ Ext.define('Ext.selection.RowModel', {
 
     isCellSelected: function(view, record, columnHeader) {
         return this.isSelected(record);
-    } 
+    },
+
+    vetoSelection: function(e) {
+        var navModel = this.view.getNavigationModel(),
+            key = e.getKey(),
+            isLeftRight = key === e.RIGHT || key === e.LEFT;
+
+        // Veto row selection upon key-based, in-row left/right navigation.
+        // Else pass to superclass to veto.
+        return (isLeftRight && navModel.previousRecord === navModel.record) || this.callParent([e]);
+    }
 });

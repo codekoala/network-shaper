@@ -1,15 +1,17 @@
 /** @class Ext.menu.Menu */
 //
 
-$menu-separator-size: 1px !dynamic;
-$menu-item-active-background-color: mix(#fff, $base-light-color, 50%) !dynamic;
-$menu-item-border-width: 0 !dynamic;
-$menu-padding: 0 !dynamic;
-$menu-glyph-color: #808080 !dynamic;
-$menu-item-text-vertical-offset: 1px !dynamic;
+$menu-separator-size: dynamic(1px);
+$menu-item-active-background-color: dynamic(mix(#fff, $base-light-color, 50%));
+$menu-item-border-width: dynamic(0);
+$menu-padding: dynamic(0);
+$menu-glyph-color: dynamic(#808080);
+$menu-item-text-vertical-offset: dynamic(1px);
 
-$menu-item-icon-horizontal-spacing: 5px !dynamic;
-$menu-item-text-horizontal-spacing: 5px !dynamic;
+$menu-item-icon-horizontal-spacing: dynamic(5px);
+$menu-item-text-horizontal-spacing: dynamic(5px);
 
 // Margins for non-MenuItem components in menus
-$menu-component-margin: 2px !dynamic;
+$menu-component-margin: dynamic(2px);
+
+$menubar-item-arrow-vertical-offset: dynamic(1px);

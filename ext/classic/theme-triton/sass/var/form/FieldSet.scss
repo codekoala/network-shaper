@@ -1,5 +1,10 @@
-$fieldset-header-font-size: round($font-size * 1.15) !dynamic;
-$fieldset-header-line-height: 20px !dynamic;
-$fieldset-header-color: $neutral-dark-color !dynamic;
-$fieldset-border-color: $form-field-border-color !dynamic;
-$fieldset-padding: 5px 15px !dynamic;
+$fieldset-header-font-size: dynamic(round($font-size * 1.2));
+$fieldset-header-line-height: dynamic(20px);
+$fieldset-header-color: dynamic($neutral-dark-color);
+$fieldset-border-color: dynamic($form-field-border-color);
+$fieldset-padding: dynamic(5px 15px 10px 15px);
+
+$fieldset-header-font-weight: dynamic($font-weight-bold);
+$fieldset-tool-glyph-font-size: dynamic(14px);
+$fieldset-tool-collapse-glyph: dynamic($fa-var-plus-square $fieldset-tool-glyph-font-size $font-icon-font-family);
+$fieldset-tool-expand-glyph: dynamic($fa-var-minus-square $fieldset-tool-glyph-font-size $font-icon-font-family);

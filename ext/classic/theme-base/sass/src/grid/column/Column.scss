@@ -45,8 +45,16 @@
     white-space: nowrap;
 }
 
+// Make the text a block element, so the checkbox wraps
+// If there is NO text, hide the empty text element
 .#{$prefix}column-header-text-inner {
     background-repeat: no-repeat;
+}
+.#{$prefix}column-header-inner-empty .#{$prefix}column-header-text-inner {
+    display: none;
+}
+.#{$prefix}column-header-inner-empty .#{$prefix}column-header-text-container {
+    line-height: 0;
 }
 
 @if $include-ie and $include-rtl {
@@ -65,8 +73,14 @@
     position: absolute;
     right: 0;
     top: 0;
-    z-index: 2;
     text-align: center;
+}
+
+.#{$prefix}ie9m .#{$prefix}column-header-trigger {
+    // IE9m fix: Needs to be 6 to clear the docked-item that contains it.
+    // Not even sure why lesser value doesn't work but hey it's IE9m.
+    // Other browsers as well as IE10+ don't need that.
+    z-index: 6;
 }
 
 @if $include-rtl {

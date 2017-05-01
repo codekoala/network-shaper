@@ -1,11 +1,11 @@
-$menu-background-color: #414551 !dynamic;
-$menu-text-color: #fff !dynamic;
-$menu-border-color: darken($panel-border-color, 15%) !dynamic;
-$menu-item-active-background-color: $orange !dynamic;
-$menu-item-active-border-color: darken($orange, 5) !dynamic;
-$menu-separator-border-color: #222233 !dynamic;
-$menu-separator-background-color: #666666 !dynamic;
+$menu-background-color: dynamic(#414551);
+$menu-text-color: dynamic(#fff);
+$menu-border-color: dynamic(darken($panel-border-color, 15%));
+$menu-item-active-background-color: dynamic($orange);
+$menu-item-active-border-color: dynamic(darken($orange, 5));
+$menu-separator-border-color: dynamic(#222233);
+$menu-separator-background-color: dynamic(#666666);
 
-$menu-scroller-opacity: 1 !dynamic;
-$menu-scroller-opacity-over: .8 !dynamic;
-$menu-scroller-opacity-pressed: .6 !dynamic;
+$menu-scroller-opacity: dynamic(1);
+$menu-scroller-opacity-over: dynamic(.8);
+$menu-scroller-opacity-pressed: dynamic(.6);

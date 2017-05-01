@@ -1,4 +1,3 @@
-$grid-column-header-color: $highlight-color !dynamic;
-$grid-column-header-line-height: round($grid-column-header-font-size * 1.45) !dynamic;
-$grid-column-header-font-weight: $font-weight-bold !dynamic;
-$grid-column-header-border-width: 0 !dynamic;
+$grid-column-header-color: dynamic($color);
+$grid-column-header-line-height: dynamic(round($grid-column-header-font-size * 1.45));
+$grid-column-header-font-weight: dynamic($font-weight-bold);

@@ -6,13 +6,13 @@
  * @var {number}
  * The horizontal space before the number in the RowNumberer cell
  */
-$grid-row-numberer-cell-spacing-before: 3px !dynamic;
+$grid-row-numberer-cell-spacing-before: dynamic(3px);
 
 /**
  * @var {number}
  * The horizontal space after the number in the RowNumberer cell
  */
-$grid-row-numberer-cell-spacing-after: 5px !dynamic;
+$grid-row-numberer-cell-spacing-after: dynamic(5px);
 
 // private
 $grid-row-numberer-cell-padding:

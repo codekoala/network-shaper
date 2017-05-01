@@ -49,20 +49,15 @@ Ext.define('Ext.field.Radio', {
          * @cfg
          * @inheritdoc
          */
-        ui: 'radio',
-
-        /**
-         * @cfg
-         * @inheritdoc
-         */
         component: {
-            type: 'radio',
-            cls: Ext.baseCSSPrefix + 'input-radio'
+            xtype: 'radioinput'
         }
     },
 
+    classCls: Ext.baseCSSPrefix + 'radiofield',
+
     getValue: function() {
-        return (typeof this._value === 'undefined') ? null : this._value;
+        return this._value === undefined ? null : this._value;
     },
 
     setValue: function(value) {
@@ -72,17 +67,19 @@ Ext.define('Ext.field.Radio', {
 
     getSubmitValue: function() {
         var value = this._value;
-        if (typeof value == "undefined" || value == null) {
+        if (value === undefined || value === null) {
             value = true;
         }
         return (this.getChecked()) ? value : null;
     },
 
-    updateChecked: function(newChecked) {
-        this.getComponent().setChecked(newChecked);
+    updateChecked: function(checked, oldChecked) {
+        var me = this;
 
-        if (this.initialized) {
-            this.refreshGroupValues();
+        me.callParent([checked, oldChecked]);
+
+        if (me.initialized && checked) {
+            me.refreshGroupValues(me);
         }
     },
 
@@ -91,17 +88,13 @@ Ext.define('Ext.field.Radio', {
      */
     onMaskTap: function(component, e) {
         var me = this,
-            dom = me.getComponent().input.dom;
+            dom = me.getComponent().inputElement.dom;
 
         if (me.getDisabled()) {
             return false;
         }
 
-        if (!me.getChecked()) {
-            dom.checked = true;
-        }
-
-        me.refreshGroupValues();
+        me.setChecked(true);
 
         //return false so the mask does not disappear
         return false;
@@ -152,7 +145,7 @@ Ext.define('Ext.field.Radio', {
      * calls `onChange` on those fields so the appropriate event is fired.
      * @private
      */
-    refreshGroupValues: function() {
+    refreshGroupValues: function(trigger) {
         var fields = this.getSameGroupFields(),
             ln = fields.length,
             i = 0,
@@ -160,7 +153,9 @@ Ext.define('Ext.field.Radio', {
 
         for (; i < ln; i++) {
             field = fields[i];
-            field.onChange();
+            if (field !== trigger) {
+                field.setChecked(false);
+            }
         }
     }
 });

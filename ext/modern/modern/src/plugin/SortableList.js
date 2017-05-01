@@ -88,7 +88,7 @@ Ext.define('Ext.plugin.SortableList', {
     },
 
     onDragStart: function(e) {
-        var row = Ext.getCmp(e.getTarget('.' + Ext.baseCSSPrefix + 'list-item').id),
+        var row = Ext.getCmp(e.getTarget('.' + Ext.baseCSSPrefix + 'listitem').id),
             list = this.getList(),
             store = list.getStore();
 
@@ -121,9 +121,10 @@ Ext.define('Ext.plugin.SortableList', {
     onDrag: function(e) {
         var list = this.getList(),
             listItems = list.listItems,
+            store = list.getStore(),
             collection = list.getStore().data,
             dragRow = this.dragRow,
-            dragRecordKey = collection.getKey(dragRow.getRecord()),
+            dragRecordKey = dragRow.id,
             listItemInfo = list.getListItemInfo(),
             positionMap = this.positionMap,
             distance = 0,
@@ -140,7 +141,7 @@ Ext.define('Ext.plugin.SortableList', {
             distance = targetIndex - this.currentDragRowIndex;
 
             if (distance !== 0) {
-                draggingUp = (distance < 0);
+                draggingUp = distance < 0;
 
                 for (i = 0, ln = Math.abs(distance); i < ln; i++) {
                     if (draggingUp) {
@@ -156,12 +157,10 @@ Ext.define('Ext.plugin.SortableList', {
                     item.translate(0, swapPosition);
 
                     record = item.getRecord();
-                    swapKey = collection.getKey(record);
+                    swapKey = record.id;
 
                     Ext.Array.remove(collection.items, record);
-                    Ext.Array.remove(collection.all, record);
                     collection.items.splice(swapIndex, 0, record);
-                    collection.all.splice(swapIndex, 0, record);
                     collection.indices[dragRecordKey] = collection.indices[swapKey];
                     collection.indices[swapKey] = swapIndex;
 
@@ -183,27 +182,32 @@ Ext.define('Ext.plugin.SortableList', {
 
     onDragEnd: function() {
         var me = this,
-            row = this.dragRow,
-            list = this.getList(),
+            row = me.dragRow,
+            list = me.getList(),
             listItemInfo = list.getListItemInfo(),
             position = row.$position;
 
-        this.scrollerElement.un({
+        me.scrollerElement.un({
             drag: 'onDrag',
             dragend: 'onDragEnd',
-            scope: this
+            scope: me
         });
 
-        this.animating = true;
+        me.animating = true;
 
         row.getTranslatable().on('animationend', function() {
             row.removeCls(Ext.baseCSSPrefix + 'list-item-dragging');
 
-            list.updateListItem(row, row.$dataIndex, listItemInfo);
-            row.$position = position;
+            var currentIdx = this.currentDragRowIndex,
+                dragIdx = this.dragRowIndex;
 
-            list.fireEvent('dragsort', list, row, this.currentDragRowIndex, this.dragRowIndex);
-            this.animating = false;
+            if (currentIdx !== dragIdx) {
+                list.updateListItem(row, row.$dataIndex, listItemInfo);
+                row.$position = position;
+
+                list.fireEvent('dragsort', list, row, currentIdx, dragIdx);
+            }
+            me.animating = false;
         }, me, {single: true});
 
         row.translate(0, position, {duration: 100});

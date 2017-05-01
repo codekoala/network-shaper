@@ -3,7 +3,7 @@
  * "mainView" property. That setting causes an instance of this class to be created and
  * added to the Viewport container.
  *
- * TODO - Replace this content of this view to suite the needs of your application.
+ * TODO - Replace the content of this view to suit the needs of your application.
  */
 Ext.define('NShape.view.main.Main', {
     extend: 'Ext.tab.Panel',
@@ -21,6 +21,9 @@ Ext.define('NShape.view.main.Main', {
     viewModel: 'main',
 
     defaults: {
+        tab: {
+            iconAlign: 'top'
+        },
         styleHtmlContent: true
     },
 
@@ -29,7 +32,7 @@ Ext.define('NShape.view.main.Main', {
     items: [
         {
             title: 'Home',
-            iconCls: 'fa-home',
+            iconCls: 'x-fa fa-home',
             layout: 'fit',
             // The following grid shares a store with the classic version's grid as well!
             items: [{
@@ -37,19 +40,19 @@ Ext.define('NShape.view.main.Main', {
             }]
         },{
             title: 'Users',
-            iconCls: 'fa-user',
+            iconCls: 'x-fa fa-user',
             bind: {
                 html: '{loremIpsum}'
             }
         },{
             title: 'Groups',
-            iconCls: 'fa-users',
+            iconCls: 'x-fa fa-users',
             bind: {
                 html: '{loremIpsum}'
             }
         },{
             title: 'Settings',
-            iconCls: 'fa-cog',
+            iconCls: 'x-fa fa-cog',
             bind: {
                 html: '{loremIpsum}'
             }

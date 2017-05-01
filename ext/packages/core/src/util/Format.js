@@ -111,6 +111,17 @@ Ext.define('Ext.util.Format', function () {
         currencySign: '$',
         //</locale>
 
+        //<locale>
+        /**
+         * @property {String} [currencySpacer='']
+         * True to add a space between the currency and the value
+         *
+         * This may be overridden in a locale file.
+         * @since 6.2.0
+         */
+        currencySpacer: '',
+        //</locale>
+
         /**
          * @property {String} percentSign
          * The percent sign that the {@link #percent} function displays.
@@ -151,6 +162,24 @@ Ext.define('Ext.util.Format', function () {
 
         constructor: function () {
             me = this; // we are a singleton, so cache our this pointer in scope
+        },
+
+        /**
+         * Returns a non-breaking space ("NBSP") for any "blank" value.
+         * @param {Mixed} value
+         * @param {Boolean} [strict=true] Pass `false` to convert all falsey values to an
+         * NBSP. By default, only '', `null` and `undefined` will be converted.
+         * @return {Mixed}
+         * @since 6.2.0
+         */
+        nbsp: function (value, strict) {
+            strict = strict !== false;
+
+            if (strict ? value === '' || value == null : !value) {
+                value = '\xA0';
+            }
+
+            return value;
         },
 
         /**
@@ -226,9 +255,10 @@ Ext.define('Ext.util.Format', function () {
          * (defaults to {@link #currencyPrecision})
          * @param {Boolean} [end] True if the currency sign should be at the end of the string
          * (defaults to {@link #currencyAtEnd})
+         * @param {String} [currencySpacer] True to add a space between the currency and value
          * @return {String} The formatted currency string
          */
-        currency: function(v, currencySign, decimals, end) {
+        currency: function(v, currencySign, decimals, end, currencySpacer) {
             var negativeSign = '',
                 format = ",0",
                 i = 0;
@@ -243,10 +273,15 @@ Ext.define('Ext.util.Format', function () {
                 format += '0';
             }
             v = me.number(v, format);
+            
+            if (currencySpacer == null) {
+                currencySpacer = me.currencySpacer;
+            }
+
             if ((end || me.currencyAtEnd) === true) {
-                return Ext.String.format("{0}{1}{2}", negativeSign, v, currencySign || me.currencySign);
+                return Ext.String.format("{0}{1}{2}{3}", negativeSign, v, currencySpacer, currencySign || me.currencySign);
             } else {
-                return Ext.String.format("{0}{1}{2}", negativeSign, currencySign || me.currencySign, v);
+                return Ext.String.format("{0}{1}{2}{3}", negativeSign, currencySign || me.currencySign, currencySpacer,v);
             }
         },
 
@@ -262,93 +297,15 @@ Ext.define('Ext.util.Format', function () {
          * @param {String} [format] Any valid date format string. Defaults to {@link Ext.Date#defaultFormat}.
          * @return {String} The formatted date string.
          */
-        date: function(v, format) {
-            if (!v) {
-                return "";
-            }
-            if (!Ext.isDate(v)) {
-                v = new Date(Date.parse(v));
-            }
-            return Ext.Date.dateFormat(v, format || Ext.Date.defaultFormat);
-        },
-        /* TODO - reconcile with Touch version:
         date: function(value, format) {
-            var date = value;
             if (!value) {
                 return "";
             }
             if (!Ext.isDate(value)) {
-                date = new Date(Date.parse(value));
-                if (isNaN(date)) {
-                    // Dates with ISO 8601 format are not well supported by mobile devices, this can work around the issue.
-                    if (this.iso8601TestRe.test(value)) {
-                        // Fix for older android browsers to properly implement ISO 8601 formatted dates with timezone
-                        if (Ext.os.is.Android && Ext.os.version.isLessThan("3.0")) {
-
-                             //* This code is modified from the following source: <https://github.com/csnover/js-iso8601>
-                             //* © 2011 Colin Snover <http://zetafleet.com>
-                             //* Released under MIT license.
-
-                            var potentialUndefinedKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
-                            var dateParsed, minutesOffset = 0;
-
-                            // Capture Groups
-                            // 1 YYYY (optional)
-                            // 2 MM
-                            // 3 DD
-                            // 4 HH
-                            // 5 mm (optional)
-                            // 6 ss (optional)
-                            // 7 msec (optional)
-                            // 8 Z (optional)
-                            // 9 ± (optional)
-                            // 10 tzHH (optional)
-                            // 11 tzmm (optional)
-                            if ((dateParsed = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec(value))) {
-
-                                //Set any undefined values needed for Date to 0
-                                for (var i = 0, k; (k = potentialUndefinedKeys[i]); ++i) {
-                                    dateParsed[k] = +dateParsed[k] || 0;
-                                }
-
-                                // Fix undefined month and decrement
-                                dateParsed[2] = (+dateParsed[2] || 1) - 1;
-                                //fix undefined days
-                                dateParsed[3] = +dateParsed[3] || 1;
-
-                                // Correct for timezone
-                                if (dateParsed[8] !== 'Z' && dateParsed[9] !== undefined) {
-                                    minutesOffset = dateParsed[10] * 60 + dateParsed[11];
-
-                                    if (dateParsed[9] === '+') {
-                                        minutesOffset = 0 - minutesOffset;
-                                    }
-                                }
-
-                                // Calculate valid date
-                                date = new Date(Date.UTC(dateParsed[1], dateParsed[2], dateParsed[3], dateParsed[4], dateParsed[5] + minutesOffset, dateParsed[6], dateParsed[7]));
-                            }
-                        } else {
-                            date = value.split(this.iso8601SplitRe);
-                            date = new Date(date[0], date[1] - 1, date[2], date[3], date[4], date[5]);
-                        }
-                    }
-                }
-                if (isNaN(date)) {
-                    // Dates with the format "2012-01-20" fail, but "2012/01/20" work in some browsers. We'll try and
-                    // get around that.
-                    date = new Date(Date.parse(value.replace(this.dashesRe, "/")));
-                    //<debug>
-                    if (isNaN(date)) {
-                        Ext.Logger.error("Cannot parse the passed value " + value + " into a valid date");
-                    }
-                    //</debug>
-                }
-                value = date;
+                value = new Date(Date.parse(value));
             }
-            return Ext.Date.format(value, format || Ext.util.Format.defaultDateFormat);
+            return Ext.Date.dateFormat(value, format || Ext.Date.defaultFormat);
         },
-        */
 
         /**
          * Returns a date rendering function that can be reused to apply a date format multiple times efficiently.
@@ -443,12 +400,61 @@ Ext.define('Ext.util.Format', function () {
         },
 
         /**
+         * Compares `value` against `threshold` and returns:
+         *
+         * - if `value` < `threshold` then it returns `below`
+         * - if `value` > `threshold` then it returns `above`
+         * - if `value` = `threshold` then it returns `equal` or `above` when `equal` is missing
+         *
+         * The usefulness of this formatter method is in templates. For example:
+         *
+         *      {foo:lessThanElse(0, 'negative', 'positive')}
+         *
+         *      {bar:lessThanElse(200, 'lessThan200', 'greaterThan200', 'equalTo200')}
+         *
+         * @param {Number} value Value that will be checked
+         * @param {Number} threshold Value to compare against
+         * @param {Mixed} below Value to return when `value` < `threshold`
+         * @param {Mixed} above Value to return when `value` > `threshold`. If `value` = `threshold` and
+         * `equal` is missing then `above` is returned.
+         * @param {Mixed} equal Value to return when `value` = `threshold`
+         * @return {Mixed}
+         */
+        lessThanElse: function (value, threshold, below, above, equal) {
+            var v = Ext.Number.from(value, 0),
+                t = Ext.Number.from(threshold, 0),
+                missing = !Ext.isDefined(equal);
+
+            return v < t ? below : (v > t ? above : (missing ? above : equal));
+        },
+
+        /**
+         * Checks if `value` is a positive or negative number and returns the proper param.
+         *
+         * The usefulness of this formatter method is in templates. For example:
+         *
+         *      {foo:sign("clsNegative","clsPositive")}
+         *
+         * @param {Number} value
+         * @param {Mixed} negative
+         * @param {Mixed} positive
+         * @param {Mixed} zero
+         * @return {Mixed}
+         */
+        sign: function (value, negative, positive, zero) {
+            if (zero === undefined) {
+                zero = positive;
+            }
+            return me.lessThanElse(value, 0, negative, positive, zero);
+        },
+
+        /**
          * Strips all HTML tags.
          * @param {Object} value The text from which to strip tags
          * @return {String} The stripped text
          */
-        stripTags: function(v) {
-            return !v ? v : String(v).replace(me.stripTagsRe, "");
+        stripTags: function(value) {
+            return !value ? value : String(value).replace(me.stripTagsRe, "");
         },
 
         /**
@@ -456,11 +462,12 @@ Ext.define('Ext.util.Format', function () {
          * @param {Object} value The text from which to strip script tags
          * @return {String} The stripped text
          */
-        stripScripts : function(v) {
-            return !v ? v : String(v).replace(me.stripScriptsRe, "");
+        stripScripts : function(value) {
+            return !value ? value : String(value).replace(me.stripScriptsRe, "");
         },
 
         /**
+         * @method
          * Simple format for a file size (xxx bytes, xxx KB, xxx MB).
          * @param {Number/String} size The numeric value to format
          * @return {String} The formatted file size
@@ -599,7 +606,7 @@ Ext.define('Ext.util.Format', function () {
                     // In a vast majority of cases, the separator will never change over the lifetime of the application.
                     // So we'll only regenerate this if we really need to
                     if (!me.I18NFormatCleanRe || me.lastDecimalSeparator !== decimalSeparator) {
-                        me.I18NFormatCleanRe = new RegExp('[^\\d\\' + decimalSeparator + ']','g');
+                        me.I18NFormatCleanRe = new RegExp('[^\\d\\' + decimalSeparator + '#]','g');
                         me.lastDecimalSeparator = decimalSeparator;
                     }
                     formatString = formatString.substr(0, formatString.length - 2);
@@ -779,8 +786,8 @@ Ext.define('Ext.util.Format', function () {
          * singular form with an "s" appended)
          * @return {String} output The pluralized output of the passed singular form
          */
-        plural : function(v, s, p) {
-            return v +' ' + (v === 1 ? s : (p ? p : s+'s'));
+        plural : function(value, singular, plural) {
+            return value +' ' + (value === 1 ? singular : (plural ? plural : singular+'s'));
         },
 
         /**
@@ -881,7 +888,7 @@ Ext.define('Ext.util.Format', function () {
                     bottom: box,
                     left  : box
                 };
-             }
+            }
 
             var parts  = box.split(' '),
                 ln = parts.length;
@@ -903,6 +910,47 @@ Ext.define('Ext.util.Format', function () {
                 bottom:parseInt(parts[2], 10) || 0,
                 left  :parseInt(parts[3], 10) || 0
             };
+        },
+
+        /**
+         * Formats the given value using `encodeURI`.
+         * @param {String} value The value to encode.
+         * @returns {string}
+         * @since 6.2.0
+         */
+        uri: function (value) {
+            return encodeURI(value);
+        },
+
+        /**
+         * Formats the given value using `encodeURIComponent`.
+         * @param {String} value The value to encode.
+         * @returns {string}
+         * @since 6.2.0
+         */
+        uriCmp: function (value) {
+            return encodeURIComponent(value);
+        },
+        
+        wordBreakRe: /[\W\s]+/,
+
+        /**
+         * Returns the word at the given `index`. Spaces and punctuation are considered
+         * as word separators by default. For example:
+         *
+         *      console.log(Ext.util.Format.word('Hello, my name is Bob.', 2);
+         *      // == 'name'
+         *
+         * @param {String} value The sentence to break into words.
+         * @param {Number} index The 0-based word index.
+         * @param {String/RegExp} [sep="[\W\s]+"} The pattern by which to separate words.
+         * @return {String} The requested word or empty string.
+         */
+        word: function (value, index, sep) {
+            var re = sep ? (typeof sep === 'string' ? new RegExp(sep) : sep) : me.wordBreakRe,
+                parts = (value || '').split(re);
+            
+            return parts[index || 0] || '';
         }
     };
 });

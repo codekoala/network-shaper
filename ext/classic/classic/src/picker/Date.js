@@ -39,74 +39,6 @@ Ext.define('Ext.picker.Date', {
     alias: 'widget.datepicker',
     alternateClassName: 'Ext.DatePicker',
     
-    isDatePicker: true,
-    
-    focusable: true,
-
-    childEls: [
-        'innerEl', 'eventEl', 'prevEl', 'nextEl', 'middleBtnEl', 'footerEl'
-    ],
-    
-    border: true,
-    
-    /**
-     * @cfg
-     * @inheritdoc
-     */
-    renderTpl: [
-        '<div id="{id}-innerEl" data-ref="innerEl">',
-            '<div class="{baseCls}-header">',
-                '<div id="{id}-prevEl" data-ref="prevEl" class="{baseCls}-prev {baseCls}-arrow" role="button" title="{prevText}"></div>',
-                '<div id="{id}-middleBtnEl" data-ref="middleBtnEl" class="{baseCls}-month" role="heading">{%this.renderMonthBtn(values, out)%}</div>',
-                '<div id="{id}-nextEl" data-ref="nextEl" class="{baseCls}-next {baseCls}-arrow" role="button" title="{nextText}"></div>',
-            '</div>',
-            '<table role="grid" id="{id}-eventEl" data-ref="eventEl" class="{baseCls}-inner" {%',
-                // If the DatePicker is focusable, make its eventEl tabbable.
-                // Note that we're looking at the `focusable` property because
-                // calling `isFocusable()` will always return false at that point
-                // as the picker is not yet rendered.
-                'if (values.$comp.focusable) {out.push("tabindex=\\\"0\\\"");}',
-            '%} cellspacing="0">',
-                '<thead><tr role="row">',
-                    '<tpl for="dayNames">',
-                        '<th role="columnheader" class="{parent.baseCls}-column-header" aria-label="{.}">',
-                            '<div role="presentation" class="{parent.baseCls}-column-header-inner">{.:this.firstInitial}</div>',
-                        '</th>',
-                    '</tpl>',
-                '</tr></thead>',
-                '<tbody><tr role="row">',
-                    '<tpl for="days">',
-                        '{#:this.isEndOfWeek}',
-                        '<td role="gridcell">',
-                            '<div hidefocus="on" class="{parent.baseCls}-date"></div>',
-                        '</td>',
-                    '</tpl>',
-                '</tr></tbody>',
-            '</table>',
-            '<tpl if="showToday">',
-                '<div id="{id}-footerEl" data-ref="footerEl" role="presentation" class="{baseCls}-footer">{%this.renderTodayBtn(values, out)%}</div>',
-            '</tpl>',
-        '</div>',
-        {
-            firstInitial: function(value) {
-                return Ext.picker.Date.prototype.getDayInitial(value);
-            },
-            isEndOfWeek: function(value) {
-                // convert from 1 based index to 0 based
-                // by decrementing value once.
-                value--;
-                var end = value % 7 === 0 && value !== 0;
-                return end ? '</tr><tr role="row">' : '';
-            },
-            renderTodayBtn: function(values, out) {
-                Ext.DomHelper.generateMarkup(values.$comp.todayBtn.getRenderTree(), out);
-            },
-            renderMonthBtn: function(values, out) {
-                Ext.DomHelper.generateMarkup(values.$comp.monthBtn.getRenderTree(), out);
-            }
-        }
-    ],
-
     //<locale>
     /**
      * @cfg {String} todayText
@@ -168,6 +100,15 @@ Ext.define('Ext.picker.Date', {
      */
     minText: 'This date is before the minimum date',
     //</locale>
+    
+    //<locale>
+    /**
+     * @cfg {String} ariaMinText The text that will be announced by Assistive Technologies
+     * such as screen readers when user is navigating to the cell which date is less than
+     * {@link #minDate}.
+     */
+    ariaMinText: "This date is before the minimum date",
+    //</locale>
 
     //<locale>
     /**
@@ -175,6 +116,15 @@ Ext.define('Ext.picker.Date', {
      * The error text to display if the maxDate validation fails.
      */
     maxText: 'This date is after the maximum date',
+    //</locale>
+    
+    //<locale>
+    /**
+     * @cfg {String} ariaMaxText The text that will be announced by Assistive Technologies
+     * such as screen readers when user is navigating to the cell which date is later than
+     * {@link #maxDate}.
+     */
+    ariaMaxText: "This date is after the maximum date",
     //</locale>
 
     /**
@@ -190,7 +140,15 @@ Ext.define('Ext.picker.Date', {
      */
     disabledDaysText: 'Disabled',
     //</locale>
-
+    
+    //<locale>
+    /**
+     * @cfg {String} ariaDisabledDaysText The text that Assistive Technologies such as screen readers
+     * will announce when the date falls on a disabled day of week.
+     */
+    ariaDisabledDaysText: "This day of week is disabled",
+    //</locale>
+    
     //<locale>
     /**
      * @cfg {String} disabledDatesText
@@ -199,6 +157,14 @@ Ext.define('Ext.picker.Date', {
     disabledDatesText: 'Disabled',
     //</locale>
 
+    //<locale>
+    /**
+     * @cfg {String} ariaDisabledDatesText The text that Assistive Technologies such as screen readers
+     * will announce when the date falls on a disabled date.
+     */
+    ariaDisabledDatesText: "This date is disabled",
+    
+    //</locale>
     /**
      * @cfg {String[]} monthNames
      * An array of textual month names which can be overriden for localization support (defaults to Ext.Date.monthNames)
@@ -343,6 +309,80 @@ Ext.define('Ext.picker.Date', {
      */
     footerButtonUI: 'default',
 
+    isDatePicker: true,
+    alignOnScroll: false,
+    
+    ariaRole: 'region',
+    focusable: true,
+
+    childEls: [
+        'innerEl', 'eventEl', 'prevEl', 'nextEl', 'middleBtnEl', 'footerEl'
+    ],
+    
+    border: true,
+    
+    /**
+     * @cfg
+     * @inheritdoc
+     */
+    renderTpl: [
+        '<div id="{id}-innerEl" data-ref="innerEl" role="presentation">',
+            '<div class="{baseCls}-header">',
+                '<div id="{id}-prevEl" data-ref="prevEl" class="{baseCls}-prev {baseCls}-arrow" role="presentation" title="{prevText}"></div>',
+                '<div id="{id}-middleBtnEl" data-ref="middleBtnEl" class="{baseCls}-month" role="heading">{%this.renderMonthBtn(values, out)%}</div>',
+                '<div id="{id}-nextEl" data-ref="nextEl" class="{baseCls}-next {baseCls}-arrow" role="presentation" title="{nextText}"></div>',
+            '</div>',
+            '<table role="grid" id="{id}-eventEl" data-ref="eventEl" class="{baseCls}-inner" cellspacing="0" tabindex="0" aria-readonly="true">',
+                '<thead>',
+                    '<tr role="row">',
+                        '<tpl for="dayNames">',
+                            '<th role="columnheader" class="{parent.baseCls}-column-header" aria-label="{.}">',
+                                '<div role="presentation" class="{parent.baseCls}-column-header-inner">{.:this.firstInitial}</div>',
+                            '</th>',
+                        '</tpl>',
+                    '</tr>',
+                '</thead>',
+                '<tbody>',
+                    '<tr role="row">',
+                        '<tpl for="days">',
+                            '{#:this.isEndOfWeek}',
+                            '<td role="gridcell">',
+                                '<div hidefocus="on" class="{parent.baseCls}-date"></div>',
+                            '</td>',
+                        '</tpl>',
+                    '</tr>',
+                '</tbody>',
+            '</table>',
+            '<tpl if="showToday">',
+                '<div id="{id}-footerEl" data-ref="footerEl" role="presentation" class="{baseCls}-footer">{%this.renderTodayBtn(values, out)%}</div>',
+            '</tpl>',
+            // These elements are used with Assistive Technologies such as screen readers
+            '<div id="{id}-todayText" class="' + Ext.baseCSSPrefix + 'hidden-clip">{todayText}.</div>',
+            '<div id="{id}-ariaMinText" class="' + Ext.baseCSSPrefix + 'hidden-clip">{ariaMinText}.</div>',
+            '<div id="{id}-ariaMaxText" class="' + Ext.baseCSSPrefix + 'hidden-clip">{ariaMaxText}.</div>',
+            '<div id="{id}-ariaDisabledDaysText" class="' + Ext.baseCSSPrefix + 'hidden-clip">{ariaDisabledDaysText}.</div>',
+            '<div id="{id}-ariaDisabledDatesText" class="' + Ext.baseCSSPrefix + 'hidden-clip">{ariaDisabledDatesText}.</div>',
+        '</div>',
+        {
+            firstInitial: function(value) {
+                return Ext.picker.Date.prototype.getDayInitial(value);
+            },
+            isEndOfWeek: function(value) {
+                // convert from 1 based index to 0 based
+                // by decrementing value once.
+                value--;
+                var end = value % 7 === 0 && value !== 0;
+                return end ? '</tr><tr role="row">' : '';
+            },
+            renderTodayBtn: function(values, out) {
+                Ext.DomHelper.generateMarkup(values.$comp.todayBtn.getRenderTree(), out);
+            },
+            renderMonthBtn: function(values, out) {
+                Ext.DomHelper.generateMarkup(values.$comp.monthBtn.getRenderTree(), out);
+            }
+        }
+    ],
+
     // Default value used to initialise each date in the DatePicker.
     // __Note:__ 12 noon was chosen because it steers well clear of all DST timezone changes.
     initHour: 12, // 24-hour format
@@ -356,10 +396,6 @@ Ext.define('Ext.picker.Date', {
      * @param {Date} date The selected date
      */
 
-    /**
-     * @private
-     * @inheritdoc
-     */
     initComponent: function() {
         var me = this,
             clearTime = Ext.Date.clearTime;
@@ -371,7 +407,6 @@ Ext.define('Ext.picker.Date', {
         me.cellCls = me.baseCls + '-cell';
         me.nextCls = me.baseCls + '-prevday';
         me.todayCls = me.baseCls + '-today';
-        
         
         if (!me.format) {
             me.format = Ext.Date.defaultFormat;
@@ -415,6 +450,7 @@ Ext.define('Ext.picker.Date', {
          * all the appropriate cells.
          */
         var me = this,
+            encode = Ext.String.htmlEncode,
             days = new Array(me.numDays),
             today = Ext.Date.format(new Date(), me.format);
 
@@ -427,6 +463,8 @@ Ext.define('Ext.picker.Date', {
             ownerLayout: me.getComponentLayout(),
             text: '',
             tooltip: me.monthYearText,
+            tabIndex: -1,
+            ariaRole: 'presentation',
             listeners: {
                 click: me.doShowMonthPicker,
                 arrowclick: me.doShowMonthPicker,
@@ -442,6 +480,8 @@ Ext.define('Ext.picker.Date', {
                 text: Ext.String.format(me.todayText, today),
                 tooltip: Ext.String.format(me.todayTip, today),
                 tooltipType: 'title',
+                tabIndex: -1,
+                ariaRole: 'presentation',
                 handler: me.selectToday,
                 scope: me
             });
@@ -456,8 +496,13 @@ Ext.define('Ext.picker.Date', {
         Ext.apply(me.renderData, {
             dayNames: me.dayNames,
             showToday: me.showToday,
-            prevText: me.prevText,
-            nextText: me.nextText,
+            prevText: encode(me.prevText),
+            nextText: encode(me.nextText),
+            todayText: encode(me.todayText),
+            ariaMinText: encode(me.ariaMinText),
+            ariaMaxText: encode(me.ariaMaxText),
+            ariaDisabledDaysText: encode(me.ariaDisabledDaysText),
+            ariaDisabledDatesText: encode(me.ariaDisabledDatesText),
             days: days
         });
 
@@ -481,12 +526,13 @@ Ext.define('Ext.picker.Date', {
      * @private
      */
     onRender: function(container, position) {
-        var me = this;
+        var me = this,
+            dateCellSelector = 'div.' + me.baseCls + '-date';
 
         me.callParent(arguments);
 
         me.cells = me.eventEl.select('tbody td');
-        me.textNodes = me.eventEl.query('tbody td div');
+        me.textNodes = me.eventEl.query(dateCellSelector);
         
         me.eventEl.set({ 'aria-labelledby': me.monthBtn.id });
 
@@ -495,7 +541,7 @@ Ext.define('Ext.picker.Date', {
             mousewheel: me.handleMouseWheel,
             click: {
                 fn: me.handleDateClick,
-                delegate: 'div.' + me.baseCls + '-date'
+                delegate: dateCellSelector
             }
         });
         
@@ -505,130 +551,166 @@ Ext.define('Ext.picker.Date', {
      * @inheritdoc
      * @private
      */
-    initEvents: function(){
-        var me = this,
-            pickerField = me.pickerField,
-            eDate = Ext.Date,
-            day = eDate.DAY;
+    initEvents: function() {
+        var me = this;
 
         me.callParent();
 
-        // If this is not focusable (eg being used as the picker of a DateField)
-        // then prevent mousedown from blurring the input field.
-        if (!me.focusable) {
-            me.el.on({
-                mousedown: me.onMouseDown
-            });
+        // If we're part of a date field, don't allow us to focus on mousedown,
+        // the field will handle that. If we are standalone, then allow the default
+        // behaviour to occur to receive focus
+        if (me.pickerField) {
+            me.el.on('mousedown', me.onMouseDown, me);
         }
+
+        // Month button is pointer interactive only, it should not be allowed to focus.
+        me.monthBtn.el.on('mousedown', me.onMouseDown, me);
 
         me.prevRepeater = new Ext.util.ClickRepeater(me.prevEl, {
             handler: me.showPrevMonth,
             scope: me,
-            preventDefault: true,
-            stopDefault: true
+            mousedownStopEvent: true
         });
 
         me.nextRepeater = new Ext.util.ClickRepeater(me.nextEl, {
             handler: me.showNextMonth,
             scope: me,
-            preventDefault: true,
-            stopDefault: true
+            mousedownStopEvent: true
         });
 
-        // Read key events through our pickerField if we are bound to one
-        me.keyNav = new Ext.util.KeyNav(pickerField ? pickerField.inputEl : me.eventEl, Ext.apply({
+        me.keyNav = new Ext.util.KeyNav(me.eventEl, Ext.apply({
             scope: me,
-
-            // Must capture event so that the Picker sees it before the Field.
-            capture: true,
 
             left: function(e) {
                 if (e.ctrlKey) {
-                    me.showPrevMonth();
-                } else {
-                    me.update(eDate.add(me.activeDate, day, -1));
+                    this.showPrevMonth();
                 }
+                else {
+                    this.update(Ext.Date.add(this.activeDate, Ext.Date.DAY, -1));
+                }
+                
+                // We need to prevent default to avoid scrolling the nearest container
+                // which in case of a floating Date picker will be the document body.
+                // This applies to all navigation keys.
+                e.preventDefault();
             },
 
-            right: function(e){
+            right: function(e) {
                 if (e.ctrlKey) {
-                    me.showNextMonth();
-                } else {
-                    me.update(eDate.add(me.activeDate, day, 1));
+                    this.showNextMonth();
                 }
+                else {
+                    this.update(Ext.Date.add(this.activeDate, Ext.Date.DAY, 1));
+                }
+                
+                e.preventDefault();
             },
 
             up: function(e) {
+                // This is non-standard behavior kept for backward compatibility.
+                // Ctrl-PageUp is reverse to this and it should be used instead.
                 if (e.ctrlKey) {
-                    me.showNextYear();
-                } else {
-                    me.update(eDate.add(me.activeDate, day, -7));
+                    this.showNextYear();
                 }
+                else {
+                    this.update(Ext.Date.add(this.activeDate, Ext.Date.DAY, -7));
+                }
+                
+                e.preventDefault();
             },
 
             down: function(e) {
+                // This is non-standard behavior kept for backward compatibility.
+                // Ctrl-PageDown is reverse to this and it should be used instead.
                 if (e.ctrlKey) {
-                    me.showPrevYear();
-                } else {
-                    me.update(eDate.add(me.activeDate, day, 7));
+                    this.showPrevYear();
                 }
+                else {
+                    this.update(Ext.Date.add(this.activeDate, Ext.Date.DAY, 7));
+                }
+                
+                e.preventDefault();
             },
 
             pageUp: function(e) {
                 if (e.ctrlKey) {
-                    me.showPrevYear();
-                } else {
-                    me.showPrevMonth();
+                    this.showPrevYear();
                 }
+                else {
+                    this.showPrevMonth();
+                }
+                
+                e.preventDefault();
             },
 
             pageDown: function(e) {
                 if (e.ctrlKey) {
-                    me.showNextYear();
-                } else {
-                    me.showNextMonth();
+                    this.showNextYear();
                 }
+                else {
+                    this.showNextMonth();
+                }
+                
+                e.preventDefault();
+            },
+            
+            home: function(e) {
+                this.update(Ext.Date.getFirstDateOfMonth(this.activeDate));
+                
+                e.preventDefault();
             },
 
-            tab: function (e) {
-                me.handleTabClick(e);
+            end: function(e) {
+                this.update(Ext.Date.getLastDateOfMonth(this.activeDate));
+                
+                e.preventDefault();
+            },
+            
+            tab: function(e) {
+                // When the picker is floating and attached to an input field, its
+                // 'select' handler will focus the inputEl so when navigation happens
+                // it does so as if the input field was focused all the time.
+                // This is the desired behavior and we try not to interfere with it
+                // in the picker itself, see below.
+                this.handleTabKey(e);
                 
                 // Allow default behaviour of TAB - it MUST be allowed to navigate.
                 return true;
             },
 
             enter: function(e) {
-                me.handleDateClick(e, me.activeCell.firstChild);
+                this.handleDateClick(e, this.activeCell.firstChild);
             },
 
-            space: function() {
+            space: function(e) {
+                var me = this,
+                    pickerField = me.pickerField,
+                    startValue, value, pickerValue;
+                
                 me.setValue(new Date(me.activeCell.firstChild.dateValue));
-                var startValue = me.startValue,
-                    value = me.value,
-                    pickerValue;
-
+                
                 if (pickerField) {
+                    startValue = me.startValue;
+                    value = me.value;
                     pickerValue = pickerField.getValue();
+                    
                     if (pickerValue && startValue && pickerValue.getTime() === value.getTime()) {
                         pickerField.setValue(startValue);
-                    } else {
+                    }
+                    else {
                         pickerField.setValue(value);
                     }
                 }
-            },
-
-            home: function(e) {
-                me.update(eDate.getFirstDateOfMonth(me.activeDate));
-            },
-
-            end: function(e) {
-                me.update(eDate.getLastDateOfMonth(me.activeDate));
+                
+                // Space key causes scrolling, too :(
+                e.preventDefault();
             }
         }, me.keyNavConfig));
 
         if (me.disabled) {
-            me.syncDisabled(true);
+            me.syncDisabled(true, true);
         }
+        
         me.update(me.value);
     },
 
@@ -636,7 +718,7 @@ Ext.define('Ext.picker.Date', {
         e.preventDefault();
     },
 
-    handleTabClick: function (e) {
+    handleTabKey: function(e) {
         var me = this,
             t = me.getSelectedDate(me.activeDate),
             handler = me.handler;
@@ -646,9 +728,14 @@ Ext.define('Ext.picker.Date', {
             me.setValue(new Date(t.dateValue));
             me.fireEvent('select', me, me.value);
             if (handler) {
-                handler.call(me.scope || me, me, me.value);
+                Ext.callback(handler, me.scope, [me, me.value], null, me, me);
             }
             me.onSelect();
+        }
+        // Even if the above condition is not met we have to let the field know
+        // that we're tabbing out - that's user action we can do nothing about
+        else {
+            me.fireEventArgs('tabout', [me]);
         }
     },
 
@@ -683,7 +770,7 @@ Ext.define('Ext.picker.Date', {
             len,
             d, dLen, dI;
 
-        if(!me.disabledDatesRE && dd){
+        if (!me.disabledDatesRE && dd) {
                 len = dd.length - 1;
 
             dLen = dd.length;
@@ -789,7 +876,7 @@ Ext.define('Ext.picker.Date', {
         var me = this;
 
         me.callParent();
-        me.syncDisabled(false);
+        me.syncDisabled(false, true);
         me.update(me.activeDate);
 
     },
@@ -823,7 +910,7 @@ Ext.define('Ext.picker.Date', {
      */
     onDisable: function() {
         this.callParent();
-        this.syncDisabled(true);
+        this.syncDisabled(true, true);
     },
 
     /**
@@ -877,7 +964,7 @@ Ext.define('Ext.picker.Date', {
         return me;
     },
     
-    doShowMonthPicker: function(){
+    doShowMonthPicker: function() {
         // Wrap in an extra call so we can prevent the button
         // being passed as an animation parameter.
         this.showMonthPicker();
@@ -1036,12 +1123,17 @@ Ext.define('Ext.picker.Date', {
      * @param {Ext.event.Event} e
      */
     handleMouseWheel: function(e) {
+        var delta;
+        
         e.stopEvent();
-        if(!this.disabled){
-            var delta = e.getWheelDelta();
-            if(delta > 0){
+        
+        if (!this.disabled) {
+            delta = e.getWheelDelta();
+            
+            if (delta > 0) {
                 this.showPrevMonth();
-            } else if(delta < 0){
+            }
+            else if (delta < 0) {
                 this.showNextMonth();
             }
         }
@@ -1058,12 +1150,15 @@ Ext.define('Ext.picker.Date', {
             handler = me.handler;
 
         e.stopEvent();
-        if(!me.disabled && t.dateValue && !Ext.fly(t.parentNode).hasCls(me.disabledCellCls)){
+        
+        if (!me.disabled && t.dateValue && !Ext.fly(t.parentNode).hasCls(me.disabledCellCls)) {
             me.setValue(new Date(t.dateValue));
             me.fireEvent('select', me, me.value);
+            
             if (handler) {
-                handler.call(me.scope || me, me, me.value);
+                Ext.callback(handler, me.scope, [me, me.value], null, me, me);
             }
+            
             // event handling is turned off on hide
             // when we are using the picker in a field
             // therefore onSelect comes AFTER the select
@@ -1095,7 +1190,7 @@ Ext.define('Ext.picker.Date', {
             me.setValue(Ext.Date.clearTime(new Date()));
             me.fireEvent('select', me, me.value);
             if (handler) {
-                handler.call(me.scope || me, me, me.value);
+                Ext.callback(handler, me.scope, [me, me.value], null, me, me);
             }
             me.onSelect();
         }
@@ -1115,8 +1210,11 @@ Ext.define('Ext.picker.Date', {
             c,
             cLen      = cells.getCount(),
             cell;
-
+        
+        me.eventEl.dom.setAttribute('aria-busy', 'true');
+        
         cell = me.activeCell;
+        
         if (cell) {
             Ext.fly(cell).removeCls(cls);
             cell.setAttribute('aria-selected', false);
@@ -1134,6 +1232,8 @@ Ext.define('Ext.picker.Date', {
                 break;
             }
         }
+        
+        me.eventEl.dom.removeAttribute('aria-busy');
     },
 
     /**
@@ -1180,62 +1280,85 @@ Ext.define('Ext.picker.Date', {
                 (ddMatch && format && ddMatch.test(eDate.dateFormat(tempDate, format))) ||
                 (ddays && ddays.indexOf(tempDate.getDay()) !== -1));
 
+            me.todayDisabled = disableToday;
             if (!me.disabled) {
                 me.todayBtn.setDisabled(disableToday);
             }
         }
 
         setCellClass = function(cellIndex, cls){
-            var cell = cells[cellIndex];
+            var cell = cells[cellIndex],
+                describedBy = [];
             
-            value = +eDate.clearTime(current, true);
-            cell.setAttribute('aria-label', eDate.format(current, ariaTitleDateFormat));
+            // Cells are not rendered with ids
+            if (!cell.hasAttribute('id')) {
+                cell.setAttribute('id', me.id + '-cell-' + cellIndex);
+            }
+            
             // store dateValue number as an expando
+            value = +eDate.clearTime(current, true);
             cell.firstChild.dateValue = value;
+            
+            cell.setAttribute('aria-label', eDate.format(current, ariaTitleDateFormat));
+            
+            // Here and below we can't use title attribute instead of data-qtip
+            // because JAWS will announce title value before cell content
+            // which is not what we need. Also we are using aria-describedby attribute
+            // and not placing the text in aria-label because some cells may have
+            // compound descriptions (like Today and Disabled day).
+            cell.removeAttribute('aria-describedby');
+            cell.removeAttribute('data-qtip');
+            
             if (value === today) {
                 cls += ' ' + me.todayCls;
-                cell.firstChild.title = me.todayText;
-                
-                // Extra element for ARIA purposes
-                me.todayElSpan = Ext.DomHelper.append(cell.firstChild, {
-                    tag: 'span',
-                    cls: Ext.baseCSSPrefix + 'hidden-clip',
-                    html: me.todayText
-                }, true);
+                describedBy.push(me.id + '-todayText');
             }
+            
             if (value === newDate) {
                 me.activeCell = cell;
                 me.eventEl.dom.setAttribute('aria-activedescendant', cell.id);
                 cell.setAttribute('aria-selected', true);
                 cls += ' ' + me.selectedCls;
                 me.fireEvent('highlightitem', me, cell);
-            } else {
+            }
+            else {
                 cell.setAttribute('aria-selected', false);
             }
 
             if (value < min) {
                 cls += ' ' + disabledCls;
-                cell.setAttribute('aria-label', me.minText);
+                describedBy.push(me.id + '-ariaMinText');
+                cell.setAttribute('data-qtip', me.minText);
             }
             else if (value > max) {
                 cls += ' ' + disabledCls;
-                cell.setAttribute('aria-label', me.maxText);
+                describedBy.push(me.id + '-ariaMaxText');
+                cell.setAttribute('data-qtip', me.maxText);
             }
             else if (ddays && ddays.indexOf(current.getDay()) !== -1){
-                cell.setAttribute('aria-label', ddaysText);
+                cell.setAttribute('data-qtip', ddaysText);
+                describedBy.push(me.id + '-ariaDisabledDaysText');
                 cls += ' ' + disabledCls;
             }
             else if (ddMatch && format){
                 formatValue = eDate.dateFormat(current, format);
                 if(ddMatch.test(formatValue)){
-                    cell.setAttribute('aria-label', ddText.replace('%0', formatValue));
+                    cell.setAttribute('data-qtip', ddText.replace('%0', formatValue));
+                    describedBy.push(me.id + '-ariaDisabledDatesText');
                     cls += ' ' + disabledCls;
                 }
             }
+            
+            if (describedBy.length) {
+                cell.setAttribute('aria-describedby', describedBy.join(' '));
+            }
+            
             cell.className = cls + ' ' + me.cellCls;
         };
+        
+        me.eventEl.dom.setAttribute('aria-busy', 'true');
 
-        for(; i < me.numDays; ++i) {
+        for (; i < me.numDays; ++i) {
             if (i < startingPos) {
                 html = (++prevStart);
                 cls = me.prevCls;
@@ -1250,6 +1373,8 @@ Ext.define('Ext.picker.Date', {
             current.setDate(current.getDate() + 1);
             setCellClass(i, cls);
         }
+        
+        me.eventEl.dom.removeAttribute('aria-busy');
 
         me.monthBtn.setText(Ext.Date.format(date, me.monthYearFormat));
     },
@@ -1277,11 +1402,7 @@ Ext.define('Ext.picker.Date', {
         return me;
     },
 
-    /**
-     * @private
-     * @inheritdoc
-     */
-    beforeDestroy: function() {
+    doDestroy: function() {
         var me = this;
 
         if (me.rendered) {
@@ -1294,9 +1415,8 @@ Ext.define('Ext.picker.Date', {
                 me.todayBtn,
                 me.todayElSpan
             );
-            delete me.textNodes;
-            delete me.cells.elements;
         }
+        
         me.callParent();
     },
 
@@ -1322,18 +1442,19 @@ Ext.define('Ext.picker.Date', {
          * @param {Boolean} disabled
          * @private
          */
-        syncDisabled: function (disabled) {
+        syncDisabled: function (disabled, doButton) {
             var me = this,
-                keyNav = me.keyNav;
+                keyNav = me.keyNav,
+                todayBtn = me.todayBtn;
 
             // If we have one, we have all
             if (keyNav) {
                 keyNav.setDisabled(disabled);
                 me.prevRepeater.setDisabled(disabled);
                 me.nextRepeater.setDisabled(disabled);
-                if (me.todayBtn) {
-                    me.todayBtn.setDisabled(disabled);
-                }
+            }
+            if (doButton && todayBtn) {
+                todayBtn.setDisabled(me.todayDisabled || disabled);
             }
         }
     }

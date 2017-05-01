@@ -1,7 +1,28 @@
-describe('Ext.grid.plugin.BufferedRenderer', function () {
-    var store, grid, tree, view, plugin;
+/* global Ext, MockAjaxManager, expect, spyOn, jasmine, xit */
 
-    function createData(total, variableRowHeight) {
+describe('Ext.grid.plugin.BufferedRenderer', function () {
+    var store, grid, tree, view, plugin,
+        synchronousLoad = true,
+        proxyStoreLoad = Ext.data.ProxyStore.prototype.load,
+        loadStore = function() {
+            proxyStoreLoad.apply(this, arguments);
+            if (synchronousLoad) {
+                this.flushLoad.apply(this, arguments);
+            }
+            return this;
+        },
+        treeStoreLoad = Ext.data.TreeStore.prototype.load,
+        loadTreeStore = function() {
+            treeStoreLoad.apply(this, arguments);
+            if (synchronousLoad) {
+                this.flushLoad.apply(this, arguments);
+            }
+            return this;
+        },
+        itIE10p = Ext.isIE9m ? xit : it,
+        itNotTouch = Ext.supports.TouchEvents ? xit : it;
+
+    function createData(total, variableRowHeight, asymmetricRowHeight) {
         var data = [],
             i, len, n;
 
@@ -9,7 +30,7 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             n = i + 1;
 
             data.push({
-                field1: variableRowHeight ? ('<div style="height:' + Ext.Number.randomInt(20, 40)+ 'px">' + n + '</div>') : n,
+                field1: variableRowHeight ? ('<div style="height:' + Ext.Number.randomInt(20, 40)+ 'px">' + n + '</div>') : asymmetricRowHeight ? 40 : n,
                 field2: n,
                 field3: n,
                 field4: n,
@@ -52,18 +73,19 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
 
     function satisfyRequests(total) {
         var requests = Ext.Ajax.mockGetAllRequests(),
+            empty = total === 0,
             request, params, data;
 
         while (requests.length) {
             request = requests[0];
 
             params = request.options.params;
-            data = getData(params.start, params.limit);
+            data = getData(empty ? 0 : params.start, empty ? 0 : params.limit);
 
             Ext.Ajax.mockComplete({
                 status: 200,
                 responseText: Ext.encode({
-                    total: total || 5000,
+                    total: (total || empty) ? total : 5000,
                     data: data
                 })
             });
@@ -109,7 +131,9 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
         }, gridCfg));
 
         view = grid.view;
-        plugin = grid.bufferedRenderer;
+
+        // Extract the buffered renderer from a real TableView, the topmost one might be a Locking pseudo view
+        plugin = grid.down('tableview').bufferedRenderer;
     }
 
     function createTreeData(count) {
@@ -161,6 +185,7 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
         }, treeCfg || {}));
 
         view = tree.view;
+        return tree;
     }
 
     function completeWithData(data) {
@@ -171,11 +196,17 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
     }
 
     beforeEach(function () {
+        // Override so that we can control asynchronous loading
+        Ext.data.ProxyStore.prototype.load = loadStore;
+        Ext.data.TreeStore.prototype.load = loadTreeStore;
+
         MockAjaxManager.addMethods();
     });
 
     afterEach(function () {
-        MockAjaxManager.removeMethods();
+        // Undo the overrides.
+        Ext.data.ProxyStore.prototype.load = proxyStoreLoad;
+        Ext.data.TreeStore.prototype.load = treeStoreLoad;
 
         if (grid) {
             Ext.destroy(grid);
@@ -185,7 +216,22 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             Ext.destroy(tree);
         }
 
+        MockAjaxManager.removeMethods();
+
         store = grid = tree = view = plugin = null;
+    });
+
+    describe('updateing scroller when changing width', function() {
+        it('should update the horizontal scroll range', function() {
+            makeGrid();
+            var scroller = view.getScrollable(),
+                maxX = scroller.getMaxPosition().x;
+
+            grid.setWidth(grid.getWidth() - 100);
+
+            // The scroll range should have increased
+            expect(scroller.getMaxPosition().x).toBe(maxX + 100);
+        });
     });
 
     describe('autogenerating the plugin', function () {
@@ -203,65 +249,244 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             });
 
             expect(plugin instanceof BR).toBe(false);
-            expect(plugin).toBe(false);
+            expect(plugin).toBeUndefined();
         });
 
         describe('locking grids', function () {
-            describe('with buffered rendering', function () {
-                beforeEach(function () {
-                    makeGrid({
-                        columns: [
-                            {header: 'Name',  dataIndex: 'name', editor: 'textfield'},
-                            {header: 'Phone', dataIndex: 'phone', editor: 'textfield', locked: true},
-                            {header: 'Age', dataIndex: 'age', editor: 'textfield'}
-                        ]
-                    });
-                });
+            var normal, locked;
 
-                it('should not create an instance on the ownerGrid for locking grids', function () {
-                    expect(plugin instanceof BR).toBe(false);
-                    expect(plugin).toBe(true);
-                });
-
-                it('should create an instance by default on each child grid for locking grids', function () {
-                    expect(grid.normalGrid.bufferedRenderer instanceof BR).toBe(true);
-                    expect(grid.lockedGrid.bufferedRenderer instanceof BR).toBe(true);
-                });
+            afterEach(function () {
+                normal = locked = null;
             });
 
-            describe('without buffered rendering', function () {
-                var normal, locked;
+            describe('init', function () {
+                function runTests(useBR) {
+                    var not = useBR ? 'not' : '';
 
+                    describe('buffered rendering = ' + useBR, function () {
+                        beforeEach(function () {
+                            makeGrid({
+                                bufferedRenderer: useBR,
+                                columns: [
+                                    {header: 'Name',  dataIndex: 'name', editor: 'textfield'},
+                                    {header: 'Phone', dataIndex: 'phone', editor: 'textfield', locked: true},
+                                    {header: 'Age', dataIndex: 'age', editor: 'textfield'}
+                                ]
+                            });
+
+                            normal = grid.normalGrid.bufferedRenderer;
+                            locked = grid.lockedGrid.bufferedRenderer;
+                        });
+
+                        it('should ' + not + ' create an instance on the ownerGrid for locking grids', function () {
+                            plugin = grid.bufferedRenderer;
+                            expect(plugin instanceof BR).toBe(false);
+                        });
+
+                        it('should ' + not + ' create an instance by default on each child grid for locking grids', function () {
+                            expect(normal instanceof BR).toBe(useBR);
+                            expect(locked instanceof BR).toBe(useBR);
+                        });
+                    });
+                }
+
+                runTests(true);
+                runTests(false);
+            });
+
+            describe('syncing locking partners when scrolling', function () {
                 beforeEach(function () {
                     makeGrid({
-                        bufferedRenderer: false,
                         columns: [
-                            {header: 'Name',  dataIndex: 'name', editor: 'textfield'},
-                            {header: 'Phone', dataIndex: 'phone', editor: 'textfield', locked: true},
+                            {header: 'Name',  dataIndex: 'name', editor: 'textfield', locked: true},
+                            {header: 'Email', dataIndex: 'email', flex:1,
+                                editor: {
+                                    xtype: 'textfield',
+                                    allowBlank: false
+                                }
+                            },
+                            {header: 'Phone', dataIndex: 'phone', editor: 'textfield'},
                             {header: 'Age', dataIndex: 'age', editor: 'textfield'}
                         ]
+                    }, {
+                        data: makeData(1000)
                     });
 
                     normal = grid.normalGrid.bufferedRenderer;
                     locked = grid.lockedGrid.bufferedRenderer;
                 });
 
-                afterEach(function () {
-                    normal = locked = null;
+                it('should fetch the range', function () {
+                    spyOn(normal, 'onRangeFetched').andCallThrough();
+                    spyOn(locked, 'onRangeFetched').andCallThrough();
+
+                    normal.scrollTo(500);
+
+                    expect(normal.onRangeFetched).toHaveBeenCalled();
+                    expect(locked.onRangeFetched).toHaveBeenCalled();
                 });
 
-                it('should not create an instance on the ownerGrid for locking grids', function () {
-                    expect(plugin instanceof BR).toBe(false);
-                    expect(plugin).toBe(false);
-                });
+                it('should sync the view els', function () {
+                    normal.scrollTo(500);
 
-                it('should not create an instance on each child grid for locking grids', function () {
-                    expect(normal).toBe(false);
-                    expect(normal instanceof BR).toBe(false);
-
-                    expect(locked).toBe(false);
-                    expect(locked instanceof BR).toBe(false);
+                    expect(normal.bodyTop).toBe(locked.bodyTop);
                 });
+            });
+
+            describe('Load requests during scrolling', function () {
+                var scrollToLoadBufferValue,
+                    scrollTimer,
+                    Person = Ext.define(null, {
+                        extend: 'Ext.data.Model',
+                        fields: ['name'],
+                        proxy: {
+                            type: 'ajax',
+                            url: '/foo',
+                            reader: {
+                                rootProperty: 'data'
+                            }
+                        }
+                    });
+
+                function scrollTheGrid() {
+                    // Scroll incrementally until the correct starting point is found
+                    if (view && !view.destroyed) {
+                        view.scrollBy(null, 100);
+                    }
+                    scrollTimer = 0;
+                }
+
+                beforeEach(function () {
+                    scrollToLoadBufferValue = Ext.grid.plugin.BufferedRenderer.prototype.scrollToLoadBuffer;
+
+                    // Make the timeout from attemptLoad call to the doAttemptLoad ten seconds
+                    // The doAttemptLoad DelayedTask should not fire between scroll events which take place
+                    // every 50 milliseconds
+                    Ext.grid.plugin.BufferedRenderer.prototype.scrollToLoadBuffer = 10000;
+                    makeGrid({
+                        columns: [
+                            {header: 'Name',  dataIndex: 'name', editor: 'textfield'},
+                            {header: 'Phone', dataIndex: 'phone', editor: 'textfield', locked: true},
+                            {header: 'Age', dataIndex: 'age', editor: 'textfield'}
+                        ]
+                    }, {
+                        store: new Ext.data.BufferedStore({
+                            model: Person,
+                            leadingBufferZone: 300,
+                            pageSize: 100,
+                            autoDestroy: true
+                        })
+                    });
+
+                    // Tell the BufferedRenderer that there are 1000 rows.
+                    // We plan not to satisfy any requests from now on so that
+                    // on scroll, an attemptLoad call will be made.
+                    // the timeout to doAttemptLoad should not expire during the scroll operation
+                    store.load();
+                    completeWithData({
+                        total: 1000,
+                        data: makeData(100)
+                    });
+                    completeWithData({
+                        total: 1000,
+                        data: makeData(100, 101)
+                    });
+                    completeWithData({
+                        total: 1000,
+                        data: makeData(100, 201)
+                    });
+                    completeWithData({
+                        total: 1000,
+                        data: makeData(100, 301)
+                    });
+                });
+                afterEach(function() {
+                    Ext.grid.plugin.BufferedRenderer.prototype.scrollToLoadBuffer = scrollToLoadBufferValue;
+                });
+                it('should not have time between scroll events to fire off any requests', function() {
+                    spyOn(plugin, 'doAttemptLoad');
+                    
+                    // Scroll to close enough to the end in a slow manner, 50ms between each scroll.
+                    // The doAttemptLoad timer should not timeout and fire off a page request between each scroll.
+                    waitsFor(function() {
+                        if (plugin.getLastVisibleRowIndex() <= 995) {
+                            if (!scrollTimer) {
+                                scrollTimer = setTimeout(scrollTheGrid, 50);
+                            }
+                        } else {
+                            return true;
+                        }
+                    }, 'grid to scroll to end', 40000);
+
+                    // The atteptLoad timer must never have fired during the scroll.
+                    runs(function() {
+                        expect(plugin.doAttemptLoad.callCount).toBe(0);
+                    });
+                });
+            });
+        });
+    });
+
+    describe("Less data than the computed view size", function() {
+        it("should add new rows at top while scrolled to bottom", function() {
+            var Person = Ext.define(null, {
+                extend: 'Ext.data.Model',
+                fields: ['name'],
+                proxy: {
+                    type: 'ajax',
+                    url: '/foo',
+                    reader: {
+                        rootProperty: 'data'
+                    }
+                }
+            });
+
+            store = new Ext.data.Store({
+                model: Person,
+                data: makeData(12)
+            });
+
+            grid = new Ext.grid.Panel({
+                width: 600,
+                height: 305,
+                store: store,
+                deferRowRender: false,
+                columns: [{
+                    dataIndex: 'id',
+                    renderer: function(v) {
+                        return '<span style="line-height:25px">' + v + '</span>';
+                    },
+                    producesHTML: true
+                }, {
+                    dataIndex: 'name'
+                }],
+                renderTo: Ext.getBody()
+            });
+            view = grid.getView();
+
+            // Wait until known correct condition is met.
+            // Timeout === test failure.
+            waitsFor(function() {
+                if (view.all.endIndex === store.getCount() - 1) {
+                    return true;
+                }
+                else {
+                    // Scroll incrementally until the correct starting point is found
+                    view.scrollBy(null, 10);
+                }
+            }, 'view is scrolled to the last record');
+
+            runs(function() {
+                store.insert(0, {id: 666, name: 'Old Nick'});
+                view.scrollTo(0, 0);
+                
+                var r0 = view.all.item(0, true);
+
+                // Must have been rendered
+                expect(r0).not.toBeNull();
+
+                // The new row zero must have been rendered.
+                expect((r0.innerText || r0.textContent).replace(/[\r\n\t]/g,'')).toBe("666Old Nick");
             });
         });
     });
@@ -283,7 +508,8 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             store = new Ext.data.BufferedStore({
                 model: Person,
                 leadingBufferZone: 300,
-                pageSize: 100
+                pageSize: 100,
+                autoDestroy: true
             });
 
             grid = new Ext.grid.Panel({
@@ -315,22 +541,25 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                 total: 5000,
                 data: makeData(100, 301)
             });
-            var view = grid.getView();
+            var view = grid.getView(),
+                rows = view.all;
 
             // Wait until known correct condition is met.
             // Timeout === test failure.
             waitsFor(function() {
-                if (view.getRecord(view.getNodes()[0]).getId() === 37) {
+                if (rows.startIndex <= 100 && rows.endIndex >= 100) {
                     return true;
                 }
-                // Scroll incrementally until the correct starting point is found
-                view.scrollBy(0, 10);
-            });
+                else {
+                    // Scroll incrementally until the correct starting point is found
+                    view.scrollBy(null, 25);
+                }
+            }, 'View to scroll record id 100 into the rendered block', 30000, Ext.isIE ? 100 : null);
 
             runs(function() {
                 var nodes = view.getNodes(),
                     len = nodes.length,
-                    offset = 37,
+                    offset = rows.startIndex + 1,
                     i, rec;
 
                 expect(len).toBe(view.bufferedRenderer.viewSize);
@@ -362,7 +591,8 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             store = new Ext.data.BufferedStore({
                 model: Person,
                 leadingBufferZone: 300,
-                pageSize: 100
+                pageSize: 100,
+                autoDestroy: true
             });
 
             grid = new Ext.grid.Panel({
@@ -381,14 +611,18 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             lockedView = grid.lockedGrid.view;
             normalView = grid.normalGrid.view;
 
+            // Make the buffered renderers respond IMMEDIATELY to the scroll event, so that
+            // the waits(100) will be enough to wait for the newly scrolled-to region to be rendered.
+            lockedView.bufferedRenderer.scrollToLoadBuffer = normalView.bufferedRenderer.scrollToLoadBuffer = 0;
+
             store.load();
             completeWithData({
                 total: 5000,
                 data: makeData(100)
             });
 
-            maxScroll = normalView.getScrollable().getMaxPosition().y;
-            normalView.setScrollY(maxScroll);
+            maxScroll = grid.getScrollable().getMaxPosition().y;
+            grid.getScrollable().scrollTo(null, maxScroll);
 
             // Important: Simulate Ajax delay before returning data
             waits(100);
@@ -399,7 +633,7 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             // Both views must render up to the last row with no error thrown
             waitsFor(function() {
                 return lockedView.all.endIndex === 4999 && normalView.all.endIndex === 4999;
-            });
+            }, 'Both views to render the last renderable block', 30000, Ext.isIE ? 100 : null);
         });
 
         // EXTJS-17053
@@ -733,9 +967,7 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                     "company": "ZANITY",
                     "email": "chandlerschmidt@zanity.com",
                     "phone": "+1 (822) 461-2247"
-                },
-
-                {
+                }, {
                     "_id": "54ff69d99e5b0a9b8db8da2b",
                     "index": 26,
                     "guid": "b8081e85-d0a9-4575-9fdd-83baa0cfe79b",
@@ -1398,16 +1630,25 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                 }, {
                     text: 'gender',
                     dataIndex: 'gender'
-                }]
+                }],
+                region: 'center'
             });
 
             var normalView = grid.normalGrid.getView(),
                 lockedView = grid.lockedGrid.getView(),
+                lockedScroller = lockedView.getScrollable(),
+                normalScroller = normalView.getScrollable(),
                 normalRows = normalView.all,
                 lockedRows = lockedView.all,
                 navModel = normalView.getNavigationModel();
 
-            navModel.setPosition(new Ext.grid.CellContext(lockedView).setPosition(0, 0));
+            waitsFor(function() {
+                return normalView.all.getCount();
+            });
+
+            runs(function() {
+                navModel.setPosition(new Ext.grid.CellContext(lockedView).setPosition(0, 0));
+            });
 
             waitsFor(function() {
                 var a = Ext.Element.getActiveElement(),
@@ -1415,14 +1656,14 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
 
                 if (p) {
                     // Scroll only when the last scroll signal has found both views and caused them to update
-                    if (navModel.getCell() && (a === navModel.getCell().dom) && normalRows.startIndex === lockedRows.startIndex) {
-                        jasmine.fireKeyEvent(a, 'keydown', Ext.EventObject.PAGE_DOWN);
+                    if (navModel.getCell() && (a === navModel.getCell().dom) && normalRows.startIndex === lockedRows.startIndex && lockedScroller.getPosition().y === normalScroller.getPosition().y) {
+                        jasmine.fireKeyEvent(a, 'keydown', Ext.event.Event.PAGE_DOWN);
                     }
 
                     // Scroll until the end
                     return (navModel.getPosition().rowIdx === store.getCount() - 1);
                 }
-            });
+            }, 'down arrow to scroll to the last row. 20 seconds expired', 20000);
 
             runs(function() {
                 var i;
@@ -1443,7 +1684,7 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
 
     describe('gridpanel', function () {
         describe('locking grid', function () {
-            function doIt(reconfigure) {
+            function doIt(reconfigure, afterScrollToEnd) {
                 var columns = [{
                     text: 'Col 1',
                     dataIndex: 'field1',
@@ -1485,7 +1726,7 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                 view = grid.view.normalView;
                 nodeCache = view.all;
 
-                if (reconfigure) {
+                if (reconfigure && !afterScrollToEnd) {
                     grid.reconfigure(null, columns);
                 }
 
@@ -1493,11 +1734,17 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                     if (nodeCache.endIndex === 99 && view.bufferedRenderer.getLastVisibleRowIndex() === 99) {
                         return true;
                     }
-                    // Scroll incrementally until the correct end point is found
-                    view.scrollBy(0, 20);
-                }, 'last node to scroll into view', 10000);
+                    else {
+                        // Scroll incrementally until the correct end point is found
+                        grid.getScrollable().scrollBy(null, 40);
+                    }
+                }, 'last node to scroll into view', 40000, 50);
 
                 runs(function () {
+                    if (reconfigure && afterScrollToEnd) {
+                        grid.reconfigure(null, columns);
+                    }
+
                     expect(view.el.down('.x-grid-item-container').getHeight() === view.lockingPartner.el.down('.x-grid-item-container').getHeight()).toBe(true);
                 });
             }
@@ -1509,10 +1756,14 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             it('should have the same height for each locking partner when scrolling after a reconfigure', function () {
                 doIt(true);
             });
+
+            it('should have the same height for each locking partner when scrolling after a reconfigure when scrolled to end', function () {
+                doIt(true, true);
+            });
         });
-        
+
         describe('locking grid with variableRowHeight', function () {
-            it('should keep the row heights on both sides synchronized', function() {
+            itIE10p('should keep the row heights on both sides synchronized', function() {
                 var columns = [{
                     text: 'Col 1',
                     dataIndex: 'field1',
@@ -1567,7 +1818,8 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
 
                 // Make grid with small buffer zones.
                 makeGrid({
-                    columns: columns
+                    columns: columns,
+                    syncRowHeight: true
                 }, {
                     fields: ['field1', 'field2', 'field3', 'field4', 'field5'],
                     data: createData(1000, true)
@@ -1582,12 +1834,150 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                 lockedView.bufferedRenderer.syncRowHeights = Ext.Function.createSequence(view.bufferedRenderer.syncRowHeights, onSyncHeights);
 
                 waitsFor(function () {
-                    if (view.bufferedRenderer.getLastVisibleRowIndex() === 99) {
+                    var reachedTargetRow = nodeCache.startIndex <= 99 && nodeCache.endIndex >= 99;
+
+                    // If row 99 is in the nodeCache, we're done
+                    if (reachedTargetRow) {
+                        return nodeCache.startIndex === lockedView.all.startIndex && lockedView.position === view.position && lockedView.bodyTop === view.bodyTop;
+                    }
+                    else {
+                        // Scroll incrementally until the correct end point is found
+                        grid.getScrollable().scrollBy(null, 40);
+                    }
+                }, 'row 99 to be rendered', 40000, 50);
+
+                // Must have invoked the row syncher and the two body heights must be the same
+                runs(function () {
+
+                    expect(bufferedRendererInvocationCount).toBeGreaterThan(0);
+                    expect(view.el.down('.x-grid-item-container', true).offsetHeight === view.lockingPartner.el.down('.x-grid-item-container', true).offsetHeight).toBe(true);
+                    bufferedRendererInvocationCount = 0;
+                });
+
+                // Now teleport down to neat the bottom
+                waitsFor(function () {
+                    var reachedTargetRow = view.bufferedRenderer.getLastVisibleRowIndex() > 990;
+
+                    if (reachedTargetRow) {
                         return true;
                     }
-                    // Scroll incrementally until the correct end point is found
-                    view.scrollBy(0, 20);
-                }, 'row 99 to scroll into view', 10000);
+                    else {
+                        // Scroll in teleporting chunks until the correct end point is found
+                        grid.getScrollable().scrollBy(null, 1000);
+                    }
+                }, 'row 990 to scroll into view', 30000, 100);
+                
+                // Scrolling is too fast for IE8, need to repaint the grid
+                // so that measurements below will yield correct values
+                if (Ext.isIE8) {
+                    runs(function() {
+                        grid.hide();
+                        grid.show();
+                    });
+                }
+
+                // Must have invoked the row syncher and the two body heights must be the same
+                runs(function () {
+                    expect(bufferedRendererInvocationCount).toBeGreaterThan(0);
+                    
+                    var mainHeight = view.el.down('.x-grid-item-container').getHeight(),
+                        partnerHeight = view.lockingPartner.el.down('.x-grid-item-container').getHeight();
+                    
+                    expect(partnerHeight).toBe(mainHeight);
+                    bufferedRendererInvocationCount = 0;
+                });
+            });
+        });
+
+        describe('locking grid with asymmetricRowHeight', function () {
+            it('should keep the row heights on both sides synchronized', function() {
+                // Note that we do NOT set variableRowHeight. All row heights are the same
+                // even if one side drives the row height, and the sides need syncing.
+                // This means BufferedRenderer can use simple arithmetic to find first/last visible row index.
+                var columns = [{
+                    text: 'Col 1',
+                    dataIndex: 'field1',
+                    width: 100,
+                    locked: true
+                }, {
+                    text: 'Col 2',
+                    dataIndex: 'field2',
+                    width: 100
+                }, {
+                    text: 'Col 3',
+                    dataIndex: 'field3',
+                    width: 100
+                }, {
+                    text: 'Col 4',
+                    dataIndex: 'field4',
+                    width: 100
+                }, {
+                    text: 'Col 5',
+                    dataIndex: 'field5',
+                    height: 25,
+                    width: 150,
+                    xtype: 'widgetcolumn',
+                    widget: {
+                        xtype: 'progressbarwidget',
+                        height: 25,
+                        textTpl: ['{percent:number("0")}% capacity']
+                    }
+                }],
+                nodeCache,
+                lockedView,
+                bufferedRendererInvocationCount = 0,
+                onSyncHeights = function() {
+                    var lockedItems = lockedView.all.slice(),
+                        normalItems = nodeCache.slice(),
+                        lockedSize = lockedItems.length,
+                        normalSize = normalItems.length,
+                        i,
+                        allEqual = true;
+
+                    // must be same number of rows
+                    expect(lockedSize).toBe(normalSize);
+
+                    for (i = 0; allEqual && i < lockedSize; i++) {
+                        allEqual = allEqual && normalItems[i].offsetHeight === lockedItems[i].offsetHeight;
+                    }
+                    // All rows must be same size
+                    expect(allEqual).toBe(true);
+                    bufferedRendererInvocationCount++;
+                };
+
+                // Make grid with small buffer zones.
+                makeGrid({
+                    columns: columns,
+                    syncRowHeight: true
+                }, {
+                    fields: ['field1', 'field2', 'field3', 'field4', 'field5'],
+                    data: createData(1000, false, true),
+
+                    // Make sure store.isGrouped() returns false
+                    // otherwise variableRowHeight will be detected
+                    groupField: undefined
+                });
+
+                lockedView = grid.view.lockedView;
+                view = grid.view.normalView;
+                nodeCache = view.all;
+
+                // Set up a sequence on the buffered renderers to check that all rows are always synced
+                view.bufferedRenderer.syncRowHeights = Ext.Function.createSequence(view.bufferedRenderer.syncRowHeights, onSyncHeights);
+                lockedView.bufferedRenderer.syncRowHeights = Ext.Function.createSequence(view.bufferedRenderer.syncRowHeights, onSyncHeights);
+
+                waitsFor(function () {
+                    var reachedTargetRow = nodeCache.startIndex <= 99 && nodeCache.endIndex >= 99;
+
+                    // If row 99 is in the nodeCache, we're done
+                    if (reachedTargetRow) {
+                        return nodeCache.startIndex === lockedView.all.startIndex && lockedView.position === view.position && lockedView.bodyTop === view.bodyTop;
+                    }
+                    else {
+                        // Scroll incrementally until the correct end point is found
+                        grid.getScrollable().scrollBy(null, 40);
+                    }
+                }, 'row 99 to be rendered', 40000, 50);
 
                 // Must have invoked the row syncher and the two body heights must be the same
                 runs(function () {
@@ -1598,17 +1988,34 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
 
                 // Now teleport down to neat the bottom
                 waitsFor(function () {
-                    if (view.bufferedRenderer.getLastVisibleRowIndex() > 990) {
+                    var reachedTargetRow = view.bufferedRenderer.getLastVisibleRowIndex() > 990;
+
+                    if (reachedTargetRow) {
                         return true;
                     }
-                    // Scroll in teleporting chunks until the correct end point is found
-                    view.scrollBy(0, 1000);
-                }, 'row 990 to scroll into view', 10000);
+                    else {
+                        // Scroll in teleporting chunks until the correct end point is found
+                        grid.getScrollable().scrollBy(null, 1000);
+                    }
+                }, 'row 990 to scroll into view', 30000, 100);
+                
+                // Scrolling is too fast for IE8, need to repaint the grid
+                // so that measurements below will yield correct values
+                if (Ext.isIE8) {
+                    runs(function() {
+                        grid.hide();
+                        grid.show();
+                    });
+                }
 
                 // Must have invoked the row syncher and the two body heights must be the same
                 runs(function () {
                     expect(bufferedRendererInvocationCount).toBeGreaterThan(0);
-                    expect(view.el.down('.x-grid-item-container').getHeight() === view.lockingPartner.el.down('.x-grid-item-container').getHeight()).toBe(true);
+                    
+                    var mainHeight = view.el.down('.x-grid-item-container').getHeight(),
+                        partnerHeight = view.lockingPartner.el.down('.x-grid-item-container').getHeight();
+                    
+                    expect(partnerHeight).toBe(mainHeight);
                     bufferedRendererInvocationCount = 0;
                 });
             });
@@ -1626,11 +2033,11 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                     success: true,
                     totally: 1000,
                     data: [{
-                        first: 'First',
-                        last: 'Last'
+                        first: 'load2 - First1',
+                        last: 'load2 - Last1'
                     }, {
-                        first: 'First',
-                        last: 'Last'
+                        first: 'load2 - First2',
+                        last: 'load2 - Last2'
                     }],
                     metaData: {
                         root: 'data',
@@ -1645,11 +2052,20 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                         }]
                     }
                 },
-                wasCalled = false;
+                initialData = [
+                    {'name': 'Lisa', 'email': 'lisa@simpsons.com', 'phone': '555-111-1224', 'age': 14},
+                    {'name': 'Lisa', 'email': 'aunt_lisa@simpsons.com', 'phone': '555-111-1274', 'age': 34},
+                    {'name': 'Bart', 'email': 'bart@simpsons.com', 'phone': '555-222-1234', 'age': 12},
+                    {'name': 'Homer', 'email': 'homer@simpsons.com', 'phone': '555-222-1244', 'age': 44},
+                    {'name': 'Marge', 'email': 'marge@simpsons.com', 'phone': '555-222-1254', 'age': 41}
+                ],
+                wasCalled = false,
+                initialColumnCount,
+                newColumnCount;
 
                 makeGrid(null, {
                     data: null,
-                    fields: [],
+                    fields: ['name', 'email'],
                     leadingBufferZone: 50,
                     pageSize: 25,
                     proxy: {
@@ -1663,18 +2079,23 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                         }
                     }
                 });
+                store.load();
+                completeWithData(initialData);
 
-                // Overriding the PageMap method to return a value > 0 when there isn't a representative
-                // page map will reproduce the bug.
-                spyOn(store.data, 'getCount').andCallFake(function () {
-                    store.totalCount = 1000;
-                    return 25;
-                });
+                // No metadata in initial payload
+                expect(wasCalled).toBe(false);
+                expect(store.getCount()).toBe(5);
+                initialColumnCount = grid.getVisibleColumnManager().getColumns().length;
 
                 store.load();
                 completeWithData(successData);
 
+                // Check that reconfigure has been successful
+                newColumnCount = grid.getVisibleColumnManager().getColumns().length;
                 expect(wasCalled).toBe(true);
+                expect(store.getCount()).toBe(2);
+                expect(newColumnCount).toBe(2);
+                expect(newColumnCount).toBeLessThan(initialColumnCount);
             });
 
             describe('with grouping feature', function () {
@@ -1698,6 +2119,79 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                 });
             });
         });
+
+        describe('refreshing the view', function () {
+            describe('filtering out all records', function () {
+                function makeData(len) {
+                    var data = [],
+                        i, str;
+
+                    len = len || 100;
+
+                    for (i = 0; i < len; i++) {
+                        str = 'emp_' + i;
+
+                        data.push({
+                            name: str,
+                            email: str + '@sencha.com',
+                            phone: '1-888-' + i,
+                            age: i
+                        });
+                    }
+
+                    return data;
+                }
+
+                function runTests(scroll) {
+                    describe('scrolled = ' + scroll, function () {
+                        it('should trigger a view refresh', function () {
+                            var wasCalled = false;
+
+                            makeGrid({
+                                viewConfig: {
+                                    listeners: {
+                                        refresh: function () {
+                                            wasCalled = true;
+                                        }
+                                    }
+                                }
+                            });
+
+                            if (scroll) {
+                                plugin.scrollTo(50);
+                            }
+
+                            // Filter out all data.
+                            store.filter('name', '______');
+
+                            expect(wasCalled).toBe(true);
+                        });
+
+                        it('should reset the view body', function () {
+                            makeGrid(null, {
+                                data: makeData(500)
+                            });
+
+                            if (scroll) {
+                                plugin.scrollTo(50);
+
+                                expect(plugin.bodyTop).toBeGreaterThan(0);
+                                expect(plugin.scrollHeight).toBeGreaterThan(0);
+                            }
+
+                            // Filter out all data.
+                            store.filter('name', '______');
+
+                            expect(plugin.bodyTop).toBe(0);
+                            expect(plugin.scrollHeight).toBe(0);
+                        });
+                    });
+                }
+
+                runTests(true);
+                runTests(false);
+            });
+        });
     });
 
     describe('treepanel', function () {
@@ -1716,9 +2210,11 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                     if (nodeCache.endIndex === 99 && view.bufferedRenderer.getLastVisibleRowIndex() === 99) {
                         return true;
                     }
-                    // Scroll incrementally until the correct end point is found
-                    view.scrollBy(0, 10);
-                }, 'last node to scroll into view', 10000);
+                    else {
+                        // Scroll incrementally until the correct end point is found
+                        view.scrollBy(null, 10);
+                    }
+                }, 'last node to scroll into view', 30000, 50);
 
                 // Expanding that last node should append some child nodes to replenish the leading buffer zone.
                 runs(function () {
@@ -1731,9 +2227,11 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                     if (nodeCache.endIndex === 105) {
                         return true;
                     }
-                    // Scroll incrementally until the correct end point is found
-                    view.scrollBy(0, 10);
-                }, 'new last leaf node to scroll into view', 10000);
+                    else {
+                        // Scroll incrementally until the correct end point is found
+                        view.scrollBy(null, 10);
+                    }
+                }, 'new last leaf node to scroll into view', 10000, 50);
 
                 // Expanding that last node should append the child nodes to the view even though the buffer rendered block is the correct size already
                 runs(function () {
@@ -1790,7 +2288,16 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
 
                 // Should measure the row height be looking at the first row when we do NOT have variableRowHeight: true
                 // EXTJS-15942 - did not measure, stayed at classic default of 21
-                expect(plugin.rowHeight).toBe(view.all.first(true).offsetHeight);
+                var row = view.all.first(),
+                    rowHeight = row.getHeight();
+                
+                // In IE8 we're adding a bottom border on the rows and shifting the row up
+                // at -border-width to compensate for that
+                if (Ext.isIE8) {
+                    rowHeight -= row.getBorderWidth('b');
+                }
+                
+                expect(plugin.rowHeight).toBe(rowHeight);
             });
         });
     });
@@ -1799,11 +2306,11 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
         var Hobbit, store;
 
         afterEach(function() {
-            Ext.destroy(Hobbit, store);
+            Ext.destroy(Hobbit);
         });
 
         it('should reset the cached position so the grid-item-container is at the top of the view on filter', function () {
-            Hobbit = Ext.define(null, {
+            var Hobbit = Ext.define(null, {
                 extend: 'Ext.data.Model',
                 fields: ['name'],
                 proxy: {
@@ -1855,9 +2362,9 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             });
 
             waitsFor(function () {
-                view.scrollBy(0, 10);
-                return view.getRecord(view.getNodes()[0]).getId() === 199;
-            }, 'row 199 to scroll into view', 10000);
+                view.scrollBy(null, 25);
+                return view.all.startIndex <= 199 && view.all.endIndex >= 199;
+            }, 'row 199 to scroll into the rendered block', 30000, 50);
 
             runs(function () {
                 store.addFilter({
@@ -1870,10 +2377,12 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                 expect(plugin.position).toBe(0);
             });
         });
-        it('should reset the cached position so the grid-item-container is at the top of the view on clearFilter', function () {
+        
+        // Uses shift/click which is not available on touch
+        itNotTouch('should reset the cached position so the grid-item-container is at the top of the view on clearFilter', function () {
             var selModel;
 
-            Hobbit = Ext.define(null, {
+            var Hobbit = Ext.define(null, {
                 extend: 'Ext.data.Model',
                 fields: ['name'],
                 proxy: {
@@ -1930,15 +2439,10 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
                 // Click to select first row
                 jasmine.fireMouseEvent(view.getCellByPosition({row: 0, column: 0}, true), 'click');
                 expect(view.selModel.getSelection().length).toBe(1);
-            });
 
-            // Scroll all the way to the end
-            waitsFor(function () {
-                view.scrollBy(0, 100);
-                return view.all.endIndex === 2499;
-            }, 'scroll to end', 10000);
+                // Scroll all the way to the end
+                grid.ensureVisible(2499);
 
-            runs(function () {
                 // Click to select from start to end.
                 jasmine.fireMouseEvent(view.getCellByPosition({row: 2499, column: 0}, true), 'click', null, null, null, true);
                 expect(view.selModel.getSelection().length).toBe(2500);
@@ -1967,4 +2471,499 @@ describe('Ext.grid.plugin.BufferedRenderer', function () {
             });
         });
     });
+
+    describe("reloading store", function() {
+        describe("from having items to not having items", function() {
+            it("should not cause an error when reloading", function() {
+                var store = new Ext.data.BufferedStore({
+                    fields: ['id'],
+                    autoDestroy: true,
+                    proxy: {
+                        type: 'ajax',
+                        url: '/foo',
+                        reader: {
+                            type: 'json',
+                            rootProperty: 'data',
+                            totalProperty: 'total'
+                        }
+                    }
+                });
+
+                makeGrid({
+                    columns: [{
+                        dataIndex: 'name',
+                        width: 100
+                    }]
+                }, {
+                    store: store
+                });
+
+                store.load();
+                satisfyRequests();
+
+                store.reload();
+                satisfyRequests(0);
+
+                expect(view.getNodes()).toEqual([]);
+            });
+
+            it("should show emptyText if specified", function() {
+                var store = new Ext.data.BufferedStore({
+                    fields: ['id'],
+                    autoDestroy: true,
+                    proxy: {
+                        type: 'ajax',
+                        url: '/foo',
+                        reader: {
+                            type: 'json',
+                            rootProperty: 'data',
+                            totalProperty: 'total'
+                        }
+                    }
+                });
+
+                makeGrid({
+                    columns: [{
+                        dataIndex: 'name',
+                        width: 100
+                    }],
+                    emptyText: 'Empty'
+                }, {
+                    store: store
+                });
+
+                store.load();
+                satisfyRequests();
+
+                store.reload();
+                satisfyRequests(0);
+
+                expect(grid.el.down('.' + grid.emptyCls, true)).hasHTML('Empty');
+            });
+        });
+
+        describe('loading the bound store', function () {
+            function testLockable(locked) {
+                makeTree({
+                    columns: [{
+                        xtype: 'treecolumn',
+                        text: 'Tree Column',
+                        width: 300,
+                        locked: locked,
+                        dataIndex: 'task'
+                    }, {
+                        text: 'Task1',
+                        dataIndex: 'task1'
+                    }, {
+                        text: 'Task2',
+                        dataIndex: 'task2'
+                    }, {
+                        text: 'Task3',
+                        dataIndex: 'task3'
+                    }, {
+                        text: 'Task4',
+                        dataIndex: 'task4'
+                    }, {
+                        text: 'Task5',
+                        dataIndex: 'task5'
+                    }]
+                }, 1000);
+            }
+
+            it('should not scroll the view, non-locked grid', function () {
+
+                testLockable(false);
+
+                expect(view.el.dom.scrollTop).toBe(0);
+                store.load();
+                expect(view.el.dom.scrollTop).toBe(0);
+            });
+
+            it('should not scroll the view, locked grid', function () {
+                var lockedView, normalView;
+
+                testLockable(true);
+                lockedViewDom = view.lockedView.el.dom;
+                normalViewDom = view.normalView.el.dom;
+
+                expect(lockedViewDom.scrollTop).toBe(0);
+                expect(normalViewDom.scrollTop).toBe(0);
+                store.load();
+                expect(lockedViewDom.scrollTop).toBe(0);
+                expect(normalViewDom.scrollTop).toBe(0);
+            });
+        });
+    });
+
+    describe('Expanding view size', function() {
+        var window;
+
+        afterEach(function() {
+            window.destroy();
+        });
+
+        it('should scroll to top when view size expands to encapsulate whole dataset', function() {
+            var Person = Ext.define(null, {
+                extend: 'Ext.data.Model',
+                fields: ['name'],
+                proxy: {
+                    type: 'ajax',
+                    url: '/foo',
+                    reader: {
+                        rootProperty: 'data'
+                    }
+                }
+            });
+
+            var store = new Ext.data.Store({
+                model: Person,
+                proxy: {
+                    type: 'memory',
+                    data: makeData(52)
+                },
+                autoDestroy: true
+            });
+            store.load();
+            var store1 = new Ext.data.Store({
+                model: Person,
+                proxy: {
+                    type: 'memory',
+                    data: makeData(52)
+                }
+            });
+            store1.load();
+
+            var grid = new Ext.grid.Panel({
+                hideMode: 'offsets',
+                title: 'Grid 1',
+                store: store,
+                deferRowRender: false,
+                columns: [{
+                    dataIndex: 'id'
+                }, {
+                    dataIndex: 'name'
+                }]
+            });
+            var grid1 = new Ext.grid.Panel({
+                hideMode: 'offsets',
+                title: 'Grid 2',
+                store: store1,
+                deferRowRender: false,
+                columns: [{
+                    dataIndex: 'id'
+                }, {
+                    dataIndex: 'name'
+                }]
+            });
+
+            window = new Ext.window.Window({
+                title: 'Test',
+                height: 395,
+                width: 800,
+                x: 10,
+                y: 10,
+                autoShow: true,
+                maximizable: true,
+                minimizable: true,
+                constrain: false,
+                layout: 'fit',
+                items: {
+                    xtype: 'tabpanel',
+                    items: [
+                        grid, grid1
+                    ]
+                }
+            });
+            var tabPanel = window.child('tabpanel');
+
+            var view = grid.getView();
+
+            // Scroll all the way to the end
+            waitsFor(function () {
+                view.scrollBy(null, 100);
+                return view.all.endIndex === view.store.getCount() - 1;
+            }, 'scroll to end', 10000);
+
+            runs(function() {
+                view.scrollBy(null, 100);
+
+                tabPanel.setActiveTab(1);
+
+                // inserting at top
+                grid.store.insert(0,{'title': 'hi',replycount:5});
+                grid.store.insert(0,{'title': 'hi2',replycount:5});
+
+                grid1.store.insert(0,{'title': 'hi',replycount:5});
+                grid1.store.insert(0,{'title': 'hi2',replycount:5});
+
+                tabPanel.setActiveTab(0);
+
+                window.setHeight(940);
+            });
+            
+            // Scroll all the way to the start
+            waitsFor(function () {
+                view.scrollBy(null, -100);
+                return view.getScrollY() === 0;
+            }, 'scroll to top', 10000);
+
+            runs(function() {
+                expect(view.bufferedRenderer.bodyTop).toBe(0);
+            });
+        });
+    });
+
+    describe('Reducing view size', function() {
+        var grid;
+
+        afterEach(function() {
+            grid.destroy();
+        });
+
+        it("should reduce the size of the rendered block when the view's height is reduced", function() {
+            var Person = Ext.define(null, {
+                extend: 'Ext.data.Model',
+                fields: ['name'],
+                proxy: {
+                    type: 'ajax',
+                    url: '/foo',
+                    reader: {
+                        rootProperty: 'data'
+                    }
+                }
+            });
+
+            var store = new Ext.data.Store({
+                model: Person,
+                proxy: {
+                    type: 'memory',
+                    data: makeData(100)
+                },
+                autoDestroy: true
+            });
+            store.load();
+
+            grid = new Ext.grid.Panel({
+                title: 'Grid 1',
+                store: store,
+                deferRowRender: false,
+                columns: [{
+                    dataIndex: 'id'
+                }, {
+                    dataIndex: 'name'
+                }],
+                height: 500,
+                renderTo: document.body
+            });
+            
+            grid.view.getScrollable().scrollBy(0, 2000);
+            
+            waitsFor(function() {
+                return grid.view.all.startIndex !== 0;
+            });
+            
+            runs(function() {
+
+                var renderedBlockSize = grid.view.all.getCount();
+                
+                expect(function() {
+                    grid.setHeight(200);
+                }).not.toThrow();
+
+                expect(grid.view.all.getCount()).toBeLessThan(renderedBlockSize);
+            });
+        });
+    });
+
+    describe('ensureVisible', function() {
+        it('should work in a viewready listener', function() {
+            var done,
+                columns = [{
+                    text: 'Col 1',
+                    dataIndex: 'field1',
+                    width: 100
+                }, {
+                    text: 'Col 2',
+                    dataIndex: 'field2',
+                    width: 100
+                }, {
+                    text: 'Col 3',
+                    dataIndex: 'field3',
+                    width: 100
+                }, {
+                    text: 'Col 4',
+                    dataIndex: 'field4',
+                    width: 100
+                }];
+            
+            makeGrid({
+                columns: columns,
+                listeners : {
+                    viewready : function(grid) {
+                        grid.ensureVisible(grid.getStore().last(), {
+                            callback: function() {
+                                done = true;
+                            }
+                        });
+                    }
+                }
+            }, {
+                fields: ['field1', 'field2', 'field3', 'field4'],
+                data: createData(1000)
+            });
+
+            waitsFor(function() {
+                return done;
+            });
+
+            // Should have scrolled all the way to the end
+            expect(view.all.endIndex).toBe(999);
+            expect(view.bufferedRenderer.getLastVisibleRowIndex()).toBe(999);
+        });
+    });
+    
+    // https://sencha.jira.com/browse/EXTJS-19454
+    // Bug manifests when a buffer rendered tree is added by state restoration
+    // on DOM scrolling devices when touch is enabled.
+    describe('scroll range stretching correctly when DOM TouchScrolling is used', function() {
+        var touch = Ext.supports.Touch,
+            touchEvents = Ext.supports.TouchEvents,
+            container;
+
+        afterEach(function() {
+            Ext.destroy(container, tree);
+
+            // Restore to platform defaults
+            Ext.supports.TouchEvents = touchEvents;
+            Ext.supports.Touch = touch;
+        });
+
+        it('should always create a spacer', function() {
+
+            // Fake up the touch scrolling environment which triggers the bug
+            Ext.supports.TouchEvents = true;
+            Ext.supports.Touch = true;
+
+            container = new Ext.container.Container({
+                stateful: true,
+                layout: 'fit',
+                height: 400,
+                width: 600,
+                renderTo: document.body,
+                initState: function() {
+                    this.add(makeTree({
+                        rootVisible: false,
+                        renderTo: null
+                    }, 500));
+                }
+            });
+
+            // There must ALWAYS be a spacer to create a virtual scroll range
+            expect(view.getScrollable()._spacer).not.toBeUndefined();
+        });
+    });
+    
+    describe('delayed data returning after scroll position has moved', function() {
+        it('should not render the returned data block if the scroll position has moved on since the load was requested', function() {
+            var Person = Ext.define(null, {
+                extend: 'Ext.data.Model',
+                fields: ['name'],
+                proxy: {
+                    type: 'ajax',
+                    url: '/foo',
+                    reader: {
+                        rootProperty: 'data'
+                    }
+                }
+            });
+
+            store = new Ext.data.BufferedStore({
+                model: Person,
+                leadingBufferZone: 300,
+                pageSize: 100,
+                autoDestroy: true
+            });
+
+            grid = new Ext.grid.Panel({
+                width: 500,
+                height: 300,
+                store: store,
+                deferRowRender: false,
+                columns: [{
+                    dataIndex: 'id',
+                    locked: true
+                }, {
+                    dataIndex: 'name'
+                }],
+                renderTo: Ext.getBody()
+            });
+            var view = grid.normalGrid.view;
+
+            // Load the pages around scrollTop 0
+            store.load();
+            satisfyRequests();
+
+            // Scroll a long way to a part of the dataset for which we do not have data.
+            view.scrollTo(null, 100000);
+
+            // Allow the scroll event to fire and the requests for the pages
+            // surrounding scrollTop 100000 to be requested.
+            waits(100);
+
+            // Before we return the data for that scroll position,
+            // scroll back to zero
+            runs(function() {
+                view.scrollTo(null, 0);
+            });
+
+            // Allow the scroll handler to fire.
+            // The pages at the top of the dataset will be already there.
+            // The incoming pages for scrollTop 100000 should NOT cause
+            // a render of the rows down at that range; that data
+            // is not required any more.
+            waits(100);
+
+            runs(function() {
+                satisfyRequests();
+                expect(view.all.startIndex).toBe(0);
+            });
+
+        });
+    });
+    
+    describe('refreshView', function() {
+        it('should scroll to an appropriate position when refreshing the view at a specified startIndex', function() {
+            var columns = [{
+                    text: 'Col 1',
+                    dataIndex: 'field1',
+                    width: 100
+                }, {
+                    text: 'Col 2',
+                    dataIndex: 'field2',
+                    width: 100
+                }, {
+                    text: 'Col 3',
+                    dataIndex: 'field3',
+                    width: 100
+                }, {
+                    text: 'Col 4',
+                    dataIndex: 'field4',
+                    width: 100
+                }];
+
+            makeGrid({
+                columns: columns
+            }, {
+                fields: ['field1', 'field2', 'field3', 'field4', 'field5'],
+                data: createData(1000)
+            });
+            view.bufferedRenderer.refreshView(500);
+
+            // After a refresh at a teleported position (no overlapping records with previous rendered block),
+            // the view has moved downwards, so the first visible row index must be "trailingBufferZone" rows
+            // after the requested refresh start row.
+            expect(view.bufferedRenderer.getFirstVisibleRowIndex()).toBe(500 + view.bufferedRenderer.trailingBufferZone);
+        });
+    });
 });
+

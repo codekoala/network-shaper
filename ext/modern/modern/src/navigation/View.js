@@ -424,6 +424,10 @@ Ext.define('Ext.navigation.View', {
             };
         }
 
+        // Call the getter for items on this view to insure that they will be
+        // available (via innerItems) for the navigationBar created below.
+        me.getItems();
+
         if (config.title) {
             delete config.title;
             //<debug>

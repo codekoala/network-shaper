@@ -111,6 +111,8 @@ Ext.define('Ext.chart.interactions.CrossZoom', {
     type: 'crosszoom',
     alias: 'interaction.crosszoom',
 
+    isCrossZoom: true,
+
     config: {
         /**
          * @cfg {Object/Array} axes
@@ -244,6 +246,8 @@ Ext.define('Ext.chart.interactions.CrossZoom', {
             x = xy[0],
             y = xy[1];
 
+        e.claimGesture();
+
         if (me.zoomAnimationInProgress) {
             return;
         }
@@ -358,7 +362,7 @@ Ext.define('Ext.chart.interactions.CrossZoom', {
                     height: Math.abs(me.startY - y)
                 });
 
-                me.selectionRect.fx.setConfig(chart.getAnimation() || {duration: 0});
+                me.selectionRect.setAnimation(chart.getAnimation() || {duration: 0});
                 me.selectionRect.setAttributes({
                     globalAlpha: 0,
                     x: 0,
@@ -455,7 +459,7 @@ Ext.define('Ext.chart.interactions.CrossZoom', {
 
     destroy: function () {
         this.setUndoButton(null);
-        this.callParent(arguments);
+        this.callParent();
     }
 
 });

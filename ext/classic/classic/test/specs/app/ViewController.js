@@ -106,7 +106,7 @@ describe("Ext.app.ViewController", function() {
             });
 
             doBeforeInit = function(ctrl) {
-                wasCalled = !!called
+                wasCalled = !!called;
             };
 
             var c = new C({
@@ -462,6 +462,7 @@ describe("Ext.app.ViewController", function() {
             ct.items.first().fireEvent('custom');
             expect(controller.method1).toHaveBeenCalled();
             
+            Ext.destroy(other);
         });
     });
     
@@ -522,6 +523,36 @@ describe("Ext.app.ViewController", function() {
         });
         
         describe("on the event bus", function() {
+            describe("widgets", function() {
+                beforeEach(function() {
+                    Ext.define('spec.Foo', {
+                        extend: 'Ext.Widget',
+                        xtype: 'specfoo'
+                    });
+                });
+
+                afterEach(function() {
+                    Ext.undefine('spec.Foo');
+                });
+
+                it("should react to widgets", function() {
+                    ct = new spec.Foo({
+                        controller: {
+                            type: 'test1',
+                            control: {
+                                specfoo: {
+                                    custom: 'method1'
+                                }
+                            }
+                        }
+                    });
+                    controller = ct.getController();
+                    spyOn(controller, 'method1');
+                    ct.fireEvent('custom');
+                    expect(controller.method1).toHaveBeenCalled();
+                });
+            });
+
             it("should react to matching selectors", function() {
                 makeContainer({
                     controller: {
@@ -864,7 +895,49 @@ describe("Ext.app.ViewController", function() {
                 
                 c.fireEvent('custom');
                 expect(ctrl.method1).not.toHaveBeenCalled();
-            });  
+            });
+        });
+    });
+
+    describe("fireViewEvent", function() {
+        it("view should be first argument", function() {
+            makeContainer({
+                controller : {
+                    type: 'test1',
+                    control: {
+                        '#': {
+                            custom: 'method1'
+                        }
+                    }
+                }
+            });
+
+            spyOn(controller, 'method1');
+
+            controller.fireViewEvent('custom', 'foo');
+
+            expect(controller.method1).toHaveBeenCalled();
+            expect(controller.method1.mostRecentCall.args[0]).toEqual(ct);
+        });
+
+        it("view should not add view as first argument", function() {
+            makeContainer({
+                controller : {
+                    type: 'test1',
+                    control: {
+                        '#': {
+                            custom: 'method1'
+                        }
+                    }
+                }
+            });
+
+            spyOn(controller, 'method1');
+
+            controller.fireViewEvent('custom', ct, 'foo');
+
+            expect(controller.method1).toHaveBeenCalled();
+            expect(controller.method1.mostRecentCall.args[0]).toEqual(ct);
         });
     });
 });

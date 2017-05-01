@@ -1,7 +1,23 @@
 describe("grid-events", function() {
     function createSuite(buffered) {
         describe(buffered ? "with buffered rendering" : "without buffered rendering", function() {
-            var grid, view, store, args, called;
+            var grid, view, store, selModel, args, called,
+                GridEventModel = Ext.define(null, {
+                    extend: 'Ext.data.Model',
+                    fields: [
+                        'field1',
+                        'field2',
+                        'field3',
+                        'field4',
+                        'field5',
+                        'field6',
+                        'field7',
+                        'field8',
+                        'field9',
+                        'field10',
+                        'group'
+                    ]
+                });
             
             function triggerCellMouseEvent(type, rowIdx, cellIdx, button, x, y) {
                 var target = findCell(rowIdx, cellIdx);
@@ -48,23 +64,6 @@ describe("grid-events", function() {
             }
             
             function makeGrid(columns, grouped, gridCfg) {
-                Ext.define('spec.GridEventModel', {
-                    extend: 'Ext.data.Model',
-                    fields: [
-                        'field1',
-                        'field2',
-                        'field3',
-                        'field4',
-                        'field5',
-                        'field6',
-                        'field7',
-                        'field8',
-                        'field9',
-                        'field10',
-                        'group'
-                    ]
-                });
-
                 var data = [],
                     defaultCols = [],
                     i;
@@ -93,7 +92,7 @@ describe("grid-events", function() {
                 }
 
                 store = {
-                    model: spec.GridEventModel,
+                    model: GridEventModel,
                     data: data
                 };
 
@@ -125,13 +124,13 @@ describe("grid-events", function() {
 
                 grid = new Ext.grid.Panel(grid);
                 view = grid.getView();
+                selModel = view.getSelectionModel();
             }
             
             afterEach(function(){
                 Ext.destroy(grid, store);
                 grid = store = view = args = null;
                 called = false;
-                Ext.undefine('spec.GridEventModel');
                 Ext.data.Model.schema.clear();
             });
             
@@ -145,7 +144,7 @@ describe("grid-events", function() {
                         });
                     });
                 
-                    describe("item events", function() {
+                    describe('item events', function() {
                         function expectArgs(index, type) {
                             expect(args[0]).toBe(view);
                             expect(args[1]).toBe(getRec(index));
@@ -153,7 +152,38 @@ describe("grid-events", function() {
                             expect(args[3]).toBe(index);
                             expect(args[4].type).toBe(type);
                         }
-                    
+                        
+                        describe('longpresses', function() {
+                            it('should fire beforeitemlongpress', function() {
+                                var test = {
+                                    setArgs: setArgs
+                                };
+                                spyOn(test, 'setArgs').andCallThrough();
+                                grid.on('beforeitemlongpress', test.setArgs);
+                                triggerCellMouseEvent('mousedown', 1, 3);
+                                waitsFor(function(){
+                                    return test.setArgs.callCount;
+                                });
+                                runs(function () {
+                                    expectArgs(1, 'longpress');
+                                });
+                            });
+
+                            it('should fire itemlongpress', function() {
+                                var test = {
+                                    setArgs: setArgs
+                                };
+                                spyOn(test, 'setArgs').andCallThrough();
+                                grid.on('itemlongpress', test.setArgs);
+                                triggerCellMouseEvent('mousedown', 1, 3);
+                                waitsFor(function(){
+                                    return test.setArgs.callCount;
+                                });
+                                runs(function () {
+                                    expectArgs(1, 'longpress');
+                                });
+                            });
+                        });
                         // For mouseenter the view uses mouseover
                         describe("itemmouseenter", function() {
                             it("should fire the beforeitemmouseenter event", function(){
@@ -1123,6 +1153,33 @@ describe("grid-events", function() {
                             text: 'F10',
                             dataIndex: 'field10'
                         }]);
+                    });
+
+                    describe('selection events', function() {
+                        var callCount;
+
+                        function countEvent(eventName) {
+                            grid.on(eventName, function() {
+                                callCount++;
+                            });
+                        }
+                        function createTest(eventName) {
+                            it('should fire the ' + eventName + ' event once', function() {
+                                selModel.select(0);
+                                countEvent(eventName);
+                                selModel.select(1);
+                                expect(callCount).toBe(1);
+                            });
+                        }
+
+                        beforeEach(function() {
+                            callCount = 0;
+                        });
+                        createTest('deselect');
+                        createTest('select');
+                        createTest('beforeselect');
+                        createTest('beforedeselect');
+                        createTest('selectionchange');
                     });
 
                     describe('row events', function () {

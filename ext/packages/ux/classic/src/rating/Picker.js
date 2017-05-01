@@ -95,12 +95,6 @@ Ext.define('Ext.ux.rating.Picker', {
         selectedStyle: null,
 
         /**
-         * @cfg {String/Object} [style]
-         * Optional styles to apply to the top-level element.
-         */
-        style: null,
-
-        /**
          * @cfg {Object/String/String[]/Ext.XTemplate/Function} tooltip
          * A template or a function that produces the tooltip text. The `Object`, `String`
          * and `String[]` forms are converted to an `Ext.XTemplate`. If a function is given,
@@ -230,10 +224,6 @@ Ext.define('Ext.ux.rating.Picker', {
 
     applySelectedStyle: function(style) {
         this.valueEl.applyStyles(style);
-    },
-
-    applyStyle: function(style) {
-        this.element.applyStyles(style);
     },
 
     applyTooltip: function (tip) {
@@ -441,7 +431,7 @@ Ext.define('Ext.ux.rating.Picker', {
         /**
          * This method returns the DOM text node into which glyphs are placed.
          * @param {HTMLElement} dom The DOM node parent of the text node.
-         * @return {HTMLTextNode} The text node.
+         * @return {HTMLElement} The text node.
          * @private
          */
         getGlyphTextNode: function (dom) {
@@ -546,7 +536,7 @@ Ext.define('Ext.ux.rating.Picker', {
 
         /**
          * Convert the coordinates of the given `Event` into a rating value.
-         * @param {Ext.Event} event The event.
+         * @param {Ext.event.Event} event The event.
          * @return {Number} The rating based on the given event coordinates.
          * @private
          */

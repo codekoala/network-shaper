@@ -19,6 +19,10 @@ Ext.define('Ext.chart.axis.Axis3D', {
     extend: 'Ext.chart.axis.Axis',
     xtype: 'axis3d',
 
+    requires: [
+        'Ext.chart.axis.sprite.Axis3D'
+    ],
+
     config: {
         /**
          * @private

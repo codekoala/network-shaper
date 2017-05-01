@@ -126,7 +126,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Safari',
-                    flags: ['Safari', 'Safari4', 'Safari40', 'WebKit', 'WebKit533', 'WebKit5331', 'AndroidStock', 'AndroidStock2'],
+                    flags: ['Safari', 'Safari4', 'Safari40', 'WebKit', 'WebKit533', 'WebKit5331', 'AndroidStock'],
                     version: '4.0'
                 },
                 os: {
@@ -143,7 +143,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Safari',
-                    flags: ['Safari', 'Safari4', 'Safari40', 'WebKit', 'WebKit533', 'WebKit5331', 'AndroidStock', 'AndroidStock2'],
+                    flags: ['Safari', 'Safari4', 'Safari40', 'WebKit', 'WebKit533', 'WebKit5331', 'AndroidStock'],
                     version: '4.0'
                 },
                 os: {
@@ -160,7 +160,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Safari',
-                    flags: ['Safari', 'Safari4', 'Safari40', 'WebKit', 'WebKit533', 'WebKit5331', 'AndroidStock', 'AndroidStock2'],
+                    flags: ['Safari', 'Safari4', 'Safari40', 'WebKit', 'WebKit533', 'WebKit5331', 'AndroidStock'],
                     version: '4.0'
                 },
                 os: {
@@ -177,7 +177,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Safari',
-                    flags: ['Safari', 'Safari4', 'Safari40', 'WebKit', 'WebKit530', 'WebKit53017', 'AndroidStock', 'AndroidStock2'],
+                    flags: ['Safari', 'Safari4', 'Safari40', 'WebKit', 'WebKit530', 'WebKit53017', 'AndroidStock'],
                     version: '4.0'
                 },
                 os: {
@@ -228,7 +228,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Safari',
-                    flags: ['WebKit', 'WebKit534', 'WebKit53413', 'Safari', 'Safari4', 'Safari40', 'AndroidStock', 'AndroidStock2'],
+                    flags: ['WebKit', 'WebKit534', 'WebKit53413', 'Safari', 'Safari4', 'Safari40', 'AndroidStock'],
                     version: '4.0'
                 },
                 os: {
@@ -245,7 +245,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Safari',
-                    flags: ['WebKit', 'WebKit533', 'WebKit5331', 'Safari', 'Safari4', 'Safari40', 'AndroidStock', 'AndroidStock2'],
+                    flags: ['WebKit', 'WebKit533', 'WebKit5331', 'Safari', 'Safari4', 'Safari40', 'AndroidStock'],
                     version: '4.0'
                 },
                 os: {
@@ -262,7 +262,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Safari',
-                    flags: ['Safari', 'Safari5', 'Safari50', 'WebKit', 'WebKit533', 'WebKit53316', 'safari', 'safari5', 'safari50', 'webkit', 'webkit533', 'webkit53316', 'AndroidStock', 'AndroidStock2'],
+                    flags: ['Safari', 'Safari5', 'Safari50', 'WebKit', 'WebKit533', 'WebKit53316', 'safari', 'safari5', 'safari50', 'webkit', 'webkit533', 'webkit53316', 'AndroidStock'],
                     version: '5.0'
                 },
                 os: {
@@ -279,7 +279,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Silk',
-                    flags: [ 'Silk', 'Silk1', 'Silk10138110003810', 'WebKit', 'WebKit533', 'WebKit53316', 'silk', 'silk1', 'silk10138110003810', 'webkit', 'webkit533', 'webkit53316', 'AndroidStock', 'AndroidStock2'],
+                    flags: [ 'Silk', 'Silk1', 'Silk10138110003810', 'WebKit', 'WebKit533', 'WebKit53316', 'silk', 'silk1', 'silk10138110003810', 'webkit', 'webkit533', 'webkit53316', 'AndroidStock'],
                     version: '1.0.13.81.10003810'
                 },
                 os: {
@@ -296,7 +296,7 @@ xdescribe("Ext.env.Browser and Ext.env.OS", function() {
             expect: {
                 browser: {
                     name: 'Silk',
-                    flags: [ 'Silk', 'Silk2', 'Silk21', 'WebKit', 'WebKit535', 'WebKit53519', 'silk', 'silk2', 'silk21', 'webkit', 'webkit535', 'webkit53519', 'AndroidStock', 'AndroidStock2'],
+                    flags: [ 'Silk', 'Silk2', 'Silk21', 'WebKit', 'WebKit535', 'WebKit53519', 'silk', 'silk2', 'silk21', 'webkit', 'webkit535', 'webkit53519', 'AndroidStock'],
                     version: '2.1'
                 },
                 os: {

@@ -1,29 +1,16 @@
-html, body {
-    font-family: $font-family;
+// font-size must be set on the html element in order for rem units to be used throughout the theme
+html {
+	font: $font-weight-normal #{$font-size}/#{$line-height} $font-family;
+	color: $color;
+
+	&.x-big {
+		font-size: $font-size-big;
+	}
 }
 
-.x-ios.x-tablet .x-landscape * {
-	-webkit-text-stroke: 1px transparent;
-}
-
-body {
-	font-size: 104%;
-}
-
-body.x-android.x-phone {
-	font-size: 116%;
-}
-
-body.x-ios.x-phone {
-	font-size: 114%;
-}
-
-body.x-desktop {
-	font-size: 114%;
-}
-
-.x-layout-card-item {
-	background: $page-bg-color;
+.#{$prefix}font-icon {
+	font-family: $font-icon-font-family;
+	// ensure that font icon does not inherit font-weight from parent node
 }
 
 @include st-loading-spinner(1em, $loading-spinner-color, .1em, .25em);

@@ -107,8 +107,8 @@ Ext.define('Ext.mixin.Responsive', function (Responsive) { return {
          *   desktop devices).
          *  * `tall` - True if `width` < `height` regardless of device type.
          *  * `wide` - True if `width` > `height` regardless of device type.
-         *  * `width` - The width of the viewport
-         *  * `height` - The height of the viewport.
+         *  * `width` - The width of the viewport in pixels.
+         *  * `height` - The height of the viewport in pixels.
          *  * `platform` - An object containing various booleans describing the platform
          *  (see `{@link Ext#platformTags Ext.platformTags}`). The properties of this
          *  object are also available implicitly (without "platform." prefix) but this
@@ -199,7 +199,7 @@ Ext.define('Ext.mixin.Responsive', function (Responsive) { return {
          *          small: {
          *              hidden: true
          *          },
-         *          medium: {
+         *          'medium && !tuesday': {
          *              hidden: false,
          *              region: 'north'
          *          },
@@ -225,7 +225,8 @@ Ext.define('Ext.mixin.Responsive', function (Responsive) { return {
      */
     destroy: function () {
         Responsive.unregister(this);
-        this.callParent();
+        
+        // No callParent() here, it's a mixin
     },
 
     privates: {
@@ -307,7 +308,7 @@ Ext.define('Ext.mixin.Responsive', function (Responsive) { return {
 
                 if (timer) {
                     Responsive.timer = null;
-                    Ext.Function.cancelAnimationFrame(timer);
+                    Ext.asapCancel(timer);
                 }
 
                 Responsive.updateContext();
@@ -338,7 +339,7 @@ Ext.define('Ext.mixin.Responsive', function (Responsive) { return {
              */
             onResize: function () {
                 if (!Responsive.timer) {
-                    Responsive.timer = Ext.Function.requestAnimationFrame(Responsive.onTimer);
+                    Responsive.timer = Ext.asap(Responsive.onTimer);
                 }
             },
 
@@ -370,7 +371,7 @@ Ext.define('Ext.mixin.Responsive', function (Responsive) { return {
                 // Good news is that both configs we have to handle have custom merges
                 // so we just need to get the Ext.Config instance and call it.
                 if (value) {
-                    configurator = instance.getConfigurator();
+                    configurator = instance.self.getConfigurator();
                     cfg = configurator.configs[name]; // the Ext.Config instance
 
                     // Update "this.config" which is the storage for this instance.

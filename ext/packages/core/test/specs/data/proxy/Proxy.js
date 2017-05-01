@@ -35,6 +35,12 @@ describe("Ext.data.proxy.Proxy", function() {
         Ext.data.Model.schema.clear();
         Ext.undefine('spec.Alien');
         Ext.undefine('spec.Human');
+        
+        if (proxy) {
+            proxy.destroy();
+        }
+        
+        proxy = null;
     });
     
 
@@ -45,6 +51,16 @@ describe("Ext.data.proxy.Proxy", function() {
     describe("instantiation", function() {
         it("should default the batch order to create/update/destroy", function() {
             expect(proxy.getBatchOrder()).toBe('create,update,destroy');
+        });
+    });
+    
+    describe("destruction", function() {
+        it("should call parent destructor", function() {
+            proxy.destroy();
+            
+            expect(proxy.isDestroyed).toBe(true);
+            
+            proxy = null;
         });
     });
 
@@ -107,6 +123,13 @@ describe("Ext.data.proxy.Proxy", function() {
     });
 
     describe("metachange event", function () {
+        function completeWithData(data) {
+            Ext.Ajax.mockComplete({
+                status: 200,
+                responseText: Ext.JSON.encode(data)
+            });
+        }
+
         var wasCalled = false,
             successData = {
                 success: true,
@@ -126,7 +149,8 @@ describe("Ext.data.proxy.Proxy", function() {
             args, proxyArg, metaArg;
 
         beforeEach(function () {
-            proxy = new Proxy({
+            MockAjaxManager.addMethods();
+            proxy = new Ext.data.proxy.Ajax({
                 listeners: {
                     metachange: function (proxy, meta) {
                         wasCalled = true;
@@ -137,10 +161,14 @@ describe("Ext.data.proxy.Proxy", function() {
                 }
             });
 
-            proxy.getReader().readRecords(successData);
+            proxy.read(new Ext.data.operation.Read({
+                url: 'foo'
+            }));
+            completeWithData(successData);
         });
 
         afterEach(function () {
+            MockAjaxManager.removeMethods();
             wasCalled = false;
             args = proxyArg = metaArg = null;
         });
@@ -163,6 +191,50 @@ describe("Ext.data.proxy.Proxy", function() {
 
         it("should return the meta data as the second arg", function () {
             expect(args[1]).toBe(metaArg);
+        });
+    });
+    
+    describe("pending operations", function() {
+        var op1, op2;
+        
+        beforeEach(function() {
+            op1 = new Ext.data.operation.Operation();
+            op2 = new Ext.data.operation.Operation();
+            
+            spyOn(op1, 'abort');
+            spyOn(op2, 'abort');
+            
+            proxy.pendingOperations[op1._internalId] = op1;
+            proxy.pendingOperations[op2._internalId] = op2;
+        });
+        
+        afterEach(function() {
+            op1 = op2 = proxy = null;
+        });
+        
+        describe("aborting", function() {
+            beforeEach(function() {
+                op1.execute();
+                proxy.destroy();
+            });
+            
+            it("should abort running operations", function() {
+                expect(op1.abort).toHaveBeenCalled();
+            });
+            
+            it("should not abort non-running operations", function() {
+                expect(op2.abort).not.toHaveBeenCalled();
+            });
+        });
+        
+        describe("cleanup", function() {
+            beforeEach(function() {
+                proxy.destroy();
+            });
+            
+            it("should null pendingOperations", function() {
+                expect(proxy.pendingOperations).toBe(null);
+            });
         });
     });
 });

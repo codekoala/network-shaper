@@ -12,25 +12,6 @@ Ext.define('Ext.overrides.GlobalEvents', {
      * Ext.Component#resumeLayouts}.
      */
 
-    /**
-     * @event mousedown
-     * A mousedown listener on the document that is immune to stopPropagation()
-     * used in cases where we need to know if a mousedown event occurred on the
-     * document regardless of whether some other handler tried to stop it.  An
-     * example where this is useful is a menu that needs to be hidden whenever
-     * there is a mousedown event on the document.
-     * @param {Ext.event.Event} The event object
-     */
-
-    attachListeners: function() {
-        this.callParent();
-        Ext.getDoc().on('mousedown', this.fireMouseDown, this);
-    },
-
-    fireMouseDown: function(e) {
-        this.fireEvent('mousedown', e);
-    },
-
     deprecated: {
         5: {
             methods: {

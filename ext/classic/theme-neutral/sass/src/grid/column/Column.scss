@@ -50,7 +50,7 @@
     .#{$prefix}column-header-inner:after {
         content: "";
         position: absolute;
-        z-index: 3; // focus border must overlay the trigger
+        z-index: 5; // focus border must overlay the trigger
         top: $grid-column-header-focus-border-inset;
         right: $grid-column-header-focus-border-inset;
         bottom: $grid-column-header-focus-border-inset;
@@ -114,7 +114,8 @@
     }
 }
 
-.#{$prefix}column-header-trigger {
+.#{$prefix}column-header-over .#{$prefix}column-header-trigger,
+.#{$prefix}column-header-open .#{$prefix}column-header-trigger {
     width: $grid-header-trigger-width;
     cursor: $grid-header-trigger-cursor;
     @if $enable-font-icons and ($grid-header-trigger-glyph != null) {
@@ -125,6 +126,7 @@
             // vertically center the glyph
             top: 50%;
             margin-top: -($grid-header-trigger-glyph-font-size / 2);
+            text-align: center;
             position: relative;
             display: block;
         }
@@ -215,6 +217,16 @@ $grid-column-align-right-margin:
         background-image: theme-background-image('grid/sort_desc');
     }
 }
+
+// A Grid with the x-no-header-borders class will show no header borders
+.#{$prefix}no-header-borders .#{$prefix}column-header {
+    border: 0 none;
+
+    .#{$prefix}column-header-inner {
+        padding-top: top($grid-header-padding);
+    }
+}
+
 
 @include x-slicer(column-header);
 @include x-slicer(column-header-over);

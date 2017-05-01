@@ -24,7 +24,10 @@ Ext.define('Ext.toolbar.Breadcrumb', {
     isBreadcrumb: true,
     baseCls: Ext.baseCSSPrefix + 'breadcrumb',
 
-    layout: 'hbox',
+    layout: {
+        type: 'hbox',
+        align: 'middle'
+    },
 
     config: {
         /**
@@ -110,6 +113,7 @@ Ext.define('Ext.toolbar.Breadcrumb', {
         /**
          * @cfg {Ext.data.TreeModel/String} selection
          * The selected node, or `"root"` to select the root node
+         * @accessor
          */
         selection: 'root'
     },
@@ -155,12 +159,16 @@ Ext.define('Ext.toolbar.Breadcrumb', {
         me.callParent();
     },
 
-    onDestroy: function() {
-        var me = this;
+    doDestroy: function() {
+        Ext.destroy(this._buttons);
+        this.setStore(null);
+        
+        this.callParent();
+    },
 
-        me._buttons = Ext.destroy(me._buttons);
-        me.setStore(null);
-        me.callParent();
+    onRemove: function(component, destroying) {
+        this.callParent([component, destroying]);
+        delete component._breadcrumbNodeId;
     },
 
     afterComponentLayout: function() {
@@ -203,7 +211,7 @@ Ext.define('Ext.toolbar.Breadcrumb', {
         var me = this,
             buttons = me._buttons,
             items = [],
-            itemCount = me.items.getCount(),
+            itemCount = Ext.ComponentQuery.query('[isCrumb]', me.getRefItems()).length,
             needsSync = me._needsSync,
             displayField = me.getDisplayField(),
             showIcons, glyph, iconCls, icon, newItemCount, currentNode, text, button, id, depth, i;
@@ -234,6 +242,7 @@ Ext.define('Ext.toolbar.Breadcrumb', {
                 } else {
                     // no button in the cache - make one and add it to the cache
                     button = buttons[i] = Ext.create({
+                        isCrumb: true,
                         xtype: me.getUseSplitButtons() ? 'splitbutton' : 'button',
                         ui: me.getButtonUI(),
                         cls: me._btnCls + ' ' + me._btnCls + '-' + me.ui,
@@ -301,13 +310,15 @@ Ext.define('Ext.toolbar.Breadcrumb', {
                 // new selection has fewer buttons, remove the extra ones from the items, but
                 // do not destroy them, as they are returned to the cache and recycled.
                 for (i = itemCount - 1; i >= newItemCount; i--) {
-                    me.remove(me.items.items[i], false);
+                    me.remove(buttons[i], false);
                 }
             }
 
         } else {
             // null selection
-            me.removeAll(false);
+            for (i = 0; i < buttons.length; i++) {
+                me.remove(buttons[i], false);
+            }
         }
 
         Ext.resumeLayouts(true);
@@ -390,7 +401,16 @@ Ext.define('Ext.toolbar.Breadcrumb', {
          */
         _onMenuClick: function(menu, item, e) {
             if (item) {
-                this.setSelection(this.getStore().getNodeById(item._breadcrumbNodeId));
+                // Find the TreeStore node corresponding to the menu item
+                item = this.getStore().getNodeById(item._breadcrumbNodeId);
+
+                this.setSelection(item);
+
+                // Find the button that has just been shown and focus it.
+                item = this._buttons[item.getDepth()];
+                if (item) {
+                    item.focus();
+                }
             }
         },
 

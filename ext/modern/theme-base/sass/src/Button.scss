@@ -2,41 +2,62 @@
  * @class Ext.Button
  */
 
-.x-button {
-    @include st-box;
+.x-button,
+.x-tab {
+    @include st-inline-box;
     @include st-box-align(center);
-
-    background-color: #eee;
-    border: 1px solid #ccc;
 
     position: relative;
     overflow: hidden;
     z-index: 1;
+    cursor: pointer;
 
-    .x-button-icon {
-        position: relative;
-        background-repeat: no-repeat;
-        background-position: center;
+    &.x-hasbadge {
+        overflow: visible;
     }
 
-    .x-button-icon.x-shown {
-        display: block;
+    &.x-disabled {
+        cursor: default;
     }
+}
 
-    .x-button-icon.x-hidden {
-        display: none;
-    }
+.x-button-icon {
+    position: relative;
+    background-repeat: no-repeat;
+    background-position: center;
+    text-align: center;
+}
+
+.x-button-icon.x-shown {
+    display: block;
+}
+
+.x-button-icon.x-hidden {
+    display: none;
 }
 
 // Button icon alignment
 .x-iconalign-left,
-.x-icon-align-right {
+.x-iconalign-right {
     @include st-box-orient(horizontal);
+
+    > .x-button-label {
+        @include st-box-flex(1);
+    }
 }
 
 .x-iconalign-top,
 .x-iconalign-bottom {
     @include st-box-orient(vertical);
+    @include st-box-pack(center);
+
+    > .x-button-label {
+        width: 100%;
+    }
+}
+
+.x-button-no-icon > .x-button-label {
+    width: 100%;
 }
 
 .x-iconalign-bottom,
@@ -50,25 +71,26 @@
 
 // Button labels
 .x-button-label {
-    @include st-box-flex(1);
-    @include st-box-align(center);
+    @include st-box-flex(1, 'auto');
+    text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
-    text-align: center;
     display: block;
     overflow: hidden;
 }
 
+.x-text-align-left > .x-button-label {
+    text-align: left;
+}
+
+.x-text-align-right > .x-button-label {
+    text-align: right;
+}
+
 .x-badge {
-    @extend .x-button-label;
-    background-color: #ccc;
-    border: 1px solid #aaa;
     z-index: 2;
-    position: absolute !important;
-    width: auto;
-    font-size: .6em;
-    right: 0;
-    top: 0;
-    max-width: 95%;
-    display: inline-block;
+    position: absolute;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

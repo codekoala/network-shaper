@@ -1,5 +1,5 @@
 /** @class Ext.panel.Header */
 //
 
-$header-draggable-cursor: move !dynamic;
-$header-white-space: nowrap !dynamic;
+$header-draggable-cursor: dynamic(move);
+$header-white-space: dynamic(nowrap);

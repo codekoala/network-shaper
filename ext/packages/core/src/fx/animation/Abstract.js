@@ -46,6 +46,8 @@ Ext.define('Ext.fx.animation.Abstract', {
 
         onBeforeStart: null,
 
+        callback: null,
+
         onEnd: null,
 
         onBeforeEnd: null,
@@ -130,6 +132,12 @@ Ext.define('Ext.fx.animation.Abstract', {
         return this.states;
     },
 
+    updateCallback: function(callback) {
+        if (callback) {
+            this.setOnEnd(callback);
+        }
+    },
+
     end: function() {
         // alias for stop so that the following api is the same between ext/touch:
         // element.getActiveAnimation().end()
@@ -185,10 +193,6 @@ Ext.define('Ext.fx.animation.Abstract', {
                 data = state.getData();
                 statesData[name] = data;
             }
-        }
-
-        if (Ext.browser.is.AndroidStock2) {
-            statesData['0.0001%'] = fromData;
         }
 
         return {

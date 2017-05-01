@@ -66,12 +66,20 @@ Ext.define('Ext.field.Slider', {
 
     /**
      * @event change
-     * Fires when an option selection has changed.
+     * Fires when the value changes.
+     * @param {Ext.field.Slider} me
+     * @param {Number[]} newValue The new value.
+     * @param {Number[]} oldValue The old value.
+     */
+
+    /**
+     * @event dragchange
+     * Fires when a thumb value changes via drag.
      * @param {Ext.field.Slider} me
      * @param {Ext.slider.Slider} sl Slider Component.
      * @param {Ext.slider.Thumb} thumb
-     * @param {Number} newValue The new value of this thumb.
-     * @param {Number} oldValue The old value of this thumb.
+     * @param {Number[]} newValue The new value of this thumb.
+     * @param {Number[]} oldValue The old value of this thumb.
      */
 
     /**
@@ -104,14 +112,19 @@ Ext.define('Ext.field.Slider', {
     */
 
     config: {
-        /**
-         * @cfg
-         * @inheritdoc
-         */
-        cls: Ext.baseCSSPrefix + 'slider-field',
+        component: {
+            xtype: 'slider'
+        },
 
         /**
-         * @cfg
+         * @cfg {Boolean} liveUpdate
+         * `true` to fire change events while the slider is dragging. `false` will
+         * only fire a change once the drag is complete.
+         */
+        liveUpdate: false,
+
+        /**
+         * @cfg tabIndex
          * @inheritdoc
          */
         tabIndex: -1,
@@ -121,8 +134,17 @@ Ext.define('Ext.field.Slider', {
          * @cfg {Boolean} readOnly
          * @accessor
          */
-        readOnly: false
+        readOnly: false,
+
+        /**
+         * @inheritdoc Ext.slider.Slider#value
+         * @cfg {Number/Number[]} value
+         * @accessor
+         */
+        value: 0
     },
+
+    classCls: Ext.baseCSSPrefix + 'sliderfield',
 
     proxyConfig: {
 
@@ -132,13 +154,6 @@ Ext.define('Ext.field.Slider', {
          * @accessor
          */
         increment : 1,
-
-        /**
-         * @inheritdoc Ext.slider.Slider#value
-         * @cfg {Number/Number[]} value
-         * @accessor
-         */
-        value: 0,
 
         /**
          * @inheritdoc Ext.slider.Slider#minValue
@@ -153,6 +168,12 @@ Ext.define('Ext.field.Slider', {
          * @accessor
          */
         maxValue: 100
+    },
+
+    defaultBindProperty: 'value',
+    twoWayBindable: {
+        values: 1,
+        value: 1
     },
 
     /**
@@ -190,34 +211,66 @@ Ext.define('Ext.field.Slider', {
     /**
      * @private
      */
-    applyComponent: function(config) {
-        return Ext.factory(config, Ext.slider.Slider);
-    },
-
-    /**
-     * @private
-     */
-    updateComponent: function(component) {
-        this.callParent(arguments);
+    updateComponent: function(component, oldComponent) {
+        this.callParent([component, oldComponent]);
 
         component.setMinValue(this.getMinValue());
         component.setMaxValue(this.getMaxValue());
     },
 
-    onSliderChange: function() {
-        this.fireEvent.apply(this, [].concat('change', this, Array.prototype.slice.call(arguments)));
+    applyValue: function(value, oldValue) {
+        value = value || 0;
+        // If we are currently dragging, don't allow the binding
+        // to push a value over the top of what the user is doing.
+        if (this.dragging && this.isSyncing('value')) {
+            value = undefined;
+        } else if (Ext.isArray(value)) {
+            value = value.slice(0);
+            if (oldValue && Ext.Array.equals(value, oldValue)) {
+                value = undefined;
+            }
+        } else {
+            value = [value];
+        }
+        return value;
     },
 
-    onSliderDragStart: function() {
-        this.fireEvent.apply(this, [].concat('dragstart', this, Array.prototype.slice.call(arguments)));
+    updateValue: function(value, oldValue) {
+        var me = this;
+
+        if (!me.dragging) {
+            me.setComponentValue(value);
+        }
+        if (me.initialized) {
+            me.fireEvent('change', me, value, oldValue);
+        }
     },
 
-    onSliderDrag: function() {
-        this.fireEvent.apply(this, [].concat('drag', this, Array.prototype.slice.call(arguments)));
+    setComponentValue: function(value) {
+        this.getComponent().setValue(value);
     },
 
-    onSliderDragEnd: function() {
-        this.fireEvent.apply(this, [].concat('dragend', this, Array.prototype.slice.call(arguments)));
+    onSliderChange: function(slider, thumb, newValue, oldValue) {
+        this.setValue(slider.getValue());
+        this.fireEvent('dragchange', this, slider, thumb, newValue, oldValue);
+    },
+
+    onSliderDragStart: function(slider, thumb, startValue, e) {
+        this.dragging = true;
+        this.fireEvent('dragstart', this, slider, thumb, startValue, e);
+    },
+
+    onSliderDrag: function(slider, thumb, value, e) {
+        var me = this;
+        if (me.getLiveUpdate()) {
+            me.setValue(slider.getValue());
+        }
+        me.fireEvent('drag', me, slider, thumb, value, e);
+    },
+
+    onSliderDragEnd: function(slider, thumb, startValue, e) {
+        this.dragging = false;
+        this.fireEvent('dragend', this, slider, thumb, startValue, e);
     },
 
     /**
@@ -242,12 +295,6 @@ Ext.define('Ext.field.Slider', {
             initialValue = (this.config.hasOwnProperty('values')) ? config.values : config.value;
 
         this.setValue(initialValue);
-    },
-
-    updateDisabled: function(disabled) {
-        this.callParent(arguments);
-
-        this.getComponent().setDisabled(disabled);
     },
 
     updateReadOnly: function(newValue) {

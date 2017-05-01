@@ -51,8 +51,11 @@
                 
                 <echo>Building locale ${build.locale}</echo>
 
-                <concat destfile="${build.dir}/${package.name}-${build.locale}-debug.js">
+                <concat encoding="UTF-8" outputencoding="UTF-8" destfile="${build.dir}/${package.name}-${build.locale}-debug.js">
                     <fileset dir="@{build.locale.dir}" includes="**/*.js"/>
+                    <filterchain>
+                        <deletecharacters chars="&#xFEFF;" />
+                    </filterchain>
                 </concat>
 
                 <x-compress-js srcfile="${build.dir}/${package.name}-${build.locale}-debug.js"

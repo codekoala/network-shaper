@@ -9,7 +9,6 @@ Ext.define('Ext.grid.feature.AbstractSummary', {
     alias: 'feature.abstractsummary',
 
     summaryRowCls: Ext.baseCSSPrefix + 'grid-row-summary',
-    summaryRowSelector: '.' + Ext.baseCSSPrefix + 'grid-row-summary',
 
     readDataOptions: {
         recordCreator: Ext.identityFn
@@ -54,6 +53,28 @@ Ext.define('Ext.grid.feature.AbstractSummary', {
         if (!me.summaryTableCls) {
             me.summaryTableCls = Ext.baseCSSPrefix + 'grid-item';
         }
+
+        me.summaryRowSelector = '.' + me.summaryRowCls;
+    },
+    
+    bindStore: function(grid, store) {
+        var me = this;
+        
+        Ext.destroy(me.readerListeners);
+        
+        if (me.remoteRoot) {
+            me.readerListeners = store.getProxy().getReader().on({
+                scope: me,
+                destroyable: true,
+                rawdata: me.onReaderRawData
+            });
+        }
+    },
+    
+    onReaderRawData: function(data) {
+        // Invalidate potentially existing summaryRows to force recalculation
+        this.summaryRows = null;
+        this.readerRawData = data;
     },
 
     /**
@@ -70,7 +91,7 @@ Ext.define('Ext.grid.feature.AbstractSummary', {
         if (visible && visible !== prev) {
             // If being shown, something may have changed while not visible, so
             // force the summary records to recalculate
-            me.updateNext = true;
+            me.updateSummaryRow = true;
         }
 
         // If there is another side to be toggled, then toggle it (as long as we are not already being commanded from that other side);
@@ -173,7 +194,7 @@ Ext.define('Ext.grid.feature.AbstractSummary', {
 
             switch (type) {
                 case 'count':
-                    return item.count(field);
+                    return item.count();
                 case 'min':
                     return item.min(field);
                 case 'max':
@@ -188,40 +209,83 @@ Ext.define('Ext.grid.feature.AbstractSummary', {
             }
         }
     },
+    
+    getRawData: function() {
+        var data = this.readerRawData;
+        
+        if (data) {
+            return data;
+        }
+        
+        // Synchronous Proxies such as Memory proxy will set keepRawData to true
+        // on their Reader instances, and may have been loaded before we were bound
+        // to the store. Or the Reader may have been configured with keepRawData: true
+        // manually.
+        // In these cases, the Reader should have rawData on the instance.
+        return this.view.getStore().getProxy().getReader().rawData;
+    },
 
-    generateSummaryData: function (groupField) {
+    generateSummaryData: function(groupField) {
         var me = this,
-            reader = me.view.store.getProxy().getReader(),
+            summaryRows = me.summaryRows,
             convertedSummaryRow = {},
             remoteData = {},
-            i, len, root, summaryRows;
-
-        // reset reader root and rebuild extractors to extract summaries data
-        root = reader.getRootProperty();
-        reader.setRootProperty(me.remoteRoot);
-        reader.buildExtractors(true);
-        summaryRows = reader.getRoot(reader.rawData);
-
-        if (summaryRows) {
-            if (!Ext.isArray(summaryRows)) {
-                summaryRows = [summaryRows];
+            storeReader, reader, rawData, i, len, summaryRows, rows, row;
+        
+        // Summary rows may have been cached by previous run
+        if (!summaryRows) {
+            rawData = me.getRawData();
+        
+            if (!rawData) {
+                return;
             }
+            
+            // Construct a new Reader instance of the same type to avoid
+            // munging the one in the Store
+            storeReader = me.view.store.getProxy().getReader();
+            reader = Ext.create('reader.' + storeReader.type, storeReader.getConfig());
+            
+            // reset reader root and rebuild extractors to extract summaries data
+            reader.setRootProperty(me.remoteRoot);
+            
+            // At this point summaryRows is still raw data, e.g. XML node
+            summaryRows = reader.getRoot(rawData);
+            
+            if (summaryRows) {
+                rows = [];
+                
+                if (!Ext.isArray(summaryRows)) {
+                    summaryRows = [summaryRows];
+                }
+                
+                len = summaryRows.length;
 
-            len = summaryRows.length;
-
-            for (i = 0; i < len; ++i) {
-                // Convert a raw data row into a Record's hash object using the Reader.
-                convertedSummaryRow = reader.extractRecordData(summaryRows[i], me.readDataOptions);
+                for (i = 0; i < len; ++i) {
+                    // Convert a raw data row into a Record's hash object using the Reader.
+                    row = reader.extractRecordData(summaryRows[i], me.readDataOptions);
+                    rows.push(row);
+                }
+                
+                me.summaryRows = summaryRows = rows;
+            }
+            
+            // By the next time the configuration may change
+            reader.destroy();
+            
+            // We also no longer need the whole raw dataset
+            me.readerRawData = null;
+        }
+        
+        if (summaryRows) {
+            for (i = 0, len = summaryRows.length; i < len; i++) {
+                convertedSummaryRow = summaryRows[i];
+                
                 if (groupField) {
                     remoteData[convertedSummaryRow[groupField]] = convertedSummaryRow;
                 }
             }
         }
-
-        // Restore initial reader configuration.
-        reader.setRootProperty(root);
-        reader.buildExtractors(true);
-
+        
         return groupField ? remoteData : convertedSummaryRow;
     },
 
@@ -236,5 +300,12 @@ Ext.define('Ext.grid.feature.AbstractSummary', {
         } else {
             summaryData[colId] = summaryValue;
         }
+    },
+    
+    destroy: function() {
+        Ext.destroy(this.readerListeners);
+        this.readerRawData = this.summaryRows = null;
+        
+        this.callParent();
     }
 });

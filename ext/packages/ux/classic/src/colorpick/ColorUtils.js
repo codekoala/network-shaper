@@ -77,7 +77,8 @@ Ext.define('Ext.ux.colorpick.ColorUtils', function (ColorUtils) {
          * - "#ABC" (HEX short)
          * - "#ABCDEF" (HEX)
          * - "#ABCDEFDD" (HEX with opacity)
-         * - "red" (named colors - see {@link #colorMap} source code for a full list)
+         * - "red" (named colors - see 
+         * [Web Colors](http://en.wikipedia.org/wiki/Web_colors) for a full list)
          * - "rgba(r,g,b,a)" i.e "rgba(255,0,0,1)" (a == alpha == 0-1)
          * - "rgba(red, 0.4)"
          * - "rgba(#ABC, 0.9)"

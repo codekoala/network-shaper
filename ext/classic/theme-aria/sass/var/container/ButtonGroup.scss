@@ -1,6 +1,6 @@
-$btn-group-background-color: #393d4e !dynamic;
-$btn-group-header-background-color: #676772 !dynamic;
-$btn-group-border-color: #606068 !dynamic;
-$btn-group-inner-border-color: #757478 !dynamic;
-$btn-group-header-color: #D2D2D2 !dynamic;
-$btn-group-tool-background-image: 'tools/tool-sprites' !dynamic;
+$btn-group-background-color: dynamic(#393d4e);
+$btn-group-header-background-color: dynamic(#676772);
+$btn-group-border-color: dynamic(#606068);
+$btn-group-inner-border-color: dynamic(#757478);
+$btn-group-header-color: dynamic(#D2D2D2);
+$btn-group-tool-background-image: dynamic('tools/tool-sprites');

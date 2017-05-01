@@ -45,9 +45,13 @@ Ext.define('Ext.Decorator', {
 
     config: {
         /**
-         * @cfg {Object} component The config object to factory the Component that this Decorator wraps around
+         * @cfg {Object} component
+         * The config object to factory the Component that this Decorator wraps around.
+         * @cmd-auto-dependency { aliasPrefix: 'widget.', typeProperty: 'xtype' }
          */
-        component: {}
+        component: {
+            xtype: 'component'
+        }
     },
 
     statics: {
@@ -92,34 +96,48 @@ Ext.define('Ext.Decorator', {
         }
     },
 
+    getRefItems: function(deep) {
+        var c = this.getComponent(),
+            ret;
+
+        if (c) {
+            ret = [c];
+            if (deep && c.getRefItems) {
+                ret = ret.concat(c.getRefItems(deep));
+            }
+        }
+        return ret || [];
+
+    },
+
     /**
      * @private
      */
     applyComponent: function(config) {
-        return Ext.factory(config, Ext.Component);
+        return Ext.factory(config);
     },
 
     /**
      * @private
      */
     updateComponent: function(newComponent, oldComponent) {
+        var me = this;
+
         if (oldComponent) {
-            if (this.isRendered() && oldComponent.setRendered(false)) {
-                oldComponent.fireEventedAction('renderedchange', [this, oldComponent, false],
-                    this.doUnsetComponent, this, [oldComponent, false]);
-            }
-            else {
-                this.doUnsetComponent(oldComponent);
+            if (me.isRendered() && oldComponent.setRendered(false)) {
+                oldComponent.fireEventedAction('renderedchange', [me, oldComponent, false],
+                    me.doUnsetComponent, me, false);
+            } else {
+                me.doUnsetComponent(oldComponent);
             }
         }
 
         if (newComponent) {
-            if (this.isRendered() && newComponent.setRendered(true)) {
-                newComponent.fireEventedAction('renderedchange', [this, newComponent, true],
-                    this.doSetComponent, this, [newComponent, true]);
-            }
-            else {
-                this.doSetComponent(newComponent);
+            if (me.isRendered() && newComponent.setRendered(true)) {
+                newComponent.fireEventedAction('renderedchange', [me, newComponent, true],
+                    me.doSetComponent, me, false);
+            } else {
+                me.doSetComponent(newComponent);
             }
         }
     },
@@ -128,9 +146,10 @@ Ext.define('Ext.Decorator', {
      * @private
      */
     doUnsetComponent: function(component) {
-        if (component.renderElement.dom) {
+        var dom = component.renderElement.dom;
+        if (dom) {
             component.setLayoutSizeFlags(0);
-            this.innerElement.dom.removeChild(component.renderElement.dom);
+            this.innerElement.dom.removeChild(dom);
         }
     },
 
@@ -138,9 +157,10 @@ Ext.define('Ext.Decorator', {
      * @private
      */
     doSetComponent: function(component) {
-        if (component.renderElement.dom) {
+        var dom = component.renderElement.dom;
+        if (dom) {
             component.setLayoutSizeFlags(this.getSizeFlags());
-            this.innerElement.dom.appendChild(component.renderElement.dom);
+            this.innerElement.dom.appendChild(dom);
         }
     },
 
@@ -176,7 +196,7 @@ Ext.define('Ext.Decorator', {
         this.getComponent().setDisabled(disabled);
     },
 
-    destroy: function() {
+    doDestroy: function() {
         Ext.destroy(this.getComponent());
         this.callParent();
     }

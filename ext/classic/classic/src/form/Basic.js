@@ -69,6 +69,7 @@ Ext.define('Ext.form.Basic', {
         'Ext.util.MixedCollection',
         'Ext.form.action.Load',
         'Ext.form.action.Submit',
+        'Ext.form.action.StandardSubmit',
         'Ext.window.MessageBox',
         'Ext.data.ErrorCollection',
         'Ext.util.DelayedTask'
@@ -297,7 +298,7 @@ Ext.define('Ext.form.Basic', {
     
     /**
      * @cfg {Object/Array} [metadata]
-     * Optional metadata to pass with the actions when Ext.Direct {@link #api} is used.
+     * Optional metadata to pass with the actions when Ext Direct {@link #api} is used.
      * See {@link Ext.direct.Manager} for more information.
      */
 
@@ -918,10 +919,11 @@ Ext.define('Ext.form.Basic', {
      *         }]
      *     });
      * 
-     * **Note**: this method does not cause the Field's {@link #validate} or 
-     * {@link #isValid} methods to return `false` if the value does _pass_ validation. 
-     * So simply marking a Field as invalid will not prevent submission of forms
-     * submitted with the {@link Ext.form.action.Submit#clientValidation} option set.
+     * **Note**: this method does not cause the Field's 
+     * {@link Ext.form.field.Field#validate} or {@link Ext.form.field.Base#isValid} 
+     * methods to return `false` if the value does _pass_ validation.  So simply marking 
+     * a Field as invalid will not prevent submission of forms submitted with the 
+     * {@link Ext.form.action.Submit#clientValidation} option set.
      * 
      * For additional information on how the fields are marked invalid see field's 
      * {@link Ext.form.field.Base#markInvalid markInvalid} method.
@@ -1083,6 +1085,10 @@ Ext.define('Ext.form.Basic', {
                             }
 
                             if (!field.isRadio) {
+                                // skipping checkbox null values since they have no contextual value
+                                if(field.isCheckbox && val===null) {
+                                    continue;
+                                }
                                 if (values.hasOwnProperty(name)) {
                                     bucket = values[name];
 

@@ -17,7 +17,7 @@ Ext.define('Ext.mixin.Selectable', {
      * @event beforeselectionchange
      * Fires before an item is selected.
      * @param {Ext.mixin.Selectable} this
-     * @preventable selectionchange
+     * @preventable
      * @deprecated 2.0.0 Please listen to the {@link #selectionchange} event with an order of `before` instead.
      */
 
@@ -71,7 +71,21 @@ Ext.define('Ext.mixin.Selectable', {
          * clicked.
          * @accessor
          */
-        deselectOnContainerClick: true
+        deselectOnContainerClick: true,
+
+        /**
+         * @cfg {Ext.data.Model} selection
+         * The selected record.
+         */
+        selection: null,
+
+        twoWayBindable: {
+            selection: 1
+        },
+
+        publishes: {
+            selection: 1
+        }
     },
 
     modes: {
@@ -81,9 +95,13 @@ Ext.define('Ext.mixin.Selectable', {
     },
 
     selectableEventHooks: {
-        addrecords: 'onSelectionStoreAdd',
-        removerecords: 'onSelectionStoreRemove',
-        updaterecord: 'onSelectionStoreUpdate',
+        add: 'onSelectionStoreAdd',
+        remove: 'onSelectionStoreRemove',
+        update: 'onSelectionStoreUpdate',
+        clear: {
+            fn: 'onSelectionStoreClear',
+            priority: 1000
+        },
         load: 'refreshSelection',
         refresh: 'refreshSelection'
     },
@@ -91,6 +109,10 @@ Ext.define('Ext.mixin.Selectable', {
     constructor: function() {
         this.selected = new Ext.util.MixedCollection();
         this.callParent(arguments);
+    },
+
+    initSelectable: function() {
+        this.publishState('selection', this.getSelection());
     },
 
     /**
@@ -113,18 +135,13 @@ Ext.define('Ext.mixin.Selectable', {
         if (oldStore && Ext.isObject(oldStore) && oldStore.isStore) {
             if (oldStore.autoDestroy) {
                 oldStore.destroy();
-            }
-            else {
+            } else {
                 oldStore.un(bindEvents);
-                if(newStore) {
-                    newStore.un('clear', 'onSelectionStoreClear', this);
-                }
             }
         }
 
         if (newStore) {
             newStore.on(bindEvents);
-            newStore.onBefore('clear', 'onSelectionStoreClear', this);
             me.refreshSelection();
         }
     },
@@ -152,6 +169,18 @@ Ext.define('Ext.mixin.Selectable', {
         me.selected.clear();
         me.setLastSelected(null);
         me.setLastFocused(null);
+    },
+
+    updateSelection: function(selection) {
+        if (this.changingSelection) {
+            return;
+        }
+
+        if (selection) {
+            this.select(selection);
+        } else {
+            this.deselectAll();
+        }
     },
 
     // Provides differentiation of logic between MULTI, SIMPLE and SINGLE
@@ -292,7 +321,7 @@ Ext.define('Ext.mixin.Selectable', {
 
         if (!keepExisting && selected.getCount() > 0) {
             change = true;
-            me.deselect(me.getSelection(), true);
+            me.deselect(me.getSelections(), true);
         }
         for (; i < ln; i++) {
             record = records[i];
@@ -369,20 +398,18 @@ Ext.define('Ext.mixin.Selectable', {
 
     fireSelectionChange: function(records) {
         var me = this;
-        //<deprecated product=touch since=2.0>
-        me.fireAction('beforeselectionchange', [me], function() {
-        //</deprecated>
-            me.fireAction('selectionchange', [me, records], 'getSelection');
-        //<deprecated product=touch since=2.0>
-        });
-        //</deprecated>
+
+        me.changingSelection = true;
+        me.setSelection(me.getLastSelected() || null);
+        me.changingSelection = false;
+        me.fireAction('selectionchange', [me, records], 'getSelections');
     },
 
     /**
-     * Returns an array of the currently selected records.
-     * @return {Array} An array of selected records.
+     * Returns the currently selected records.
+     * @return {Ext.data.Model[]} The selected records.
      */
-    getSelection: function() {
+    getSelections: function() {
         return this.selected.getRange();
     },
 
@@ -409,7 +436,7 @@ Ext.define('Ext.mixin.Selectable', {
      */
     refreshSelection: function() {
         var me = this,
-            selections = me.getSelection();
+            selections = me.getSelections();
 
         me.deselectAll(true);
         if (selections.length) {
@@ -424,7 +451,7 @@ Ext.define('Ext.mixin.Selectable', {
         var me = this,
             selected = me.selected,
             ln = records.length,
-            record, i;
+            removed, record, i;
 
         if (me.getDisableSelection()) {
             return;
@@ -439,8 +466,13 @@ Ext.define('Ext.mixin.Selectable', {
                 if (me.getLastFocused() == record) {
                     me.setLastFocused(null);
                 }
-                me.fireSelectionChange([record]);
+                removed = removed || [];
+                removed.push(record);
             }
+        }
+
+        if (removed) {
+            me.fireSelectionChange([removed]);
         }
     },
 

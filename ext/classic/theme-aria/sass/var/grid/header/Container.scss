@@ -1,5 +1,4 @@
-$grid-header-background-color: #373c4b !dynamic;
-$grid-header-over-background-color: #496085 !dynamic;
-$grid-header-sort-icon-width: 15px !dynamic;
-$grid-header-selected-cell-background-color: $orange !dynamic;
-
+$grid-header-background-color: dynamic(#373c4b);
+$grid-header-over-background-color: dynamic(#496085);
+$grid-header-sort-icon-width: dynamic(15px);
+$grid-header-selected-cell-background-color: dynamic($orange);

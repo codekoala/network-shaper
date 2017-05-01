@@ -88,8 +88,8 @@ Ext.define('Ext.form.field.Time', {
     //<locale>
     /**
      * @cfg {String} [format=undefined]
-     * The default time format string which can be overriden for localization support. The format must be valid
-     * according to {@link Ext.Date#parse}.
+     * The default time format string which can be overridden for localization support. 
+     * The format must be valid according to {@link Ext.Date#parse}.
      *
      * Defaults to `'g:i A'`, e.g., `'3:15 PM'`. For 24-hour time format try `'H:i'` instead.
      */
@@ -116,12 +116,13 @@ Ext.define('Ext.form.field.Time', {
     //</locale>
     
     //<locale>
-    /**
-     * @cfg {String} formatText The format text to be announced by screen readers
-     * when the field is focused.
-     */
     // The default format for the time field is 'g:i A', which is hardly informative
-    formatText: 'Expected time format: HH:MM space am/pm',
+    /**
+     * @cfg {String} formatText
+     * The format text to be announced by screen readers when the field is focused.
+     */
+    /** @ignore */
+    formatText: 'Expected time format HH:MM space AM or PM',
     //</locale>
 
     /**
@@ -205,6 +206,18 @@ Ext.define('Ext.form.field.Time', {
         // TimePicker does this on create.
         me.getPicker();
     },
+    
+    afterQuery: function(queryPlan) {
+        var me = this;
+
+        me.callParent([queryPlan]);
+        // Check the field for null value (TimeField returns null for invalid dates).
+        // If value is null and a rawValue is present, then we we should manually
+        // validate the field to display errors.
+        if (me.value === null && me.getRawValue() && me.validateOnChange) {
+            me.validate();
+        }
+    },
 
     /**
      * @private
@@ -223,7 +236,7 @@ Ext.define('Ext.form.field.Time', {
         }
 
         for (i = 0; i < len; i++) {
-            if (!isEqual(v2[i], v1[i])) {
+            if (!(v2[i] instanceof Date) || !(v1[i] instanceof Date) || !isEqual(v2[i], v1[i])) {
                 return false;
             }
         }
@@ -317,24 +330,30 @@ Ext.define('Ext.form.field.Time', {
                 item = data[i];
                 item = item.date || item.disp;
                 date = me.parseDate(item);
+
                 if (!date) {
                     errors.push(format(me.invalidText, item, Ext.Date.unescapeFormat(me.format)));
                     continue;
-                }
-
-                if (minValue && date < minValue) {
-                    errors.push(format(me.minText, me.formatDate(minValue)));
-                }
-
-                if (maxValue && date > maxValue) {
-                    errors.push(format(me.maxText, me.formatDate(maxValue)));
-                }
+                }                
             }
-        } else if (raw.length && !me.parseDate(raw)) {
-            // If we don't have any data & a rawValue, it means an invalid time was entered.
-            errors.push(format(me.invalidText, raw, Ext.Date.unescapeFormat(me.format)));
+        } else if (raw.length) {
+            date = me.parseDate(raw);
+            if (!date) {
+                // If we don't have any data & a rawValue, it means an invalid time was entered.
+                errors.push(format(me.invalidText, raw, Ext.Date.unescapeFormat(me.format)));
+            }
         }
-
+        // if we have a valid date, we need to check if it's within valid range
+        // this is out of the loop because as the user types a date/time, the value
+        // needs to be converted before it can be compared to min/max value
+        if(!errors.length) {
+            if (minValue && date < minValue) {
+                errors.push(format(me.minText, me.formatDate(minValue)));
+            }
+            if (maxValue && date > maxValue) {
+                errors.push(format(me.maxText, me.formatDate(maxValue)));
+            }
+        }
         return errors;
     },
 

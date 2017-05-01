@@ -40,39 +40,101 @@ Ext.define('Ext.panel.Header', {
     beforeRenderConfig: {
         /**
          * @cfg {Number/String} glyph
-         * A numeric unicode character code to use as the icon for the panel header. The
-         * default font-family for glyphs can be set globally using
-         * {@link Ext#setGlyphFontFamily Ext.setGlyphFontFamily()}. Alternatively, this
-         * config option accepts a string with the charCode and font-family separated by the
-         * `@` symbol. For example '65@My Font Family'.
+         * @accessor
+         * A numeric unicode character code to use as the icon.  The default font-family 
+         * for glyphs can be set globally using 
+         * {@link Ext.app.Application#glyphFontFamily glyphFontFamily} application 
+         * config or the {@link Ext#setGlyphFontFamily Ext.setGlyphFontFamily()} method.
+         * It is initially set to `'Pictos'`.
+         * 
+         * The following shows how to set the glyph using the font icons provided in the 
+         * SDK (assuming the font-family has been configured globally):
+         *
+         *     // assumes the glyphFontFamily is "Pictos"
+         *     glyph: 'x48'       // the "home" icon (H character)
+         *
+         *     // assumes the glyphFontFamily is "Pictos"
+         *     glyph: 72          // The "home" icon (H character)
+         *
+         *     // assumes the glyphFontFamily is "Pictos"
+         *     glyph: 'H'         // the "home" icon
+         * 
+         * Alternatively, this config option accepts a string with the charCode and 
+         * font-family separated by the `@` symbol.
+         * 
+         *     // using Font Awesome
+         *     glyph: 'xf015@FontAwesome'     // the "home" icon
+         * 
+         *     // using Pictos
+         *     glyph: 'H@Pictos'              // the "home" icon
+         * 
+         * Depending on the theme you're using, you may need include the font icon 
+         * packages in your application in order to use the icons included in the 
+         * SDK.  For more information see:
+         * 
+         *  - [Font Awesome icons](http://fortawesome.github.io/Font-Awesome/cheatsheet/)
+         *  - [Pictos icons](http://docs.sencha.com/extjs/6.0/core_concepts/font_ext.html)
+         *  - [Theming Guide](http://docs.sencha.com/extjs/6.0/core_concepts/theming.html)
          */
         glyph: null,
 
         /**
          * @cfg {String} icon
-         * Path to image for an icon.
+         * Path to an image to use as an icon.
          *
-         * There are no default icons that come with Ext JS.
+         * For instructions on how you can use icon fonts including those distributed in 
+         * the SDK see {@link #iconCls}.
+         * @accessor
          */
         icon: null,
 
         /**
          * @cfg {String} iconCls
-         * CSS class for an icon.
+         * @accessor
+         * One or more space separated CSS classes to be applied to the icon element.  
+         * The CSS rule(s) applied should specify a background image to be used as the 
+         * icon.
          *
-         * There are no default icon classes that come with Ext JS.
+         * An example of specifying a custom icon class would be something like:
+         *
+         *     // specify the property in the config for the class:
+         *     iconCls: 'my-home-icon'
+         *
+         *     // css rule specifying the background image to be used as the icon image:
+         *     .my-home-icon {
+         *         background-image: url(../images/my-home-icon.gif) !important;
+         *     }
+         * 
+         * In addition to specifying your own classes, you can use the font icons 
+         * provided in the SDK using the following syntax:
+         * 
+         *     // using Font Awesome
+         *     iconCls: 'x-fa fa-home'
+         * 
+         *     // using Pictos
+         *     iconCls: 'pictos pictos-home'
+         * 
+         * Depending on the theme you're using, you may need include the font icon 
+         * packages in your application in order to use the icons included in the 
+         * SDK.  For more information see:
+         * 
+         *  - [Font Awesome icons](http://fortawesome.github.io/Font-Awesome/cheatsheet/)
+         *  - [Pictos icons](http://docs.sencha.com/extjs/6.0/core_concepts/font_ext.html)
+         *  - [Theming Guide](http://docs.sencha.com/extjs/6.0/core_concepts/theming.html)
          */
         iconCls: null,
 
         /**
          * @cfg {'top'/'right'/'bottom'/'left'} [iconAlign='left']
          * The side of the title to render the icon.
+         * @accessor
          */
         iconAlign: null,
 
         /**
          * @cfg {String/Ext.panel.Title}
          * The title text or config object for the {@link Ext.panel.Title Title} component.
+         * @accessor
          */
         title: {
             $value: {
@@ -80,7 +142,7 @@ Ext.define('Ext.panel.Header', {
                 flex: 1
             },
             merge: function(newValue, oldValue) {
-                if (typeof newValue === 'string') {
+                if (typeof newValue !== 'object') {
                     newValue = {
                         text: newValue
                     };
@@ -91,8 +153,10 @@ Ext.define('Ext.panel.Header', {
         },
 
         /**
-         * @cfg {String} [titleAlign='left']
-         * The alignment of the title text.
+         * @cfg {'left'/'center'/'right'} [titleAlign='left']
+         * The alignment of the title text within the available space between the
+         * icon and the tools.
+         * @accessor
          */
         titleAlign: null,
 
@@ -105,11 +169,13 @@ Ext.define('Ext.panel.Header', {
          *
          * Note that if an {@link #icon} or {@link #iconCls} has been configured, then the icon component will be the
          * first item before all specified tools or {@link #cfg-items}. This configuration does not include the icon.
+         * @accessor
          */
         titlePosition: null,
         
         /**
          * @cfg {'default'/0/1/2} [titleRotation='default']
+         * @accessor
          * The rotation of the header's title text.  Can be one of the following values:
          *
          * - `'default'` - use the default rotation, depending on the dock position of the header
@@ -195,13 +261,7 @@ Ext.define('Ext.panel.Header', {
         me.addCls(cls);
 
         me.syncNoBorderCls();
-
-        me.enableFocusableContainer = !me.isAccordionHeader && me.tools.length > 0;
         
-        if (me.enableFocusableContainer) {
-            me.ariaRole = 'toolbar';
-        }
-
         // Add Tools
         Ext.Array.push(items, me.tools);
         // Clear the tools so we can have only the instances. Intentional mutation of passed in array
@@ -228,15 +288,7 @@ Ext.define('Ext.panel.Header', {
         // so let's be safe and forcibly specify tool
         me.add(Ext.ComponentManager.create(tool, 'tool'));
         
-        if (!me.isAccordionHeader && me.tools.length > 0 && !me.enableFocusableContainer) {
-            me.enableFocusableContainer = true;
-            me.ariaRole = 'toolbar';
-            
-            if (me.rendered) {
-                me.ariaEl.dom.setAttribute('role', 'toolbar');
-                me.initFocusableContainer(true);
-            }
-        }
+        me.checkFocusableTools();
     },
 
     afterLayout: function() {
@@ -266,10 +318,11 @@ Ext.define('Ext.panel.Header', {
 
         title = title || '';
 
-        isString = typeof title === 'string';
-        if (isString) {
+        isString = Ext.isString(title);
+
+        if (!Ext.isObject(title)) {
             title = {
-                text: title
+                text: title.toString()
             };
         }
 
@@ -330,6 +383,52 @@ Ext.define('Ext.panel.Header', {
 
         if (itemPosition !== undefined) {
             me.insert(itemPosition, me._userItems);
+        }
+        
+        me.checkFocusableTools();
+    },
+    
+    checkFocusableTools: function() {
+        var me = this,
+            tools = me.tools,
+            haveFocusableTool, i, len;
+
+        if (me.isAccordionHeader) {
+            me.enableFocusableContainer = false;
+            
+            return;
+        }
+        
+        // We only need to enable FocusableContainer behavior when there are focusable tools.
+        // For instance, Windows and Accordion panels can have Close tool that is not focusable,
+        // in which case there is no sense in making the header behave like focusable container.
+        for (i = 0, len = tools.length; i < len; i++) {
+            if (tools[i].focusable) {
+                haveFocusableTool = true;
+                break;
+            }
+        }
+        
+        if (haveFocusableTool) {
+            if (!me.initialConfig.hasOwnProperty('enableFocusableContainer') ||
+                me.enableFocusableContainer) {
+                me.ariaRole = 'toolbar';
+                me.enableFocusableContainer = true;
+                
+                if (me.rendered) {
+                    me.ariaEl.dom.setAttribute('role', 'toolbar');
+                    me.initFocusableContainer(true);
+                }
+            }
+        }
+        else {
+            me.ariaRole = 'presentation';
+            me.enableFocusableContainer = false;
+            
+            if (me.rendered) {
+                me.ariaEl.dom.setAttribute('role', 'presentation');
+                me.initFocusableContainer(true);
+            }
         }
     },
 
@@ -452,18 +551,6 @@ Ext.define('Ext.panel.Header', {
 
         onDblClick: function(e){
             this.fireClickEvent('dblclick', e);
-        },
-        
-        onFocusableContainerMousedown: function(e, target) {
-            var targetCmp = Ext.Component.fromElement(target);
-            
-            // We don't want to focus the header on mousedown
-            if (targetCmp === this) {
-                e.preventDefault();
-            }
-            else {
-                this.mixins.focusablecontainer.onFocusableContainerMousedown.apply(this, arguments);
-            }
         },
 
         syncBeforeAfterTitleClasses: function(force) {

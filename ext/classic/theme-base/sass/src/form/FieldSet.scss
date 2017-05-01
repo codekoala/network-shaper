@@ -19,12 +19,16 @@
     .#{$prefix}form-cb-wrap {
         font-size: 0;
         line-height: 0;
+        min-height: 0;
         height: auto; // override form-cb-wrap's height from neutral theme
     }
 
     .#{$prefix}form-cb {
         margin: 0; // override the default checkbox margin
-        position: static; // Checkboxes are now absolutely positioned so reset the positioning (see EXTJSIV-10302).
+        // Checkboxes are now absolutely positioned so reset the positioning (see EXTJSIV-10302).
+        position: static;
+        // Need to reset display to have dimensions applied
+        display: inherit;
     }
 }
 

@@ -1,5 +1,4 @@
 describe("Ext.layout.container.VBox", function(){
-    
     var ct, c, makeCt;
     
     afterEach(function(){
@@ -8,105 +7,42 @@ describe("Ext.layout.container.VBox", function(){
     });
     
     describe("defaults", function(){
-        it("should have no padding", function(){
-            expect(Ext.layout.container.VBox.prototype.padding).toBe(0);
+        var counter = 0,
+            proto = Ext.layout.container.VBox.prototype;
+        
+        beforeEach(function() {
+            // We only need to create a layout instance once to wire up configs
+            if (!counter) {
+                ct = new Ext.container.Container({
+                    renderTo: Ext.getBody(),
+                    layout: 'vbox',
+                    width: 100,
+                    height: 100
+                });
+                
+                counter++;
+            }
         });
         
-        it("should have pack start", function(){
-            expect(Ext.layout.container.VBox.prototype.pack).toBe('start');    
+        it("should have align: begin", function() {
+            expect(proto.align).toBe('begin');
+        });
+        
+        it("should have constrainAlign: false", function() {
+            expect(proto.constrainAlign).toBe(false);
+        });
+        
+        it("should have enableSplitters: true", function() {
+            expect(proto.enableSplitters).toBe(true);
+        });
+        
+        it("should have no padding", function() {
+            expect(proto.padding).toBe(0);
+        });
+        
+        it("should have pack start", function() {
+            expect(proto.pack).toBe('start');    
         });  
-    });
-
-    describe('restoring scroll state', function() {
-        var myWin, form, lastCheckbox, scroller, scrollPos;
-
-        beforeEach(function() {
-            myWin = new Ext.window.Window({
-                title: 'Hello',
-                width: 400,
-                height: 300,
-                layout: 'fit',
-                items: [{
-                    xtype: 'form',
-                    autoScroll: true,
-                    layout: 'vbox',
-
-                    fieldDefaults: {
-                        labelAlign: 'top',
-                        msgTarget: 'side'
-                    },
-                    items: [{
-                        xtype: 'textfield',
-                        text: 'ddd'
-                    }, {
-                        xtype: 'textfield',
-                        text: 'ddd'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'checkbox',
-                        boxLabel: 'Checkbox 1'
-                    }, {
-                        xtype: 'button',
-                        text: 'Add'
-                    }]
-                }]
-            });
-            myWin.show();
-            form = myWin.down('form');
-            lastCheckbox = form.child('checkbox:last');
-            scroller = form.getScrollable();
-        });
-
-        afterEach(function() {
-            myWin.destroy();
-        });
-
-        it('should restore scroll state after a layout', function() {
-            var scrollY;
-
-            runs(function() {
-                scroller.scrollIntoView(lastCheckbox.el, false);
-                scrollY = scroller.getPosition().y;
-                lastCheckbox.focus();
-            });
-
-            waitsFor(function() {
-                return lastCheckbox.hasFocus;
-            }, 'last checkbox to gain focus');
-
-            runs(function() {
-                expect(scroller.getPosition().y).toBe(scrollY);
-            });
-        });
     });
 
     describe("removing items", function(){
@@ -157,7 +93,8 @@ describe("Ext.layout.container.VBox", function(){
             });
             
             // When adding the item to the collapsed panel, it won't render
-            ct.add({});
+            c = ct.add({});
+            
             expect(function() {
                 ct.remove(0, false);
             }).not.toThrow();
@@ -687,6 +624,44 @@ describe("Ext.layout.container.VBox", function(){
                 expect(getHeight(1)).toBe(400);
             });
         });
+
+        describe("%age", function(){
+            it("should be able to use %age height", function(){
+                makeCt([{
+                    height: '50%'
+                }, {
+                    height: '50%'
+                }]);
+                expect(getHeight(0)).toBe(300);
+                expect(getHeight(1)).toBe(300);
+            });
+            
+            it("should work with fixed height", function(){
+                makeCt([{
+                    height: 100
+                }, {
+                    height: '20%'
+                }, {
+                    height: 380
+                }]);
+                expect(getHeight(0)).toBe(100);
+                expect(getHeight(1)).toBe(120);
+                expect(getHeight(2)).toBe(380);
+            });
+            
+            it("should work with flex", function(){
+                makeCt([{
+                    flex: 2
+                }, {
+                    height: '40%'
+                }, {
+                    flex: 1
+                }]);    
+                expect(getHeight(0)).toBe(240);
+                expect(getHeight(1)).toBe(240);
+                expect(getHeight(2)).toBe(120);
+            });
+        });
         
         describe("mixed", function(){
             it("should give any remaining space to a single flexed item", function(){
@@ -862,8 +837,37 @@ describe("Ext.layout.container.VBox", function(){
                 expect(c2.getHeight()).toBe(100);
                 expect(c3.getHeight()).toBe(100);
             });
+
+            describe("with %age", function() {
+                it("should respect min constraints", function() {
+                    document.documentElement.style.height = document.body.style.height = '100%';
+
+                    makeCt([{
+                        height: '10%',
+                        minHeight: 250
+                    },{
+                        flex: 1
+                    }]);
+                    expect(getHeight(0)).toBe(250);
+                    expect(getHeight(1)).toBe(350);
+
+                    document.documentElement.style.height = document.body.style.height = '';
+                });
+
+                it("should respect max constraints", function() {
+                    document.documentElement.style.height = document.body.style.height = '100%';
+                    makeCt([{
+                        height: '90%',
+                        maxHeight: 100
+                    },{
+                        flex: 1
+                    }]);
+                    expect(getHeight(0)).toBe(100);
+                    expect(getHeight(1)).toBe(500);
+                    document.documentElement.style.height = document.body.style.height = '';
+                });
+            });
         });
-        
     });
     
     // Taken from extjs/test/issues/issue.html?id=5497
@@ -1123,7 +1127,7 @@ describe("Ext.layout.container.VBox", function(){
                 return {
                     width: scrollSize,
                     height: scrollSize
-                }
+                };
             };
         });
 
@@ -1505,7 +1509,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([400, 180]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1561,7 +1565,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([200, 300]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1616,7 +1620,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([200, 380]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1666,7 +1670,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([200, 300]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1720,7 +1724,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([200, 380]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1791,7 +1795,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([400, 180]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1844,7 +1848,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([200, 300]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1898,7 +1902,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([200, 380]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1948,7 +1952,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([200, 300]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -1999,7 +2003,7 @@ describe("Ext.layout.container.VBox", function(){
                                     }]);
                                     expectScroll(false, true);
                                     expectHeights([200, 380]);
-                                    expectInnerCtHeight(defaultSize - scrollSize)
+                                    expectInnerCtHeight(defaultSize - scrollSize);
                                 });
 
                                 it("should account for the horizontal scrollbar when the minHeight causes an overflow", function() {
@@ -2908,6 +2912,16 @@ describe("Ext.layout.container.VBox", function(){
         });
 
         describe("preserving scroll state", function() {
+            var endSpy;
+
+            beforeEach(function() {
+                endSpy = jasmine.createSpy();
+            });
+
+            afterEach(function() {
+                endSpy = null;
+            });
+
             it("should restore the horizontal/vertical scroll position with user scrolling", function() {
                 makeCt({
                     height: 400,
@@ -2915,18 +2929,32 @@ describe("Ext.layout.container.VBox", function(){
                     scrollable: true,
                     items: [{
                         height: 300,
-                        width: 300
+                        width: 500
                     }, {
                         height: 300,
-                        width: 300
+                        width: 500
                     }]
                 });
                 var scrollable = ct.getScrollable();
-                scrollable.setY(50);
-                scrollable.setX(30);
-                ct.setSize(401, 401);
-                expect(scrollable.getY()).toBe(50);
-                expect(scrollable.getX()).toBe(30);
+                scrollable.on('scrollend', endSpy);
+                scrollable.scrollTo(30, 50);
+                waitsFor(function() {
+                    return endSpy.callCount > 0;
+                });
+                runs(function() {
+                    ct.setSize(401, 401);
+                });
+                waitsFor(function() {
+                    var pos = scrollable.getPosition();
+                    return pos.x > 0 && pos.y > 0;
+                });
+                runs(function() {
+                    var pos = scrollable.getPosition();
+                    expect(pos).toEqual({
+                        x: 30,
+                        y: 50
+                    });
+                });
             });
 
             it("should restore the horizontal/vertical scroll position with programmatic scrolling", function() {
@@ -2940,18 +2968,32 @@ describe("Ext.layout.container.VBox", function(){
                     },
                     items: [{
                         height: 300,
-                        width: 300
+                        width: 500
                     }, {
                         height: 300,
-                        width: 300
+                        width: 500
                     }]
                 });
                 var scrollable = ct.getScrollable();
-                scrollable.setY(50);
-                scrollable.setX(30);
-                ct.setSize(401, 401);
-                expect(scrollable.getY()).toBe(50);
-                expect(scrollable.getX()).toBe(30);
+                scrollable.on('scrollend', endSpy);
+                scrollable.scrollTo(30, 50);
+                waitsFor(function() {
+                    return endSpy.callCount > 0;
+                });
+                runs(function() {
+                    ct.setSize(401, 401);
+                });
+                waitsFor(function() {
+                    var pos = scrollable.getPosition();
+                    return pos.x > 0 && pos.y > 0;
+                });
+                runs(function() {
+                    var pos = scrollable.getPosition();
+                    expect(pos).toEqual({
+                        x: 30,
+                        y: 50
+                    });
+                });
             });
         });
     });

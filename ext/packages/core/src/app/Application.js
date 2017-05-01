@@ -82,13 +82,11 @@
  *     Ext.application('MyApp.Application');
  *
  * For more information about writing Ext JS applications, please see the [application architecture guide](../../../application_architecture/application_architecture.html).
- *
- * [mvc]: #/guide/application_architecture
  */
 Ext.define('Ext.app.Application', {
     extend: 'Ext.app.Controller',
 
-    requires : [
+    requires: [
         'Ext.util.History',
         'Ext.util.MixedCollection'
     ],
@@ -99,21 +97,38 @@ Ext.define('Ext.app.Application', {
      * @cfg {String} extend A class name to use with the `Ext.application` call. The class must also extend {@link Ext.app.Application}.
      *
      *     Ext.define('MyApp.Application', {
-     *         extend : 'Ext.app.Application',
+     *         extend: 'Ext.app.Application',
      *
-     *         launch : function() {
-     *             Ext.direct.Manager.addProvider(Ext.app.REMOTING_API);
+     *         launch: function() {
+     *             Ext.direct.Manager.addProvider(Ext.REMOTING_API);
      *         }
      *     });
      *
      *     Ext.application({
-     *         extend : 'MyApp.Application'
+     *         extend: 'MyApp.Application'
      *     });
      */
 
     /**
      * @cfg {String/String[]} controllers
-     * Names of controllers that the app uses.
+     * Names of {@link Ext.app.Controller controllers} that the app uses.  By default, 
+     * the framework will look for the controllers in the "controller" folder within the 
+     * {@link #appFolder}.  Controller classes should be named using the syntax of
+     * "{appName}.controller.{ClassName}" with additional sub-folders under the 
+     * "controller" folder specified within the class name following "controller.".
+     * 
+     *     // by default, the following controller class would be located at:
+     *     // app/controller/Main.js
+     *     controllers: '.Main' // or 'MyApp.controller.Main'
+     * 
+     *     // while the following would be located at:
+     *     // app/controller/customer/Main.js
+     *     controllers: 'customer.Main' // or 'MyApp.controller.customer.Main'
+     * 
+     * **Note:** If the controller has a different namespace than that of the 
+     * application you will need to specify the full class name as well as define a path 
+     * in the {@link Ext.Loader#cfg-paths Loader's paths} config or 
+     * {@link Ext.Loader#method-setPath setPath} method.
      */
 
     /**
@@ -204,11 +219,45 @@ Ext.define('Ext.app.Application', {
          */
         profiles: [],
 
+        /**
+        * @cfg {Ext.app.Profile}
+        */
         currentProfile: null,
 
         // @cmd-auto-dependency {aliasPrefix: "view.", mvc: true, blame: "all"}
         /**
-         * @cfg {String/Object} mainView
+         * @cfg {String/Object/Ext.Component} mainView
+         * The application class to be used as the main viewport view for the
+         * application.  The view will be configured with the
+         * {@link Ext.plugin.Viewport viewport plugin} to ensure the view takes up all
+         * available space in the browser viewport.  The main view will be created after
+         * the application's {@link #init} method is called and before the
+         * {@link #launch} method.  The main view should be an application class type and
+         * not a class from the framework.
+         *
+         * The main view value may be:
+         *  - string representing the full class name of the main view or the partial class name following "AppName.view." (provided your main view class follows that convention).
+         *  - config object for the main view
+         *  - main view class instance
+         *
+         *     Ext.define('MyApp.view.main.Main', {
+         *         extend: 'Ext.panel.Panel',
+         *         xtype: 'mainview',
+         *         title: 'Main Viewport View'
+         *     });
+         *
+         *     Ext.application({
+         *         name : 'MyApp',
+         *
+         *         mainView: 'MyApp.view.main.Main'
+         *         // mainView: 'main.Main'
+         *         // mainView: new MyApp.view.main.Main()
+         *         // mainView: { xtype: 'mainview' }
+         *     });
+         *
+         * **Note:** You may also call {@link #setMainView} at runtime if you require
+         * logic within the application's {@link #launch} method to be processed prior to
+         * the creation of the main view.
          */
         mainView: {
             $value: null,
@@ -226,7 +275,10 @@ Ext.define('Ext.app.Application', {
          * The glyphFontFamily to use for this application.  Used as the default font-family
          * for all components that support a `glyph` config.
          */
-        glyphFontFamily:  null
+        glyphFontFamily:  null,
+
+        // Docs will go in subclasses
+        quickTips: true
     },
     
     onClassExtended: function(cls, data, hooks) {
@@ -259,6 +311,8 @@ Ext.define('Ext.app.Application', {
         // Require all profiles
         Controller.processDependencies(proto, requires, namespace, 'profile', data.profiles);
 
+        // This hook is used in the classic toolkit to process other configs that need to
+        // require classes (like tooltips and viewport plugin).
         proto.getDependencies(cls, data, requires);
 
         // Any "requires" also have to be processed before we fire up the App instance.
@@ -267,6 +321,18 @@ Ext.define('Ext.app.Application', {
 
             hooks.onBeforeCreated = function(cls, data) {
                 var args = Ext.Array.clone(arguments);
+
+                //<debug>
+                // This hook is to allow unit tests to come in and control the
+                // requires so we don't have to get into the internals of the Loader.
+                // Not intended to be used for any other purpose.
+                if (data.__handleRequires) {
+                    data.__handleRequires.call(this, requires, Ext.bind(function() {
+                        return onBeforeClassCreated.apply(this, args);
+                    }, this));
+                    return;
+                }
+                //</debug>
                 
                 Ext.require(requires, function () {
                     return onBeforeClassCreated.apply(this, args);
@@ -286,7 +352,7 @@ Ext.define('Ext.app.Application', {
 
         Ext.app.route.Router.application = me;
 
-        me.callParent(arguments);
+        me.callParent([config]);
 
         //<debug>
         if (Ext.isEmpty(me.getName())) {
@@ -304,12 +370,11 @@ Ext.define('Ext.app.Application', {
         Ext.Loader.setConfig({ enabled: true });
         //</debug>
 
-        var profiles = this.getProfiles();
-        if (profiles && profiles.length) {
-            Ext.require(profiles, this.onProfilesLoaded, this);
-        } else {
-            this.onProfilesReady();
-        }
+        this.onProfilesReady();
+    },
+
+    applyId: function(id) {
+        return id || this.$className;
     },
 
     /**
@@ -322,7 +387,26 @@ Ext.define('Ext.app.Application', {
     onAppUpdate: Ext.emptyFn,
 
     onProfilesReady: function() {
-        var me = this;
+        var me = this,
+            profiles = me.getProfiles(),
+            length = profiles.length,
+            current, i, instance;
+
+        for (i = 0; i < length; i++) {
+            instance = Ext.create(profiles[i], {
+                application: me
+            });
+
+            if (instance.isActive() && !current) {
+                current = instance;
+                me.setCurrentProfile(current);
+            }
+        }
+
+        if (current) {
+            current.init();
+        }
+
         me.initControllers();
         me.onBeforeLaunch();
         me.finishInitControllers();
@@ -357,12 +441,24 @@ Ext.define('Ext.app.Application', {
 
     initControllers: function() {
         var me = this,
-            controllers = Ext.Array.from(me.controllers);
+            controllers = Ext.Array.from(me.controllers),
+            profile = me.getCurrentProfile(),
+            i, ln;
 
         me.controllers = new Ext.util.MixedCollection();
 
-        for (var i = 0, ln = controllers.length; i < ln; i++) {
+        for (i = 0, ln = controllers.length; i < ln; i++) {
             me.getController(controllers[i]);
+        }
+
+        // Also launch controllers for the active profile (if we have one)
+        //
+        if (profile) {
+            controllers = profile.getControllers();
+
+            for (i = 0, ln = controllers.length; i < ln; i++) {
+                me.getController(controllers[i]);
+            }
         }
     },
     
@@ -420,7 +516,7 @@ Ext.define('Ext.app.Application', {
             History.init();
         }
         token = History.getToken();
-        if (token) {
+        if (token || token === defaultToken) {
             Ext.app.route.Router.onStateChange(token);
         } else if (defaultToken) {
             History.add(defaultToken);
@@ -458,9 +554,12 @@ Ext.define('Ext.app.Application', {
     },
 
     applyMainView: function(value) {
-        var view;
-        view = this.getView(value);
-        return view.create();
+        var view = this.getView(value);
+
+        // Ensure the full component stack is available immediately.
+        return view.create({
+            $initParent: this.viewport
+        });
     },
 
     /**
@@ -486,11 +585,18 @@ Ext.define('Ext.app.Application', {
         Ext.destroy(controller);
     },
 
+    /**
+     * Get an application's controller based on name or id.  Generally, the controller id will be the same as the name
+     * unless otherwise specified.
+     * @param {String} name The name or id of the controller you are trying to retrieve
+     * @param {Boolean} preventCreate (private)
+     */
     getController: function(name, /* private */ preventCreate) {
-        var me          = this,
+        var me = this,
             controllers = me.controllers,
             className, controller, len, i, c, all;
 
+        // First check with the passed value if we have an explicit id
         controller = controllers.get(name);
         
         // In a majority of cases, the controller id will be the same as the name.
@@ -514,7 +620,7 @@ Ext.define('Ext.app.Application', {
             
             controller = Ext.create(className, {
                 application: me,
-                moduleClassName: name
+                moduleClassName: className
             });
 
             controllers.add(controller);
@@ -536,31 +642,40 @@ Ext.define('Ext.app.Application', {
         this.controllers.remove(controller);    
     },
 
-    // Inherit docs
     getApplication: function() {
         return this;
     },
     
-    // Inherit docs
-    destroy: function(destroyRefs){
+    destroy: function(destroyRefs) {
         var me = this,
             controllers = me.controllers,
             ns = Ext.namespace(me.getName()),
             appProp = me.getAppProperty();
+        
+        Ext.un('appupdate', me.onAppUpdate, me);
          
         Ext.destroy(me.viewport);
            
         if (controllers) {
-            controllers.each(function(controller){
+            controllers.each(function(controller) {
                 controller.destroy(destroyRefs, true);
             });
         }
+        
         me.controllers = null;
         me.callParent([destroyRefs, true]);
         
         // Clean up any app reference
         if (ns && ns[appProp] === me) {
             delete ns[appProp];
+        }
+
+        if (Ext.app.route.Router.application === me) {
+            Ext.app.route.Router.application = null;
+        }
+        
+        if (Ext.app.Application.instance === me) {
+            Ext.app.Application.instance = null;
         }
     },
 
@@ -569,75 +684,15 @@ Ext.define('Ext.app.Application', {
     },
 
     /**
-     * @private
      * As a convenience developers can locally qualify profile names (e.g. 'MyProfile' vs
-     * 'MyApp.profile.MyProfile'). This just makes sure everything ends up fully qualified
+     * 'MyApp.profile.MyProfile'). This just makes sure everything ends up fully qualified.
+     * @private
      */
     applyProfiles: function(profiles) {
         var me = this;
+
         return Ext.Array.map(profiles, function(profile) {
             return me.getModuleClassName(profile, "profile");
         });
-    },
-
-    /**
-     * @private
-     * Callback that is invoked when all of the configured Profiles have been loaded. Detects the current profile and
-     * gathers any additional dependencies from that profile, then loads all of those dependencies.
-     */
-    onProfilesLoaded: function() {
-        var me = this,
-            profiles = me.getProfiles(),
-            length = profiles.length,
-            instances = [],
-            current, i, profileDeps, requires, controllers, profileControllers,
-            views, profileViews, stores, profileStores, models, profileModels;
-
-        for (i = 0; i < length; i++) {
-            instances[i] = Ext.create(profiles[i], {
-                application: me
-            });
-
-            if (instances[i].isActive() && !current) {
-                current = instances[i];
-                profileDeps = current.getDependencies();
-                requires = profileDeps.all;
-
-                me.setCurrentProfile(current);
-                profileControllers = profileDeps.controller;
-
-                if (profileControllers.length) {
-                    controllers = me.controllers = (me.controllers || []);
-                    controllers.push.apply(controllers, profileControllers);
-                }
-
-                profileViews = profileDeps.view;
-
-                if (profileViews.length) {
-                    views = me.views = (me.views || []);
-                    views.push.apply(views, profileViews);
-                }
-
-                profileStores = profileDeps.store;
-
-                if (profileStores.length) {
-                    stores = me.stores = (me.stores || []);
-                    stores.push.apply(stores, profileStores);
-                }
-
-                profileModels = profileDeps.model;
-
-                if (profileModels.length) {
-                    models = me.models = (me.models || []);
-                    models.push.apply(models, profileModels);
-                }
-            }
-        }
-
-        if (requires) {
-            Ext.require(requires, me.onProfilesReady, me);
-        } else {
-            me.onProfilesReady();
-        }
     }
 });

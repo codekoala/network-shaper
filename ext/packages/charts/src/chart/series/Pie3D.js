@@ -47,8 +47,7 @@ Ext.define('Ext.chart.series.Pie3D', {
     type: 'pie3d',
     seriesType: 'pie3d',
     alias: 'series.pie3d',
-
-    isPie3D: true,
+    is3D: true,
 
     config: {
         rect: [0, 0, 0, 0],
@@ -81,7 +80,7 @@ Ext.define('Ext.chart.series.Pie3D', {
         hidden: [], // Populated by the coordinateX method.
 
         /**
-         * @cfg {Object} highlightCfg Default highlight config for the pie series.
+         * @cfg {Object} highlightCfg Default {@link #highlight} config for the 3D pie series.
          * Slides highlighted pie sector outward.
          */
         highlightCfg: {
@@ -96,15 +95,7 @@ Ext.define('Ext.chart.series.Pie3D', {
          * @private
          * @cfg {Boolean/Object} [shadow=false]
          */
-        shadow: false,
-
-        /**
-         * @cfg {Object} highlightCfg Default {@link #highlight} config for the 3D pie series.
-         * Slides highlighted pie sector outward.
-         */
-        highlightCfg: {
-            margin: 20
-        }
+        shadow: false
     },
 
     // Subtract 90 degrees from rotation, so that `rotation` config's default
@@ -126,6 +117,14 @@ Ext.define('Ext.chart.series.Pie3D', {
         this.doUpdateStyles();
     },
 
+    updateDistortion: function () {
+        this.setRadius();
+    },
+
+    updateThickness: function () {
+        this.setRadius();
+    },
+
     updateColors: function (colors) {
         this.setSubStyle({baseColor: colors});
     },
@@ -138,7 +137,7 @@ Ext.define('Ext.chart.series.Pie3D', {
             };
         } else if (!Ext.isObject(shadow)) {
             shadow = {
-                shadowColor: Ext.draw.Color.RGBA_NONE
+                shadowColor: Ext.util.Color.RGBA_NONE
             };
         }
 
@@ -246,7 +245,7 @@ Ext.define('Ext.chart.series.Pie3D', {
         }
 
         for (i = 0; i < spriteCount; i++) {
-            sprites[i].fx.setConfig(animation);
+            sprites[i].setAnimation(animation);
         }
 
         for (i = 0; i < recordCount; i++) {
@@ -262,7 +261,7 @@ Ext.define('Ext.chart.series.Pie3D', {
         }
 
         for (i *= spritesPerSlice; i < spriteCount; i++) {
-            sprites[i].fx.setConfig(animation);
+            sprites[i].setAnimation(animation);
             sprites[i].setAttributes({
                 startAngle: twoPi,
                 endAngle: twoPi,
@@ -308,9 +307,15 @@ Ext.define('Ext.chart.series.Pie3D', {
             padding = chart.getInnerPadding(),
             rect = chart.getMainRect() || [0, 0, 1, 1],
             width = rect[2] - padding * 2,
-            height = (rect[3] - padding * 2 - me.getThickness() * 2) / me.getDistortion();
+            height = rect[3] - padding * 2 - me.getThickness(),
+            horizontalRadius = width / 2,
+            verticalRadius = horizontalRadius * me.getDistortion();
 
-        return Math.min(width, height) * 0.5;
+        if (verticalRadius > height / 2) {
+            return height / (me.getDistortion() * 2);
+        } else {
+            return horizontalRadius;
+        }
     },
 
     getSprites: function () {
@@ -372,7 +377,7 @@ Ext.define('Ext.chart.series.Pie3D', {
                 for (j = 0; j < sliceSprites.length; j++) {
                     sprite = sliceSprites[j];
                     if (animation) {
-                        sprite.fx.setConfig(animation);
+                        sprite.setAnimation(animation);
                     }
                     sprite.setAttributes(sliceAttributes);
                 }

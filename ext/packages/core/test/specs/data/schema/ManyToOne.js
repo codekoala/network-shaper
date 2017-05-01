@@ -1,7 +1,7 @@
 describe("Ext.data.schema.ManyToOne", function() {
     
     var schema, Post, Thread, threadRole, postRole,
-        threadCalled =false, 
+        threadCalled = false, 
         postCalled = false;
 
     function definePost(refCfg) {
@@ -30,7 +30,7 @@ describe("Ext.data.schema.ManyToOne", function() {
             responseText: Ext.JSON.encode(data)
         });
     }
-    
+
     beforeEach(function() {
         threadCalled = postCalled = false;
         MockAjaxManager.addMethods();
@@ -47,7 +47,7 @@ describe("Ext.data.schema.ManyToOne", function() {
             }
         });
     });
-    
+
     afterEach(function() {
         MockAjaxManager.removeMethods();
         Ext.undefine('spec.Post');
@@ -307,7 +307,7 @@ describe("Ext.data.schema.ManyToOne", function() {
                 definePost();
                 SubThread = Ext.define('spec.SubThread', {
                     extend: 'spec.Thread'
-                })
+                });
             });
 
             it("should not have any associations", function() {
@@ -405,6 +405,8 @@ describe("Ext.data.schema.ManyToOne", function() {
             });
 
             var store = new Ext.data.Store({
+                // Always want immediate load
+                asynchronousLoad: false,
                 model: 'Node'
             });
             store.load();
@@ -417,10 +419,62 @@ describe("Ext.data.schema.ManyToOne", function() {
             Ext.undefine('spec.Node');
         });
 
+        describe("complete", function() {
+            it("should mark the store complete if there are records", function() {
+                definePost();
+                var store = new Ext.data.Store({
+                    model: Thread
+                });
+
+                store.loadRawData([{
+                    id: 1,
+                    posts: [{
+                        id: 101,
+                        content: 'Foo'
+                    }, {
+                        id: 102,
+                        content: 'Bar'
+                    }]
+                }]);
+
+                expect(store.first().posts().complete).toBe(true);
+            });
+
+            it("should mark the store complete if a root exists and there are no records", function() {
+                definePost();
+                var store = new Ext.data.Store({
+                    model: Thread
+                });
+
+                store.loadRawData([{
+                    id: 1,
+                    posts: []
+                }]);
+
+                expect(store.first().posts().complete).toBe(true);
+            });
+
+            it("should not mark the store complete if a root doesn't exist", function() {
+                definePost();
+                var store = new Ext.data.Store({
+                    model: Thread
+                });
+
+                store.loadRawData([{
+                    id: 1
+                }]);
+
+                expect(store.first().posts().complete).toBe(false);
+            });
+        });
+
         describe("key inference", function() {
             describe("without session", function() {
-                it("should infer the key from the parent", function() {
+                beforeEach(function() {
                     definePost();
+                });
+
+                it("should infer the key from the parent", function() {
                     var thread = Thread.load(1);
                     complete({
                         id: 1,
@@ -431,6 +485,27 @@ describe("Ext.data.schema.ManyToOne", function() {
                         }]
                     });
                     var posts = thread.posts();
+                    expect(posts.getCount()).toBe(2);
+                    expect(posts.getAt(0).getId()).toBe(101);
+                    expect(posts.getAt(0).get('threadId')).toBe(1);
+                    expect(posts.getAt(0).dirty).toBe(false);
+                    expect(posts.getAt(1).getId()).toBe(102);
+                    expect(posts.getAt(1).get('threadId')).toBe(1);
+                    expect(posts.getAt(1).dirty).toBe(false);
+                });
+
+                it("should infer the key when loading the store, not nested", function() {
+                    var thread = Thread.load(1);
+                    complete({
+                        id: 1
+                    });
+                    var posts = thread.posts();
+                    posts.load();
+                    complete([{
+                        id: 101
+                    }, {
+                        id: 102
+                    }]);
                     expect(posts.getCount()).toBe(2);
                     expect(posts.getAt(0).getId()).toBe(101);
                     expect(posts.getAt(0).get('threadId')).toBe(1);
@@ -497,6 +572,27 @@ describe("Ext.data.schema.ManyToOne", function() {
                     expect(posts.getAt(1).dirty).toBe(false);
                 });
 
+                it("should infer the key when loading the store, not nested", function() {
+                    var thread = Thread.load(1, null, session);
+                    complete({
+                        id: 1
+                    });
+                    var posts = thread.posts();
+                    posts.load();
+                    complete([{
+                        id: 101
+                    }, {
+                        id: 102
+                    }]);
+                    expect(posts.getCount()).toBe(2);
+                    expect(posts.getAt(0).getId()).toBe(101);
+                    expect(posts.getAt(0).get('threadId')).toBe(1);
+                    expect(posts.getAt(0).dirty).toBe(false);
+                    expect(posts.getAt(1).getId()).toBe(102);
+                    expect(posts.getAt(1).get('threadId')).toBe(1);
+                    expect(posts.getAt(1).dirty).toBe(false);
+                });
+
                 it("should not infer the key from the parent if a key is specified", function() {
                     var thread = Thread.load(1, null, session);
                     complete({
@@ -517,8 +613,77 @@ describe("Ext.data.schema.ManyToOne", function() {
                     var rec = session.peekRecord('Post', 101);
                     expect(posts.indexOf(rec)).toBe(-1);
                 });
+
+                it("should allow inference for phantom records", function() {
+                    var thread = session.createRecord('Thread', {}),
+                        post = session.createRecord('Post', {
+                            threadId: thread.getId()
+                        });
+
+                    expect(thread.posts().getCount()).toBe(1);
+                    expect(thread.posts().getAt(0)).toBe(post);
+                });
             });
         });
+    });
+
+    describe("id change of the one", function() {
+        function createSuite(withSession) {
+            describe(withSession ? "with session" : "without session", function() {
+                var session, thread;
+
+                beforeEach(function() {
+                    definePost();
+                    if (withSession) {
+                        session = new Ext.data.Session();
+                    }
+
+                    thread = new Thread(null, session);
+                });
+
+                afterEach(function() {
+                    if (withSession) {
+                        session.destroy();
+                    }
+                    session = thread = null;
+                });
+
+                it("should not cause an exception if the store is not created", function() {
+                    expect(function() {
+                        thread.setId(100);
+                    }).not.toThrow();
+                });
+
+                it("should update the store filter", function() {
+                    var posts = thread.posts(),
+                        filter = posts.getFilters().getAt(0);
+
+                    expect(filter.getValue()).toBe(thread.id);
+                    posts.add({
+                        id: 1
+                    });
+                    thread.setId(100);
+                    expect(filter.getValue()).toBe(100);
+                });
+
+                it("should update the foreign key", function() {
+                    var records = thread.posts().add([{id: 1}, {id: 2}, {id: 3}]);
+
+                    expect(records[0].get('threadId')).toBe(thread.id);
+                    expect(records[1].get('threadId')).toBe(thread.id);
+                    expect(records[2].get('threadId')).toBe(thread.id);
+
+                    thread.setId(100);
+
+                    expect(records[0].get('threadId')).toBe(100);
+                    expect(records[1].get('threadId')).toBe(100);
+                    expect(records[2].get('threadId')).toBe(100);
+                });
+            });
+        }
+
+        createSuite(false);
+        createSuite(true);
     });
     
     describe("getters/setters", function() {
@@ -1386,10 +1551,14 @@ describe("Ext.data.schema.ManyToOne", function() {
                 
                 describe("the many", function() {
                     var posts;
-                    function makeThread() {
-                        thread = new Thread({
-                            id: 3
-                        }, session);
+                    function makeThread(id) {
+                        var cfg = {
+                            id: id || 3
+                        };
+                        if (id === null) {
+                            delete cfg.id;
+                        }
+                        thread = new Thread(cfg, session);
                     }
                     
                     var thread;
@@ -1448,12 +1617,28 @@ describe("Ext.data.schema.ManyToOne", function() {
                         expect(filter.getProperty()).toBe('threadId');
                         expect(filter.getValue()).toBe(3);
                     });
+
+                    describe("complete", function() {
+                        beforeEach(function() {
+                            definePost();
+                        });
+
+                        it("should mark the store as complete if the record is a phantom", function() {
+                            makeThread(null);
+                            expect(thread.posts().complete).toBe(true);
+                        });
+
+                        it("should not mark the store as complete if the record is not a phantom", function() {
+                            makeThread();
+                            expect(thread.posts().complete).toBe(false);
+                        });
+                    });
                     
                     describe("autoLoad", function() {
                         it("should not load the store by default", function() {
                             definePost();
                             makeThread();
-                            var spy = spyOn(Ext.data.Store.prototype, 'load').andReturn();
+                            var spy = spyOn(Ext.data.ProxyStore.prototype, 'load').andReturn();
                             thread.posts();
                             expect(spy.callCount).toBe(0);    
                         });  
@@ -1466,7 +1651,7 @@ describe("Ext.data.schema.ManyToOne", function() {
                             }); 
                             
                             makeThread();
-                            var spy = spyOn(Ext.data.Store.prototype, 'load').andReturn();
+                            var spy = spyOn(Ext.data.ProxyStore.prototype, 'load').andReturn();
                             thread.posts();
                             expect(spy.callCount).toBe(1);          
                         });
@@ -2420,5 +2605,31 @@ describe("Ext.data.schema.ManyToOne", function() {
         }
         createSuite(false);
         createSuite(true);
+    });
+
+    describe("misc", function() {
+        // EXTJS-19448
+        it("should not throw an exception when changing the FK causing a store removal when the record is joined to other things", function() {
+            definePost();
+
+            var thread = new Thread({
+                id: 1
+            });
+            var post = new Post();
+
+            thread.posts().add(post);
+
+            var store = new Ext.data.Store({
+                model: Post
+            });
+            store.add(post);
+
+            expect(function() {
+                post.setThread(null);
+            }).not.toThrow();
+            expect(thread.posts().getCount()).toBe(0);
+            expect(store.getCount()).toBe(1);
+            store.destroy();
+        });
     });
 });

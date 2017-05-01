@@ -14,6 +14,7 @@
         -webkit-mask-size: 100%;
     }
 
+    // TODO: Use FontAwesome
     .x-msgbox-info {
         -webkit-mask-image: get-image-url('pictos/info');
     }
@@ -53,7 +54,7 @@
         padding-top: 0;
     }
 
-    .x-field-input {
+    .x-input {
         padding-right: 2.2em;
     }
 }

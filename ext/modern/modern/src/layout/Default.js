@@ -35,9 +35,13 @@ Ext.define('Ext.layout.Default', {
         animation: null
     },
 
-    centerWrapperClass: 'x-center',
+    centerWrapperClass: Ext.baseCSSPrefix + 'center',
 
-    dockWrapperClass: 'x-dock',
+    dockWrapperClass: Ext.baseCSSPrefix + 'dock',
+
+    cls: Ext.baseCSSPrefix + 'layout-auto',
+
+    itemCls: Ext.baseCSSPrefix + 'layout-auto-item',
 
     positionMap: {
         top: 'start',
@@ -55,23 +59,35 @@ Ext.define('Ext.layout.Default', {
     },
 
     setContainer: function(container) {
-        this.dockedItems = [];
+        var me = this;
 
-        this.callParent([container]);
+        me.dockedItems = [];
 
-        container.onInitialized('onContainerInitialized', this);
+        me.callParent([container]);
+
+        container.innerElement.addCls(me.cls);
+
+        if (container.initialized) {
+            me.onContainerInitialized();
+        } else {
+            container.onInitialized('onContainerInitialized', me);
+        }
     },
 
     onContainerInitialized: function() {
-        var me = this,
-            options = {
-                delegate: '> component'
-            };
+        var me = this;
 
-        me.container.on('centeredchange', 'onItemCenteredChange', me, options, 'before')
-            .on('floatingchange', 'onItemFloatingChange', me, options, 'before')
-            .on('dockedchange', 'onBeforeItemDockedChange', me, options, 'before')
-            .on('afterdockedchange', 'onAfterItemDockedChange', me, options);
+        me.handleDockedItemBorders();
+
+        me.container.on({
+            delegate: '> component',
+
+            beforecenteredchange: 'onItemCenteredChange',
+            positionedchange: 'onItemPositionedChange',
+            afterdockedchange: 'onAfterItemDockedChange', // see Component#updateDocked
+
+            scope: me
+        });
     },
 
     monitorSizeStateChange: function() {
@@ -85,14 +101,14 @@ Ext.define('Ext.layout.Default', {
     },
 
     onItemAdd: function(item) {
-        var docked = item.getDocked();
-
-        if (docked != null) {
+        if (item.getDocked() != null) {
             this.dockItem(item);
         } else if (item.isCentered()) {
             this.onItemCenteredChange(item, true);
-        } else if (item.isFloating()) {
-            this.onItemFloatingChange(item, true);
+        } else if (item.isPositioned()) {
+            this.onItemPositionedChange(item, true);
+        } else if (item.isFloated()) {
+            this.onItemFloatedChange(item, true);
         } else {
             this.onItemInnerStateChange(item, true);
         }
@@ -104,11 +120,14 @@ Ext.define('Ext.layout.Default', {
      * @param {Boolean} [destroying]
      */
     onItemInnerStateChange: function(item, isInner, destroying) {
+        var itemCls = this.itemCls;
+
         if (isInner) {
             this.insertInnerItem(item, this.container.innerIndexOf(item));
-        }
-        else {
+            item.addCls(itemCls);
+        } else {
             this.removeInnerItem(item);
+            item.removeCls(itemCls);
         }
     },
 
@@ -158,16 +177,17 @@ Ext.define('Ext.layout.Default', {
     },
 
     onItemRemove: function(item, index, destroying) {
-        var docked = item.getDocked();
-
-        if (docked) {
+        if (item.getDocked()) {
             this.undockItem(item);
         }
         else if (item.isCentered()) {
             this.onItemCenteredChange(item, false);
         }
-        else if (item.isFloating()) {
-            this.onItemFloatingChange(item, false);
+        else if (item.isPositioned()) {
+            this.onItemPositionedChange(item, false);
+        }
+        else if (item.isFloated()) {
+            this.unfloatItem(item, destroying);
         }
         else {
             this.onItemInnerStateChange(item, false, destroying);
@@ -175,7 +195,7 @@ Ext.define('Ext.layout.Default', {
     },
 
     onItemMove: function(item, toIndex, fromIndex) {
-        if (item.isCentered() || item.isFloating()) {
+        if (item.isCentered() || item.isPositioned()) {
             item.setZIndex((toIndex + 1) * 2);
         }
         else if (item.isInnerItem()) {
@@ -190,36 +210,52 @@ Ext.define('Ext.layout.Default', {
     onItemCenteredChange: function(item, centered) {
         var wrapperName = '$centerWrapper';
 
-        if (centered) {
+        if (item.isFloated()) {
+            item.center();
+        } else {
+            if (centered) {
+                this.insertBodyItem(item);
+                item.link(wrapperName, new Ext.util.Wrapper({
+                    className: this.centerWrapperClass
+                }, item.element));
+            }
+            else {
+                item.unlink([wrapperName]);
+                this.removeBodyItem(item);
+            }
+        }
+    },
+
+    onItemPositionedChange: function(item, positioned) {
+        if (positioned) {
             this.insertBodyItem(item);
-            item.link(wrapperName, new Ext.util.Wrapper({
-                className: this.centerWrapperClass
-            }, item.element));
         }
         else {
-            item.unlink([wrapperName]);
             this.removeBodyItem(item);
         }
     },
 
-    onItemFloatingChange: function(item, floating) {
-        if (floating) {
-            this.insertBodyItem(item);
-        }
-        else {
-            this.removeBodyItem(item);
-        }
-    },
-
-    onBeforeItemDockedChange: function(item, docked, oldDocked) {
-        if (oldDocked) {
-            this.undockItem(item);
+    onItemFloatedChange: function(item, floated) {
+        if (item.isFloated() !== floated) {
+            if (floated) {
+                this.floatItem(item);
+            }
+            else {
+                this.unfloatItem(item);
+            }
         }
     },
 
     onAfterItemDockedChange: function(item, docked, oldDocked) {
-        if (docked) {
-            this.dockItem(item);
+        // Prevent this from being called during initialization of child items, the
+        // setting of docked on the component will occur before add to the container
+        if (item.initialized) {
+            if (oldDocked) {
+                this.undockItem(item, oldDocked);
+            }
+            if (docked) {
+                this.dockItem(item);
+            }
         }
     },
 
@@ -250,24 +286,37 @@ Ext.define('Ext.layout.Default', {
         item.setLayoutSizeFlags(flags);
     },
 
+    floatItem: function(item) {
+        // Remove from being an inner component
+        this.onItemInnerStateChange(item, false);
+    },
+
+    unfloatItem: function(item, destroying) {
+        if (!destroying) {
+            // Return to being an inner component
+            this.onItemInnerStateChange(item, true);
+        }
+    },
+
     dockItem: function(item) {
-        var DockClass = Ext.layout.wrapper.BoxDock,
-            dockedItems = this.dockedItems,
+        var me = this,
+            DockClass = Ext.layout.wrapper.BoxDock,
+            dockedItems = me.dockedItems,
             ln = dockedItems.length,
-            container = this.container,
+            container = me.container,
             itemIndex = container.indexOf(item),
-            positionDirectionMap = this.positionDirectionMap,
+            positionDirectionMap = me.positionDirectionMap,
             direction = positionDirectionMap[item.getDocked()],
-            dockInnerWrapper = this.dockInnerWrapper,
+            dockInnerWrapper = me.dockInnerWrapper,
             referenceDirection, i, dockedItem, index, previousItem, slice,
             referenceItem, referenceDocked, referenceWrapper, newWrapper, nestedWrapper, oldInnerWrapper;
 
-        this.monitorSizeStateChange();
-        this.monitorSizeFlagsChange();
+        me.monitorSizeStateChange();
+        me.monitorSizeFlagsChange();
 
         if (!dockInnerWrapper) {
-            dockInnerWrapper = this.link('dockInnerWrapper', new Ext.layout.wrapper.Inner({
-                container: this.container
+            dockInnerWrapper = me.link('dockInnerWrapper', new Ext.layout.wrapper.Inner({
+                container: container
             }));
         }
 
@@ -275,14 +324,14 @@ Ext.define('Ext.layout.Default', {
             dockedItems.push(item);
 
             newWrapper = new DockClass({
-                container: this.container,
+                container: container,
                 direction: direction
             });
 
             newWrapper.addItem(item);
             newWrapper.getElement().replace(dockInnerWrapper.getElement(), false);
             newWrapper.setInnerWrapper(dockInnerWrapper);
-            container.onInitialized('onContainerSizeStateChange', this);
+            container.onInitialized('onContainerSizeStateChange', me);
         }
         else {
             for (i = 0; i < ln; i++) {
@@ -314,7 +363,7 @@ Ext.define('Ext.layout.Default', {
                 slice = referenceWrapper.getItemsSlice(itemIndex);
 
                 newWrapper = new DockClass({
-                    container: this.container,
+                    container: container,
                     direction: direction
                 });
 
@@ -326,7 +375,7 @@ Ext.define('Ext.layout.Default', {
                     }
                     else {
                         nestedWrapper = new DockClass({
-                            container: this.container,
+                            container: container,
                             direction: referenceDirection
                         });
                         nestedWrapper.setInnerWrapper(referenceWrapper.getInnerWrapper());
@@ -347,7 +396,11 @@ Ext.define('Ext.layout.Default', {
             }
         }
 
-        container.onInitialized('refreshDockedItemLayoutSizeFlags', this, [item]);
+        if (container.initialized) {
+            me.handleDockedItemBorders();
+        }
+
+        container.onInitialized('refreshDockedItemLayoutSizeFlags', me, [item]);
     },
 
     getDockWrapper: function() {
@@ -360,11 +413,30 @@ Ext.define('Ext.layout.Default', {
         return null;
     },
 
-    undockItem: function(item) {
-        var dockedItems = this.dockedItems;
+    undockItem: function(item, oldDocked) {
+        var me = this,
+            dockedItems = me.dockedItems,
+            lastBorderMask, lastBorderCollapse,
+            dockWrapper = item.$dockWrapper;
 
-        if (item.$dockWrapper) {
-            item.$dockWrapper.removeItem(item);
+        if (dockWrapper) {
+            dockWrapper.removeItem(item, oldDocked);
+        }
+
+        if (me.container.initialized) {
+            lastBorderMask = item.lastBorderMask;
+            lastBorderCollapse = item.lastBorderCollapse;
+
+            if (lastBorderMask) {
+                item.lastBorderMask = 0;
+                item.removeCls(me.noBorderClassTable[lastBorderMask]);
+            }
+            if (lastBorderCollapse) {
+                item.lastBorderCollapse = 0;
+                item.removeCls(me.getBorderCollapseTable()[lastBorderCollapse]);
+            }
+
+            me.handleDockedItemBorders();
         }
 
         Ext.Array.remove(dockedItems, item);
@@ -375,5 +447,322 @@ Ext.define('Ext.layout.Default', {
     destroy: function() {
         this.dockedItems = null;
         this.callParent();
+    },
+
+    /**
+     * This table contains the border removal classes indexed by the sum of the edges to
+     * remove. Each edge is assigned a value:
+     *
+     *  * `left` = 1
+     *  * `bottom` = 2
+     *  * `right` = 4
+     *  * `top` = 8
+     *
+     * @private
+     */
+    noBorderClassTable: [
+        0,                                      // TRBL
+        Ext.baseCSSPrefix + 'noborder-l',       // 0001 = 1
+        Ext.baseCSSPrefix + 'noborder-b',       // 0010 = 2
+        Ext.baseCSSPrefix + 'noborder-bl',      // 0011 = 3
+        Ext.baseCSSPrefix + 'noborder-r',       // 0100 = 4
+        Ext.baseCSSPrefix + 'noborder-rl',      // 0101 = 5
+        Ext.baseCSSPrefix + 'noborder-rb',      // 0110 = 6
+        Ext.baseCSSPrefix + 'noborder-rbl',     // 0111 = 7
+        Ext.baseCSSPrefix + 'noborder-t',       // 1000 = 8
+        Ext.baseCSSPrefix + 'noborder-tl',      // 1001 = 9
+        Ext.baseCSSPrefix + 'noborder-tb',      // 1010 = 10
+        Ext.baseCSSPrefix + 'noborder-tbl',     // 1011 = 11
+        Ext.baseCSSPrefix + 'noborder-tr',      // 1100 = 12
+        Ext.baseCSSPrefix + 'noborder-trl',     // 1101 = 13
+        Ext.baseCSSPrefix + 'noborder-trb',     // 1110 = 14
+        Ext.baseCSSPrefix + 'noborder-trbl'     // 1111 = 15
+    ],
+
+    /**
+     * The numeric values assigned to each edge indexed by the `dock` config value.
+     * @private
+     */
+    edgeMasks: {
+        top: 8,
+        right: 4,
+        bottom: 2,
+        left: 1
+    },
+
+    handleDockedItemBorders: function() {
+        var me     = this,
+            edges  = 0,
+            maskT  = 8,
+            maskR  = 4,
+            maskB  = 2,
+            maskL  = 1,
+            container  = me.container,
+            bodyBorder = container.getBoodyBorder && container.getBodyBorder(),
+            containerBorder = container.getBorder(),
+            collapsed   = me.collapsed,
+            edgeMasks   = me.edgeMasks,
+            noBorderCls = me.noBorderClassTable,
+            dockedItemsGen = container.items.generation,
+            b, borderCls, docked, edgesTouched, i, ln, item, dock, lastValue, mask,
+            addCls, removeCls;
+
+        if (me.initializedBorders === dockedItemsGen || !container.manageBorders) {
+            return;
+        }
+
+        addCls = [];
+        removeCls = [];
+
+        borderCls   = me.getBorderCollapseTable();
+        noBorderCls = me.getBorderClassTable ? me.getBorderClassTable() : noBorderCls;
+
+        me.initializedBorders = dockedItemsGen;
+
+        // Borders have to be calculated using expanded docked item collection.
+        me.collapsed = false;
+        docked = container.getDockedItems();
+        me.collapsed = collapsed;
+
+        for (i = 0, ln = docked.length; i < ln; i++) {
+            item = docked[i];
+
+            if (item.getHidden()) {
+                continue;
+            }
+
+            dock = item.getDocked();
+            mask = edgesTouched = 0;
+            addCls.length = 0;
+            removeCls.length = 0;
+
+            if (dock !== 'bottom') {
+                if (edges & maskT) { // if (not touching the top edge)
+                    b = item.border;
+                } else {
+                    b = containerBorder;
+                    if (b !== false) {
+                        edgesTouched += maskT;
+                    }
+                }
+                if (b === false) {
+                    mask += maskT;
+                }
+            }
+            if (dock !== 'left') {
+                if (edges & maskR) { // if (not touching the right edge)
+                    b = item.border;
+                } else {
+                    b = containerBorder;
+                    if (b !== false) {
+                        edgesTouched += maskR;
+                    }
+                }
+                if (b === false) {
+                    mask += maskR;
+                }
+            }
+            if (dock !== 'top') {
+                if (edges & maskB) { // if (not touching the bottom edge)
+                    b = item.border;
+                } else {
+                    b = containerBorder;
+                    if (b !== false) {
+                        edgesTouched += maskB;
+                    }
+                }
+                if (b === false) {
+                    mask += maskB;
+                }
+            }
+            if (dock !== 'right') {
+                if (edges & maskL) { // if (not touching the left edge)
+                    b = item.border;
+                } else {
+                    b = containerBorder;
+                    if (b !== false) {
+                        edgesTouched += maskL;
+                    }
+                }
+                if (b === false) {
+                    mask += maskL;
+                }
+            }
+
+            if ((lastValue = item.lastBorderMask) !== mask) {
+                item.lastBorderMask = mask;
+                if (lastValue) {
+                    removeCls[0] = noBorderCls[lastValue];
+                }
+                if (mask) {
+                    addCls[0] = noBorderCls[mask];
+                }
+            }
+
+            if ((lastValue = item.lastBorderCollapse) !== edgesTouched) {
+                item.lastBorderCollapse = edgesTouched;
+                if (lastValue) {
+                    removeCls[removeCls.length] = borderCls[lastValue];
+                }
+                if (edgesTouched) {
+                    addCls[addCls.length] = borderCls[edgesTouched];
+                }
+            }
+
+            if (removeCls.length) {
+                item.removeCls(removeCls);
+            }
+            if (addCls.length) {
+                item.addCls(addCls);
+            }
+
+            // mask can use += but edges must use |= because there can be multiple items
+            // on an edge but the mask is reset per item
+
+            edges |= edgeMasks[dock]; // = T, R, B or L (8, 4, 2 or 1)
+        }
+
+        mask = edgesTouched = 0;
+        addCls.length = 0;
+        removeCls.length = 0;
+
+        if (edges & maskT) { // if (not touching the top edge)
+            b = bodyBorder;
+        } else {
+            b = containerBorder;
+            if (b !== false) {
+                edgesTouched += maskT;
+            }
+        }
+        if (b === false) {
+            mask += maskT;
+        }
+
+        if (edges & maskR) { // if (not touching the right edge)
+            b = bodyBorder;
+        } else {
+            b = containerBorder;
+            if (b !== false) {
+                edgesTouched += maskR;
+            }
+        }
+        if (b === false) {
+            mask += maskR;
+        }
+
+        if (edges & maskB) { // if (not touching the bottom edge)
+            b = bodyBorder;
+        } else {
+            b = containerBorder;
+            if (b !== false) {
+                edgesTouched += maskB;
+            }
+        }
+        if (b === false) {
+            mask += maskB;
+        }
+
+        if (edges & maskL) { // if (not touching the left edge)
+            b = bodyBorder;
+        } else {
+            b = containerBorder;
+            if (b !== false) {
+                edgesTouched += maskL;
+            }
+        }
+        if (b === false) {
+            mask += maskL;
+        }
+
+        if ((lastValue = me.lastBodyBorderMask) !== mask) {
+            me.lastBodyBorderMask = mask;
+            if (lastValue) {
+                removeCls[0] = noBorderCls[lastValue];
+            }
+            if (mask) {
+                addCls[0] = noBorderCls[mask];
+            }
+        }
+
+        if ((lastValue = me.lastBodyBorderCollapse) !== edgesTouched) {
+            me.lastBodyBorderCollapse = edgesTouched;
+            if (lastValue) {
+                removeCls[removeCls.length] = borderCls[lastValue];
+            }
+            if (edgesTouched) {
+                addCls[addCls.length] = borderCls[edgesTouched];
+            }
+        }
+
+        if (removeCls.length && container.removeBodyCls) {
+            container.removeBodyCls(removeCls);
+        }
+        if (addCls.length && container.addBodyCls) {
+            container.addBodyCls(addCls);
+        }
+    },
+
+    /**
+     * This object is indexed by a component's `baseCls` to yield another object which
+     * is then indexed by the component's `ui` to produce an array of CSS class names.
+     * This array is indexed in the same manner as the `noBorderClassTable` and indicates
+     * the a particular edge of a docked item or the body element is actually "collapsed"
+     * with the component's outer border.
+     * @private
+     */
+    borderCollapseMap: {
+        /*
+         'x-panel': {
+         'default': []
+         }
+         */
+    },
+
+    /**
+     * Returns the array of class names to add to a docked item or body element when for
+     * the edges that should collapse with the outer component border. Basically, the
+     * panel's outer border must look visually like a contiguous border but may need to
+     * be realized by using the border of docked items and/or the body. This class name
+     * allows the border color and width to be controlled accordingly and distinctly from
+     * the border of the docked item or body element when it is not having its border
+     * collapsed.
+     * @private
+     */
+    getBorderCollapseTable: function () {
+        var me = this,
+            map = me.borderCollapseMap,
+            container = me.container,
+            baseCls = container.getBaseCls(),
+            ui = container.getUi(),
+            uiCls = (ui ? ('-' + ui) : ''),
+            table;
+
+        ui = ui || 'default';
+        map = map[baseCls] || (map[baseCls] = {});
+        table = map[ui];
+
+        if (!table) {
+            baseCls += uiCls + '-outer-border-';
+            map[ui] = table = [
+                0,                  // TRBL
+                baseCls + 'l',      // 0001 = 1
+                baseCls + 'b',      // 0010 = 2
+                baseCls + 'bl',     // 0011 = 3
+                baseCls + 'r',      // 0100 = 4
+                baseCls + 'rl',     // 0101 = 5
+                baseCls + 'rb',     // 0110 = 6
+                baseCls + 'rbl',    // 0111 = 7
+                baseCls + 't',      // 1000 = 8
+                baseCls + 'tl',     // 1001 = 9
+                baseCls + 'tb',     // 1010 = 10
+                baseCls + 'tbl',    // 1011 = 11
+                baseCls + 'tr',     // 1100 = 12
+                baseCls + 'trl',    // 1101 = 13
+                baseCls + 'trb',    // 1110 = 14
+                baseCls + 'trbl'    // 1111 = 15
+            ];
+        }
+
+        return table;
     }
 });

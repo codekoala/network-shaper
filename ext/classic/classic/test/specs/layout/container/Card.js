@@ -1,10 +1,9 @@
-describe("Ext.layout.container.Card", function(){
-
+describe("Ext.layout.container.Card", function() {
     var comp;
 
     function createCardContainer(config) {
         comp = Ext.widget(Ext.apply({
-            xtype: 'container',
+            xtype: config.xtype || 'container',
             width: 100,
             height: 100,
             layout: {
@@ -14,6 +13,42 @@ describe("Ext.layout.container.Card", function(){
             renderTo: document.body
         }, config));
         return comp;
+    }
+
+    function makeCard(text) {
+        return new Ext.panel.Panel({
+            title: text || 'Loooooooong text',
+            scrollable: true,
+            items: {
+                xtype: 'box',
+                html: makeText()
+            }
+        });
+    }
+
+    function makeData(len) {
+        var res = [],
+            i, len;
+
+        for (i = 0, len = len || 100; i < len; i++) {
+            res.push({
+                id: i,
+                name: 'foo_' + i
+            });
+        }
+
+        return res;
+    }
+
+    function makeText() {
+        var text = [],
+            i;
+
+        for (i = 0; i < 7000; i++) {
+            text.push('The Owl House');
+        }
+
+        return text.join('');
     }
 
     afterEach(function(){
@@ -294,6 +329,8 @@ describe("Ext.layout.container.Card", function(){
         });
 
         it('should display the first item as active item when active item is not set', function () {
+            var items, item0;
+
             comp = createCardContainer({
                 items: [{
                     xtype: 'component'
@@ -302,11 +339,18 @@ describe("Ext.layout.container.Card", function(){
                 }]
             });
 
-            expect(comp.items.items[0].el.getStyle('display')).toBe('block');
-            expect(comp.items.items[1].el.getStyle('display')).toBe('none');
+            items = comp.items;
+            item0 = items.getAt(0)
+
+            expect(item0.hidden).toBe(false);
+            expect(items.getAt(1).hidden).toBe(true);
+
+            expect(comp.layout.getActiveItem()).toBe(item0);
         });
 
         it('should not display any item as active item when active item is null', function () {
+            var items, item0;
+
             comp = createCardContainer({
                 activeItem: null,
                 items: [{
@@ -316,38 +360,17 @@ describe("Ext.layout.container.Card", function(){
                 }]
             });
 
-            expect(comp.items.items[0].el.getStyle('display')).toBe('none');
-            expect(comp.items.items[1].el.getStyle('display')).toBe('none');
+            items = comp.items;
+
+            expect(items.getAt(0).hidden).toBe(true);
+            expect(items.getAt(1).hidden).toBe(true);
+
+            expect(comp.layout.getActiveItem()).toBe(null);
         });
     });
 
     describe('scroll position when changing cards', function () {
-        var makeCard = (function () {
-            var incr = 0;
-
-            function makeText() {
-                var text = '',
-                    i;
-
-                for (i = 0; i < 7000; i++) {
-                    text += incr + ' ';
-                }
-                return text;
-            }
-
-            return function () {
-                incr++;
-
-                return new Ext.panel.Panel({
-                    title: 'Loooooooong text',
-                    scrollable: true,
-                    items: {
-                        xtype: 'box',
-                        html: makeText()
-                    }
-                });
-            };
-        }());
+        var c, scrollable;
 
         function removeCard() {
             var layout = comp.layout,
@@ -357,12 +380,14 @@ describe("Ext.layout.container.Card", function(){
             c.destroy();
         }
 
-        it('should not have scrolled a new item upon creation', function () {
+        afterEach(function () {
+            c = scrollable = null;
+        });
+
+        it('should not inherit old scroll positions from previously deleted cards', function () {
             // This may seem odd, but there's a FF bug that will preserve the scroll position
             // of a destroyed card and reapply it to the next created one.
             // See EXTJS-16173.
-            var c;
-
             createCardContainer({
                 items: [makeCard()]
             });
@@ -378,5 +403,292 @@ describe("Ext.layout.container.Card", function(){
 
             expect(c.getScrollable().getElement().dom.scrollTop).toBe(0);
         });
+
+        describe('preserving scroll position', function () {
+            // See EXTJS-17978.
+            var scrollPosition;
+
+            afterEach(function () {
+                scrollPosition = null;
+            });
+
+            describe('when card items are not nested', function () {
+                it('should keep scroll position, simple layout', function () {
+                    createCardContainer({
+                        items: [makeCard('Foo'), {
+                            title: "The Owl's Nest Farm"
+                        }]
+                    });
+
+                    c = comp.items.getAt(0);
+                    scrollable = c.getScrollable();
+                    scrollable.scrollTo(0, 2000);
+                    scrollPosition = scrollable.getPosition();
+
+                    // Toggle.
+                    comp.setActiveItem(1);
+                    comp.setActiveItem(0);
+
+                    expect(scrollable.getPosition().y).toBe(scrollPosition.y);
+                });
+            });
+
+            describe('when card items are nested', function () {
+                it('should keep scroll position, simple layout', function () {
+                    createCardContainer({
+                        items: [{
+                            title: 'The Owl House',
+                            xtype: 'container',
+                            scrollable: true,
+                            items: [{
+                                id: 'BT',
+                                xtype: 'component',
+                                scrollable: true,
+                                height: 300,
+                                html: makeText()
+
+                            }]
+                        }, makeCard()]
+                    });
+
+                    c = Ext.getCmp('BT');
+                    scrollable = c.getScrollable();
+                    scrollable.scrollTo(0, 2000);
+                    scrollPosition = scrollable.getPosition();
+
+                    // Toggle.
+                    comp.setActiveItem(1);
+                    comp.setActiveItem(0);
+
+                    expect(scrollable.getPosition().y).toBe(scrollPosition.y);
+                });
+            });
+
+            describe('when items are derived panels', function () {
+                var synchronousLoad = true,
+                    proxyStoreLoad = Ext.data.ProxyStore.prototype.load,
+                    loadStore = function() {
+                        proxyStoreLoad.apply(this, arguments);
+                        if (synchronousLoad) {
+                            this.flushLoad.apply(this, arguments);
+                        }
+                        return this;
+                    };
+
+                beforeEach(function() {
+                    // Override so that we can control asynchronous loading
+                    Ext.data.ProxyStore.prototype.load = loadStore;
+                });
+
+                afterEach(function() {
+                    // Undo the overrides.
+                    Ext.data.ProxyStore.prototype.load = proxyStoreLoad;
+                });
+
+                function doTest(isBuffered, isLocked) {
+                    describe('buffered = ' + isBuffered + ', locked = ' + isLocked, function () {
+                        it('should keep scroll position, simple layout', function () {
+                            createCardContainer({
+                                height: 300,
+                                width: 300,
+                                items: [{
+                                    xtype: 'grid',
+                                    buffered: isBuffered,
+                                    columns: [{
+                                        text: 'Id',
+                                        dataIndex: 'id',
+                                        width: 100
+                                    }, {
+                                        text: 'Name',
+                                        dataIndex: 'name',
+                                        locked: isLocked,
+                                        width: 100
+                                    }],
+                                    store: {
+                                        fields: ['id', 'name'],
+                                        data: makeData(10000)
+                                    }
+                                }, {
+                                    title: "The Owl's Nest Farm"
+                                }]
+                            });
+
+                            c = comp.items.getAt(0);
+                            scrollable = isLocked ? c.normalGrid.view.scrollable : c.view.scrollable;
+                            scrollable.scrollTo(0, 7000);
+                            scrollPosition = scrollable.getPosition();
+
+                            // Toggle.
+                            comp.setActiveItem(1);
+                            comp.setActiveItem(0);
+
+                            expect(scrollable.getPosition().y).toBe(scrollPosition.y);
+                        });
+
+                        it('should keep scroll position, complex layout', function () {
+                            var p;
+
+                            createCardContainer({
+                                xtype: 'tabpanel',
+                                region: 'west',
+                                height: 300,
+                                width: 300,
+                                collapsible: true,
+                                collapsed: false,
+                                renderTo: null,
+                                items: [{
+                                    xtype: 'grid',
+                                    title: 'The grid to end all grids',
+                                    buffered: isBuffered,
+                                    columns: [{
+                                        text: 'Id',
+                                        dataIndex: 'id',
+                                        width: 100
+                                    }, {
+                                        text: 'Name',
+                                        dataIndex: 'name',
+                                        locked: isLocked,
+                                        width: 100
+                                    }],
+                                    store: {
+                                        fields: ['id', 'name'],
+                                        data: makeData(10000)
+                                    }
+                                }, {
+                                    title: "The Owl's Nest Farm"
+                                }]
+                            });
+
+                            p = new Ext.panel.Panel({
+                                width: 1000,
+                                height: 700,
+                                title: 'Border Layout',
+                                layout: 'border',
+                                items: [{
+                                    region: 'center',
+                                    xtype: 'panel',
+                                    margin: '5 0 0 5',
+                                    layout: 'fit'
+                                }, comp],
+                                renderTo: Ext.getBody()
+                            });
+
+                            c = comp.items.getAt(0);
+                            scrollable = isLocked ? c.normalGrid.view.scrollable : c.view.scrollable;
+                            scrollable.scrollTo(0, 7000);
+                            scrollPosition = scrollable.getPosition();
+
+                            // Toggle.
+                            comp.setActiveTab(1);
+
+                            // Now toggle the state of the west region.
+                            comp.down('tool').scope.collapse(null, false);
+                            comp.down('tool').scope.expand(null, false);
+
+                            comp.setActiveTab(0);
+
+                            expect(scrollable.getPosition().y).toBe(scrollPosition.y);
+
+                            p = Ext.destroy(p);
+                        });
+                    });
+                }
+
+                // doTest(isBuffered, isLocked)
+                doTest(true, true);
+                doTest(true, false);
+                doTest(false, false);
+                doTest(false, true);
+            });
+        });
+    });
+
+    describe('hideMode', function () {
+        // See EXTJS-17978.
+        var item;
+
+        beforeEach(function () {
+            createCardContainer({
+                items: [makeCard('Foo'), {
+                    title: "The Owl's Nest Farm"
+                }]
+            });
+
+            item = comp.items.getAt(0);
+        });
+
+        afterEach(function () {
+            item = null;
+        });
+
+        it('should be automatically set to use offsets', function () {
+            expect(item.hideMode).toBe('offsets');
+        });
+
+        it('should cache the original hideMode value', function () {
+            expect(item.originalHideMode).toBe('display');
+        });
+
+        it('should restore the original hideMode value when the item is removed from the layout', function () {
+            comp.remove(item);
+            expect(item.hideMode).toBe('display');
+        });
+
+        it('should remove the cached hideMode value when the item is removed from the layout', function () {
+            comp.remove(item);
+            expect(item.originalHideMode).toBe(undefined);
+        });
+    });
+
+    describe('different xtypes as containers', function () {
+        // Behavior should be the same regardless of the xtype.
+        var item, scrollable, scrollPosition;
+
+        function makeIt(xtype) {
+            createCardContainer({
+                xtype: xtype,
+                items: [makeCard('Foo'), {
+                    title: "The Owl's Nest Farm"
+                }]
+            });
+
+            item = comp.items.getAt(0);
+            scrollable = item.scrollable;
+
+            expect(comp.xtype).toBe(xtype);
+        }
+
+
+        afterEach(function () {
+            item = scrollable = scrollPosition = null;
+        });
+
+        function runTests(xtype) {
+            describe('should work for ' + xtype + ' as the container', function () {
+                it('should set proper hideMode value', function () {
+                    makeIt(xtype);
+
+                    expect(item.hideMode).toBe('offsets');
+                });
+
+                it('should preserve scroll position', function () {
+                    makeIt(xtype);
+
+                    scrollable.scrollTo(0, 7000);
+                    scrollPosition = scrollable.getPosition();
+
+                    // Toggle.
+                    comp.setActiveItem(1);
+                    comp.setActiveItem(0);
+
+                    expect(scrollable.getPosition().y).toBe(scrollPosition.y);
+                });
+            });
+        }
+
+        runTests('container');
+        runTests('panel');
+        runTests('tabpanel');
     });
 });
+

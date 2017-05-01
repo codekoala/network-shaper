@@ -1,1 +1,1 @@
-$tag-field-item-selected-border-color: $base-highlight-color !dynamic;
+$tag-field-item-selected-border-color: dynamic($base-highlight-color);

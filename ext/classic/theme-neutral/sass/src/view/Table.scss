@@ -2,7 +2,8 @@
 // When using the buffered renderer plugin, the view rows are positioned by using CSS transforms.
 // However, b/c of the browser bug, the scrollbar will be covered by the itemcontainer when scrolled
 // to a point where the view is refreshed so we need to bump up its z-index. See EXTJS-15608.
-.#{$prefix}grid-view {
+.#{$prefix}grid-view,
+.#{$prefix}tree-view {
     z-index: 1;
 }
 
@@ -11,13 +12,6 @@
     border-width: $grid-body-border-width;
     border-style: $grid-body-border-style;
     border-color: $grid-body-border-color;
-}
-
-// The min-height ensures we get a horizontal scroll bar 
-// if necessary, even when the grid has no items in it.
-.#{$prefix}grid-item-container {
-    min-height: 1px;
-    position: relative;
 }
 
 .#{$prefix}grid-empty {
@@ -205,13 +199,30 @@
 }
 
 .#{$prefix}grid-dirty-cell {
-    background: theme-background-image('grid/dirty') no-repeat 0 0;
+    @if $enable-font-icons and ($grid-cell-dirty-glyph != null) {
+        > .#{$prefix}grid-cell-inner:after {
+            @include font-icon($grid-cell-dirty-glyph, $pseudo: false);
+            color: $grid-cell-dirty-glyph-color;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    } @else {
+        background: theme-background-image('grid/dirty') no-repeat 0 0;
+    }
 }
 
 @if $include-rtl {
     .#{$prefix}rtl.#{$prefix}grid-dirty-cell {
-        background-image: theme-background-image('grid/dirty-rtl');
-        background-position: right 0;
+        @if $enable-font-icons and ($grid-cell-dirty-glyph-rtl != null) {
+            > .#{$prefix}grid-cell-inner:after {
+                @include font-icon($grid-cell-dirty-glyph-rtl, $pseudo: false);
+                right: 0;
+            }
+        } @else {
+            background-image: theme-background-image('grid/dirty-rtl');
+            background-position: right 0;
+        }
     }
 }
 

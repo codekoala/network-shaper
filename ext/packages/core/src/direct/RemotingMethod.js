@@ -13,6 +13,7 @@ Ext.define('Ext.direct.RemotingMethod', {
             name, pLen, p, param;
 
         me.name = config.name;
+        me.disableBatching = config.batched != null ? !config.batched : false;
         
         if (config.formHandler) {
             me.formHandler = config.formHandler;
@@ -52,7 +53,7 @@ Ext.define('Ext.direct.RemotingMethod', {
                 //<debug>
                 if (len === 0) {
                     Ext.raise('metadata.len cannot be 0 ' +
-                                    'for Ext.Direct method ' + me.name);
+                                    'for Ext Direct method ' + me.name);
                 }
                 //</debug>
                 
@@ -73,7 +74,7 @@ Ext.define('Ext.direct.RemotingMethod', {
             //<debug>
             else {
                 Ext.raise('metadata is neither named nor ordered ' +
-                                'for Ext.Direct method ' + me.name);
+                                'for Ext Direct method ' + me.name);
             }
             //</debug>
             
@@ -88,22 +89,43 @@ Ext.define('Ext.direct.RemotingMethod', {
         var me = this,
             params = config.params,
             paramOrder = config.paramOrder,
-            paramsAsHash = config.paramsAsHash,
+            paramsAsArray = config.paramsAsArray,
             metadata = config.metadata,
             options = config.options,
             args = [],
-            i, len;
+            flatten, i, len;
         
         if (me.ordered) {
             if (me.len > 0) {
                 // If a paramOrder was specified, add the params into the argument list in that order.
                 if (paramOrder) {
-                    for (i = 0, len = paramOrder.length; i < len; i++) {
-                        args.push(params[paramOrder[i]]);
+                    // Direct proxy uses this configuration for its CRUD operations.
+                    // We only do this kind of thing for ordered Methods that accept 1 argument,
+                    // if there's more or less we fall back to default processing.
+                    flatten = config.paramsAsArray && me.len === 1 &&
+                              (paramOrder.length > 1 || Ext.isArray(params));
+                    
+                    if (flatten) {
+                        if (Ext.isArray(params)) {
+                            for (i = 0, len = params.length; i < len; i++) {
+                                args.push(me.convertParams(params[i], paramOrder, paramOrder.length, true));
+                            }
+                        }
+                        else {
+                            args = me.convertParams(params, paramOrder, paramOrder.length, true);
+                        }
+                        
+                        if (!params.allowSingle || args.length > 1) {
+                            args = [args];
+                        }
+                    }
+                    else {
+                        // The number of arguments expected by the Method has priority
+                        // over the number of parameters in paramOrder.
+                        args = me.convertParams(params, paramOrder, me.len, false);
                     }
                 }
-                else if (paramsAsHash) {
-                    // If paramsAsHash was specified, add all the params as a single object argument.
+                else {
                     args.push(params);
                 }
             }
@@ -127,6 +149,23 @@ Ext.define('Ext.direct.RemotingMethod', {
         }
         
         return args;
+    },
+    
+    convertParams: function(params, paramOrder, count, flatten) {
+        var ret = [],
+            paramName, i, len;
+            
+        for (i = 0, len = count; i < len; i++) {
+            paramName = paramOrder[i];
+            ret.push(params[paramName]);
+        }
+        
+        if (flatten) {
+            return ret.length === 0 ? undefined : ret.length === 1 ? ret[0] : ret;
+        }
+        else {
+            return ret;
+        }
     },
 
     /**
@@ -184,11 +223,11 @@ Ext.define('Ext.direct.RemotingMethod', {
                 //<debug>
                 if (!Ext.isArray(options.metadata)) {
                     Ext.raise('options.metadata is not an Array ' +
-                                    'for Ext.Direct method ' + me.name);
+                                    'for Ext Direct method ' + me.name);
                 }
                 else if (options.metadata.length < me.metadata.len) {
                     Ext.raise('Not enough parameters in options.metadata ' +
-                                    'for Ext.Direct method ' + me.name);
+                                    'for Ext Direct method ' + me.name);
                 }
                 //</debug>
                 
@@ -198,7 +237,7 @@ Ext.define('Ext.direct.RemotingMethod', {
                 //<debug>
                 if (!Ext.isObject(options.metadata)) {
                     Ext.raise('options.metadata is not an Object ' +
-                                    'for Ext.Direct method ' + me.name);
+                                    'for Ext Direct method ' + me.name);
                 }
                 //</debug>
 
@@ -216,7 +255,7 @@ Ext.define('Ext.direct.RemotingMethod', {
                 for (name in me.metadata.params) {
                     if (!metadata.hasOwnProperty(name)) {
                         Ext.raise('Named parameter ' + name + ' is missing ' +
-                                        'in options.metadata for Ext.Direct method ' +
+                                        'in options.metadata for Ext Direct method ' +
                                         me.name);
                     }
                 }

@@ -18,7 +18,7 @@
  * @var {boolean} $list-zebrastripe
  * Optionally zebra-stripe the list (alternating background colors).
  */
-$list-zebrastripe: false !dynamic;
+$list-zebrastripe: dynamic(false);
 
 /**
  * @var {color} $list-pressed-color
@@ -66,10 +66,10 @@ $list-disclosure-round-size: 1.5em;
  * @var {measurement} $list-round-padding
  * Default padding for lists with a `round` ui.
  */
-$list-round-padding: 13px !dynamic;
+$list-round-padding: dynamic(13px);
 
 /**
  * @var {measurement} $list-rounded-radius
  * Default border-radius for items in rounded list
  */
-$list-rounded-radius: .4em !dynamic;
+$list-rounded-radius: dynamic(.4em);

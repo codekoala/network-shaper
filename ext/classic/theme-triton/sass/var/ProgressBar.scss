@@ -1,5 +1,5 @@
-$progress-height: 24px !dynamic;
-$progress-background-color: $neutral-highlight-color !dynamic;
-$progress-bar-background-color: $base-highlight-color !dynamic;
-$progress-text-color-front: #fff !dynamic;
-$progress-text-color-back: $color !dynamic;
+$progress-height: dynamic(24px);
+$progress-background-color: dynamic($neutral-highlight-color);
+$progress-bar-background-color: dynamic($base-highlight-color);
+$progress-text-front-color: dynamic(#fff);
+$progress-text-back-color: dynamic($color);

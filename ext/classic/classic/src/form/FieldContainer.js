@@ -169,16 +169,17 @@ Ext.define('Ext.form.FieldContainer', {
     },
     
     /**
-     * @protected Called when a {@link Ext.form.Labelable} instance is added to the container's subtree.
+     * @protected
+     * Called when a {@link Ext.form.Labelable} instance is added to the container's subtree.
      * @param {Ext.form.Labelable} labelItem The instance that was added
      */
     onAdd: function(labelItem) {
         var me = this;
-        
-        // Fix for https://sencha.jira.com/browse/EXTJSIV-6424
-        // In FF, positioning absolutely within a TD positions relative to the TR!
+
+        // Fix for https://sencha.jira.com/browse/EXTJSIV-6424 Which was *sneakily* fixed fixed in version 37
+        // In FF < 37, positioning absolutely within a TD positions relative to the TR!
         // So we must add the width of a visible, left-aligned label cell to the x coordinate.
-        if (labelItem.isLabelable && Ext.isGecko && me.layout.type === 'absolute' && !me.hideLabel && me.labelAlign !== 'top') {
+        if (labelItem.isLabelable && Ext.isGecko && Ext.firefoxVersion < 37 && me.layout.type === 'absolute' && !me.hideLabel && me.labelAlign !== 'top') {
             labelItem.x += (me.labelWidth + me.labelPad);
         }
         me.callParent(arguments);
@@ -190,7 +191,8 @@ Ext.define('Ext.form.FieldContainer', {
     },
 
     /**
-     * @protected Called when a {@link Ext.form.Labelable} instance is removed from the container's subtree.
+     * @protected
+     * Called when a {@link Ext.form.Labelable} instance is removed from the container's subtree.
      * @param {Ext.form.Labelable} labelItem The instance that was removed
      */
     onRemove: function(labelItem, isDestroying) {
@@ -209,7 +211,12 @@ Ext.define('Ext.form.FieldContainer', {
             data = me.callParent();
 
         data.containerElCls = me.containerElCls;
-        return Ext.applyIf(data, me.getLabelableRenderData());
+        data = Ext.applyIf(data, me.getLabelableRenderData());
+        if (me.labelAlign === 'top' || me.msgTarget === 'under') {
+            data.extraFieldBodyCls += ' ' + Ext.baseCSSPrefix + 'field-container-body-vertical';
+        }
+        data.tipAnchorTarget = me.id + '-containerEl';
+        return data;
     },
 
     /**
@@ -238,7 +245,7 @@ Ext.define('Ext.form.FieldContainer', {
 
     getSubTplMarkup: function(fieldData) {
         var me = this,
-            tpl = me.getTpl('fieldSubTpl'),
+            tpl = me.lookupTpl('fieldSubTpl'),
             html;
 
         if (!tpl.renderContent) {
@@ -250,7 +257,8 @@ Ext.define('Ext.form.FieldContainer', {
     },
 
     /**
-     * @private Updates the content of the labelEl if it is rendered
+     * @private
+     * Updates the content of the labelEl if it is rendered
      */
     updateLabel: function() {
         var me = this,
@@ -263,7 +271,8 @@ Ext.define('Ext.form.FieldContainer', {
 
 
     /**
-     * @private Fired when the error message of any field within the container changes, and updates the
+     * @private
+     * Fired when the error message of any field within the container changes, and updates the
      * combined error message to match.
      */
     onFieldErrorChange: function() {
@@ -333,7 +342,7 @@ Ext.define('Ext.form.FieldContainer', {
         initRenderTpl: function() {
             var me = this;
             if (!me.hasOwnProperty('renderTpl')) {
-                me.renderTpl = me.getTpl('labelableRenderTpl');
+                me.renderTpl = me.lookupTpl('labelableRenderTpl');
             }
             return me.callParent();
         }

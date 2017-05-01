@@ -14,7 +14,7 @@
  * 2. Set the {@link #checkboxToggle} config to true; this is similar to using {@link #collapsible} but renders
  *    a {@link Ext.form.field.Checkbox checkbox} in place of the toggle button. The fieldset will be expanded when the
  *    checkbox is checked and collapsed when it is unchecked. The checkbox will also be included in the
- *    {@link Ext.form.Basic#submit form submit parameters} using the {@link #checkboxName} as its parameter name.
+ *    {@link Ext.form.Basic#submit form submit parameters} using {@link #checkbox}.
  *
  * # Example usage
  *
@@ -68,6 +68,7 @@ Ext.define('Ext.form.FieldSet', {
         fieldAncestor: 'Ext.form.FieldAncestor'
     },
     alias: 'widget.fieldset',
+
     uses: ['Ext.form.field.Checkbox', 'Ext.panel.Tool', 'Ext.layout.container.Anchor', 'Ext.layout.component.FieldSet'],
     
     /**
@@ -79,11 +80,12 @@ Ext.define('Ext.form.FieldSet', {
      * @cfg {Boolean} [checkboxToggle=false]
      * Set to true to render a checkbox into the fieldset frame just in front of the legend to expand/collapse the
      * fieldset when the checkbox is toggled.. This checkbox will be included in form submits using
-     * the {@link #checkboxName}.
+     * the {@link #checkbox} configuration.
      */
 
     /**
      * @cfg {String} checkboxName
+     * @deprecated 6.2.0 Use the name property in {@link #checkbox} instead.
      * The name to assign to the fieldset's checkbox if {@link #checkboxToggle} = true
      * (defaults to '[fieldset id]-checkbox').
      */
@@ -150,9 +152,19 @@ Ext.define('Ext.form.FieldSet', {
     componentLayout: 'fieldset',
     
     ariaRole: 'group',
+
     focusable: false,
 
     autoEl: 'fieldset',
+
+    /**
+     * @cfg {Object} checkbox
+     * A configuration for the generated checkbox that is adjacent to the {@link #title} in the header.
+     * This config is only effective when {@link #checkboxToggle} is true
+     *
+     * @since 6.2.0
+     */
+    checkbox: null,
 
     childEls: [
         'body'
@@ -166,6 +178,15 @@ Ext.define('Ext.form.FieldSet', {
         '</div>'
     ],
 
+    /**
+     * @cfg stateEvents
+     * @inheritdoc Ext.state.Stateful#cfg-stateEvents
+     * @localdoc By default the following stateEvents are added:
+     * 
+     *  - {@link #event-resize} - _(added by Ext.Component)_
+     *  - {@link #event-collapse}
+     *  - {@link #event-expand}
+     */
     stateEvents : [ 'collapse', 'expand' ],
 
     maskOnDisable: false,
@@ -193,19 +214,6 @@ Ext.define('Ext.form.FieldSet', {
      * Fires after this FieldSet has collapsed.
      * @param {Ext.form.FieldSet} fieldset The FieldSet that has been collapsed.
      */
-
-    beforeDestroy: function(){
-        var me = this,
-            legend = me.legend;
-
-        if (legend) {
-            // get rid of the ownerCt since it's not a proper item
-            delete legend.ownerCt;
-            legend.destroy();
-            me.legend = null;
-        }
-        me.callParent();
-    },
 
     initComponent: function() {
         var me = this,
@@ -263,6 +271,20 @@ Ext.define('Ext.form.FieldSet', {
         return data;
     },
 
+    doDestroy: function() {
+        var me = this,
+            legend = me.legend;
+
+        if (legend) {
+            // get rid of the ownerCt since it's not a proper item
+            delete legend.ownerCt;
+            legend.destroy();
+            me.legend = null;
+        }
+        
+        me.callParent();
+    },
+
     getState: function () {
         var state = this.callParent();
 
@@ -312,13 +334,6 @@ Ext.define('Ext.form.FieldSet', {
         items.push(me.createTitleCmp());
         
         legend = new Ext.container.Container(legendCfg);
-        
-        // Mark the legend as immune to collapse so that when the fieldset
-        // *is* collapsed and the toggle tool or checkbox is focused,
-        // calling isVisible(true) on it will return true instead of false.
-        // See also below in createCheckboxCmp and createToggleCmp.
-        legend.collapseImmune = true;
-        legend.getInherited().collapseImmune = true;
         
         return legend;
     },
@@ -376,7 +391,7 @@ Ext.define('Ext.form.FieldSet', {
 
         cls += ' ' + cls + '-' + me.ui;
 
-        me.checkboxCmp = checkboxCmp = new Ext.form.field.Checkbox({
+        me.checkboxCmp = checkboxCmp = new Ext.form.field.Checkbox(Ext.apply({
             hideEmptyLabel: true,
             name: me.checkboxName || me.id + suffix,
             cls: cls,
@@ -389,7 +404,7 @@ Ext.define('Ext.form.FieldSet', {
                 scope: me
             },
             ariaLabel: me.expandText
-        });
+        }, me.checkbox));
         
         return checkboxCmp;
     },
@@ -444,6 +459,7 @@ Ext.define('Ext.form.FieldSet', {
         // Create the Legend component if needed
         if (legend) {
             legend.ownerLayout.configureItem(legend);
+            me.setLegendCollapseImmunity(legend);
             tree = legend.getRenderTree();
             Ext.DomHelper.generateMarkup(tree, out);
         }
@@ -476,10 +492,12 @@ Ext.define('Ext.form.FieldSet', {
                 me.legend = legend = me.createLegendCt();
                 me.addTitleClasses();
                 legend.ownerLayout.configureItem(legend);
+                me.setLegendCollapseImmunity(legend);
                 legend.render(me.el, 0);
             }
             me.titleCmp.update(title);
             
+            // ariaLabel property was htmlEncoded in initComponent
             me.ariaEl.dom.setAttribute('aria-label', me.ariaLabel);
         } else if (legend) {
             me.titleCmp.update(title);
@@ -518,6 +536,16 @@ Ext.define('Ext.form.FieldSet', {
      */
     collapse : function() {
         return this.setExpanded(false);
+    },
+
+    /**
+     * Set the collapsed state of the fieldset.
+     * @param {Boolean} collapsed The collapsed state.
+     *
+     * @since 6.2.0
+     */
+    setCollapsed: function(collapsed) {
+        this.setExpanded(!collapsed);
     },
 
     /**
@@ -652,6 +680,19 @@ Ext.define('Ext.form.FieldSet', {
          */
         onCheckChange: function(cmp, checked) {
             this.setExpanded(checked);
+        },
+
+        setLegendCollapseImmunity: function(legend) {
+            // Mark the legend as immune to collapse so that when the fieldset
+            // *is* collapsed and the toggle tool or checkbox is focused,
+            // calling isVisible(true) on it will return true instead of false.
+            // See also below in createCheckboxCmp and createToggleCmp.
+            // 
+            // It is important to defer this until the inherited hierarchy is setup
+            // completely, otherwise we could cause our inheritedState to get 
+            // initialized incorrectly.
+            legend.collapseImmune = true;
+            legend.getInherited().collapseImmune = true;
         },
 
         setupRenderTpl: function (renderTpl) {

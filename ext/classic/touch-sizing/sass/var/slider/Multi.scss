@@ -1,6 +1,6 @@
-$horizontal-slider-thumb-width: 28px !dynamic;
-$horizontal-slider-thumb-height: 28px !dynamic;
-$horizontal-slider-end-cap-width: 14px !dynamic;
-$vertical-slider-thumb-width: 28px !dynamic;
-$vertical-slider-thumb-height: 28px !dynamic;
-$vertical-slider-end-cap-height: 14px !dynamic;
+$horizontal-slider-thumb-width: dynamic(28px);
+$horizontal-slider-thumb-height: dynamic(28px);
+$horizontal-slider-end-cap-width: dynamic(14px);
+$vertical-slider-thumb-width: dynamic(28px);
+$vertical-slider-thumb-height: dynamic(28px);
+$vertical-slider-end-cap-height: dynamic(14px);

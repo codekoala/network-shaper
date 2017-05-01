@@ -68,7 +68,7 @@
  *         }
  *     });
  *
- *     proxy.getReader(); //returns an {@link Ext.data.reader.Xml XmlReader} instance based on the config we supplied
+ *     proxy.getReader(); //returns an XmlReader instance based on the config we supplied
  *
  * # Url generation
  *
@@ -347,7 +347,7 @@ Ext.define('Ext.data.proxy.Ajax', {
     
     /**
      * Fires a request
-     * @param {Ext.data.Request} The request
+     * @param {Ext.data.Request} request The request
      * @return {Ext.data.Request} The request
      * @private
      */
@@ -404,5 +404,11 @@ Ext.define('Ext.data.proxy.Ajax', {
             }
             me.processResponse(success, operation, request, response);
         };
+    },
+    
+    destroy: function() {
+        this.lastRequest = null;
+        
+        this.callParent();
     }
 });

@@ -179,8 +179,6 @@ Ext.define('Ext.data.reader.Xml', {
      * @return {Function}
      */
     createAccessor: function(expr) {
-        var me = this;
-
         if (Ext.isEmpty(expr)) {
             return Ext.emptyFn;
         }
@@ -190,7 +188,7 @@ Ext.define('Ext.data.reader.Xml', {
         }
 
         return function(root) {
-            return me.getNodeValue(Ext.DomQuery.selectNode(expr, root));
+            return this.getNodeValue(Ext.DomQuery.selectNode(expr, root));
         };
     },
 
@@ -210,7 +208,6 @@ Ext.define('Ext.data.reader.Xml', {
         return undefined;
     },
 
-    //inherit docs
     getResponseData: function(response) {
         var xml = response.responseXML,
             error = 'XML data not found in the response'; 
@@ -289,12 +286,6 @@ Ext.define('Ext.data.reader.Xml', {
             doc = doc[0];
         }
 
-        /**
-         * @property {Object} xmlData
-         * Copy of {@link #rawData}.
-         * @deprecated Will be removed in Ext JS 5.0. Use {@link #rawData} instead.
-         */
-        this.xmlData = doc;
         return this.callParent([doc, readOptions, internalReadOptions]);
     },
 
@@ -321,5 +312,18 @@ Ext.define('Ext.data.reader.Xml', {
             };
         }
         return result;
+    },
+    
+    deprecated: {
+        '5.1.1': {
+            properties: {
+                /**
+                 * @property {Object} xmlData
+                 * Copy of {@link #rawData}.
+                 * @deprecated 5.1.1 Removed in Ext JS 5.0. Use {@link #rawData} instead.
+                 */
+                xmlData: null
+            }
+        }
     }
 });

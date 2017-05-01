@@ -1,4 +1,110 @@
-describe('Ext.chart.axis.Axis', function() {
+describe('Ext.chart.axis.Axis', function () {
+
+    describe('getRange', function () {
+        it("linked axes should always return the range of the master axis", function () {
+            var chartConfig = {
+                    renderTo: Ext.getBody(),
+                    width: 400,
+                    height: 200,
+                    store: {
+                        fields: ['name', 'value'],
+                        data: [{
+                            name: 'one',
+                            value: 10
+                        }, {
+                            name: 'two',
+                            value: 7
+                        }, {
+                            name: 'three',
+                            value: 5
+                        }, {
+                            name: 'four',
+                            value: 2
+                        }, {
+                            name: 'five',
+                            value: 27
+                        }]
+                    },
+                    series: {
+                        type: 'bar',
+                        xField: 'name',
+                        yField: 'value'
+                    }
+                },
+                verticalNumeric = Ext.Object.merge({}, chartConfig, {
+                    axes: [
+                        {
+                            id: 'left',
+                            type: 'numeric',
+                            position: 'left'
+                        },
+                        {
+                            id: 'bottom',
+                            type: 'category',
+                            position: 'bottom'
+                        },
+                        {
+                            position: 'right',
+                            linkedTo: 'left'
+                        },
+                        {
+                            position: 'top',
+                            linkedTo: 'bottom'
+                        }
+                    ]
+                }),
+                horizontalNumeric = Ext.Object.merge({}, chartConfig, {
+                    flipXY: true,
+                    axes: [
+                        {
+                            id: 'left',
+                            type: 'category',
+                            position: 'left'
+                        },
+                        {
+                            id: 'bottom',
+                            type: 'numeric',
+                            position: 'bottom'
+                        },
+                        {
+                            position: 'top',
+                            linkedTo: 'bottom'
+                        },
+                        {
+                            position: 'right',
+                            linkedTo: 'left'
+                        }
+                    ]
+                });
+
+            var axisProto = Ext.chart.axis.Axis.prototype,
+                originalGetRange = axisProto.getRange;
+
+            function getRange() {
+                var range = originalGetRange.apply(this, arguments),
+                    masterAxis = this.masterAxis;
+
+                if (masterAxis) {
+                    expect(range[0]).toEqual(masterAxis.range[0]);
+                    expect(range[1]).toEqual(masterAxis.range[1]);
+                }
+
+                return range;
+            }
+
+            axisProto.getRange = getRange;
+
+            var verticalNumericChart = new Ext.chart.CartesianChart(verticalNumeric);
+            verticalNumericChart.performLayout();
+            verticalNumericChart.destroy();
+
+            var horizontalNumericChart = new Ext.chart.CartesianChart(horizontalNumeric);
+            horizontalNumericChart.performLayout();
+            horizontalNumericChart.destroy();
+
+            axisProto.getRange = originalGetRange;
+        });
+    });
 
     describe('resolveListenerScope', function () {
 
@@ -467,6 +573,7 @@ describe('Ext.chart.axis.Axis', function() {
 
                 afterEach(function () {
                     chart.destroy();
+                    container.destroy();
                 });
 
                 it("listener scoped to 'this' should refer to the axis", function () {
@@ -867,6 +974,7 @@ describe('Ext.chart.axis.Axis', function() {
 
                 afterEach(function () {
                     chart.destroy();
+                    container.destroy();
                 });
 
                 it("listener scoped to 'this' should refer to the axis", function () {

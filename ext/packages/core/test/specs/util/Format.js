@@ -293,6 +293,12 @@ describe("Ext.util.Format", function() {
             it("should apply decimals when using thousand sep", function(){
                 expect(Ext.util.Format.number(98765.432, '0,000.##')).toBe('98,765.43');  
             });
+
+            it("should pad correctly with a mixture of # & 0", function() {
+                expect(Ext.util.Format.number(1.983, '0.0##')).toBe('1.983');
+                expect(Ext.util.Format.number(1.9, '0.00##')).toBe('1.90');
+                expect(Ext.util.Format.number(1.98765, '0.000######')).toBe('1.98765');
+            });
             
             describe("euro style separator", function(){
                 var savedFormatLocale = {
@@ -311,23 +317,45 @@ describe("Ext.util.Format", function() {
                         dateFormat: 'd/m/Y'
                     });
                 });
+
                 afterEach(function() {
                     Ext.apply(Ext.util.Format, savedFormatLocale);
                 });
-                it("should limit the number of decimal places", function(){
-                    expect(Ext.util.Format.number(1.23456, '0.##')).toBe('1,23');
-                });
+
+                describe("without /i", function() {
+                    it("should limit the number of decimal places", function(){
+                        expect(Ext.util.Format.number(1.23456, '0.##')).toBe('1,23');
+                    });
             
-                it("should should not pad decimals if less than the format", function(){
-                    expect(Ext.util.Format.number(1.987, '0.#####')).toBe('1,987');
-                });
+                    it("should should not pad decimals if less than the format", function(){
+                        expect(Ext.util.Format.number(1.987, '0.#####')).toBe('1,987');
+                    });
             
-                it("should not add decimals if not required", function() {
-                    expect(Ext.util.Format.number(17, '0.#####')).toBe('17');    
-                });
+                    it("should not add decimals if not required", function() {
+                        expect(Ext.util.Format.number(17, '0.#####')).toBe('17');    
+                    });
             
-                it("should apply decimals when using thousand sep", function(){
-                    expect(Ext.util.Format.number(98765.432, '0,000.##')).toBe('98.765,43');  
+                    it("should apply decimals when using thousand sep", function(){
+                        expect(Ext.util.Format.number(98765.432, '0,000.##')).toBe('98.765,43');  
+                    });
+                });
+
+                describe("with /i", function() {
+                    it("should limit the number of decimal places", function(){
+                        expect(Ext.util.Format.number(1.23456, '0,##/i')).toBe('1,23');
+                    });
+            
+                    it("should should not pad decimals if less than the format", function(){
+                        expect(Ext.util.Format.number(1.987, '0,#####/i')).toBe('1,987');
+                    });
+            
+                    it("should not add decimals if not required", function() {
+                        expect(Ext.util.Format.number(17, '0,#####/i')).toBe('17');    
+                    });
+            
+                    it("should apply decimals when using thousand sep", function(){
+                        expect(Ext.util.Format.number(98765.432, '0.000,##/i')).toBe('98.765,43');  
+                    });
                 });
             });
             
@@ -371,28 +399,53 @@ describe("Ext.util.Format", function() {
                         dateFormat: 'd/m/Y'
                     });
                 });
+
                 afterEach(function() {
                     Ext.apply(Ext.util.Format, savedFormatLocale);
                 });
                 
-                it("should pad to at least the amount specified", function() {
-                    expect(Ext.util.Format.number(1.2, '0.00##')).toBe('1,20');    
-                });  
-            
-                it("should trim trailing numbers after the specified amount", function() {
-                    expect(Ext.util.Format.number(1.23456, '0.00##')).toBe('1,2346'); 
+                describe("without /i", function() {
+                    it("should pad to at least the amount specified", function() {
+                        expect(Ext.util.Format.number(1.2, '0.00##')).toBe('1,20');    
+                    });  
+                
+                    it("should trim trailing numbers after the specified amount", function() {
+                        expect(Ext.util.Format.number(1.23456, '0.00##')).toBe('1,2346'); 
+                    });
+                
+                    it("should not have trailing zeroes after the specified decimal", function() {
+                        expect(Ext.util.Format.number(1.234, '0.00##')).toBe('1,234');
+                    });
+                
+                    it("should add decimals when using thousands", function() {
+                        expect(Ext.util.Format.number(11000.234, '0,000.00##')).toBe('11.000,234');     
+                    });
+                
+                    it("should apply decimals when using a negative number", function() {
+                        expect(Ext.util.Format.number(-1.2, '0,000.00##')).toBe('-1,20');     
+                    });
                 });
-            
-                it("should not have trailing zeroes after the specified decimal", function() {
-                    expect(Ext.util.Format.number(1.234, '0.00##')).toBe('1,234');
-                });
-            
-                it("should add decimals when using thousands", function() {
-                    expect(Ext.util.Format.number(11000.234, '0,000.00##')).toBe('11.000,234');     
-                });
-            
-                it("should apply decimals when using a negative number", function() {
-                    expect(Ext.util.Format.number(-1.2, '0,000.00##')).toBe('-1,20');     
+
+                describe("with /i", function() {
+                    it("should pad to at least the amount specified", function() {
+                        expect(Ext.util.Format.number(1.2, '0,00##/i')).toBe('1,20');    
+                    });  
+                
+                    it("should trim trailing numbers after the specified amount", function() {
+                        expect(Ext.util.Format.number(1.23456, '0,00##/i')).toBe('1,2346'); 
+                    });
+                
+                    it("should not have trailing zeroes after the specified decimal", function() {
+                        expect(Ext.util.Format.number(1.234, '0,00##/i')).toBe('1,234');
+                    });
+                
+                    it("should add decimals when using thousands", function() {
+                        expect(Ext.util.Format.number(11000.234, '0.000,00##/i')).toBe('11.000,234');     
+                    });
+                
+                    it("should apply decimals when using a negative number", function() {
+                        expect(Ext.util.Format.number(-1.2, '0.000,00##/i')).toBe('-1,20');     
+                    });
                 });
             });
         });
@@ -805,4 +858,13 @@ describe("Ext.util.Format", function() {
         });
     });
 
+    describe('word', function () {
+        it('should split on spaces or punctuation', function () {
+            expect(Ext.util.Format.word('a b, abc', 2)).toBe('abc');
+        });
+
+        it('should return empty if out of bounds', function () {
+            expect(Ext.util.Format.word('a b, abc', 5)).toBe('');
+        });
+    });
 });

@@ -67,7 +67,7 @@ Ext.define('Ext.form.action.Action', {
      * @cfg {Ext.form.action.Action} success.action The Action class. The {@link #result} property of this object may
      * be examined to perform custom post-processing.
      * 
-     * @declarativeHandler
+     * @controllable
      */
 
     /**
@@ -79,7 +79,7 @@ Ext.define('Ext.form.action.Action', {
      * occurred, the failure type will be in {@link #failureType}. The {@link #result} 
      * property of this object may be examined to perform custom post-processing.
      * 
-     * @declarativeHandler
+     * @controllable
      */
 
     /**
@@ -130,17 +130,17 @@ Ext.define('Ext.form.action.Action', {
      *                     waitMsg: 'Submitting your data...',
      *                     success: function(form, action){
      *                         // server responded with success = true
-     *                         var result = action.{@link #result};
+     *                         var result = action.result;
      *                     },
      *                     failure: function(form, action){
      *                         if (action.{@link #failureType} === Ext.form.action.Action.CONNECT_FAILURE) {
      *                             Ext.Msg.alert('Error',
-     *                                 'Status:'+action.{@link #response}.status+': '+
-     *                                 action.{@link #response}.statusText);
+     *                                 'Status:'+action.response.status+': '+
+     *                                 action.response.statusText);
      *                         }
      *                         if (action.failureType === Ext.form.action.Action.SERVER_INVALID){
      *                             // server responded with success = false
-     *                             Ext.Msg.alert('Invalid', action.{@link #result}.errormsg);
+     *                             Ext.Msg.alert('Invalid', action.result.errormsg);
      *                         }
      *                     }
      *                 });
@@ -266,15 +266,13 @@ Ext.define('Ext.form.action.Action', {
      * Creates a callback object.
      */
     createCallback: function() {
-        var me = this,
-            undef,
-            form = me.form;
+        var me = this;
+
         return {
             success: me.onSuccess,
             failure: me.onFailure,
             scope: me,
-            timeout: (this.timeout * 1000) || (form.timeout * 1000),
-            upload: form.fileUpload ? me.onSuccess : undef
+            timeout: (me.timeout || me.form.timeout) * 1000
         };
     },
 

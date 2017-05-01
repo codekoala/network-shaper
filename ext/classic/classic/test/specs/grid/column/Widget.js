@@ -1,4 +1,17 @@
+/* global expect, Ext, jasmine */
+
 describe("Ext.grid.column.Widget", function() {
+    var webkitIt = Ext.isWebKit ? it : xit,
+        synchronousLoad = true,
+        proxyStoreLoad = Ext.data.ProxyStore.prototype.load,
+        loadStore = function() {
+            proxyStoreLoad.apply(this, arguments);
+            if (synchronousLoad) {
+                this.flushLoad.apply(this, arguments);
+            }
+            return this;
+        };
+
     var Model = Ext.define(null, {
         extend: 'Ext.data.Model',
         fields: ['a', 'b', 'c']
@@ -17,7 +30,8 @@ describe("Ext.grid.column.Widget", function() {
                 id: 'rec' + i,
                 a: i + 'a',
                 b: i + 'b',
-                c: i + 'c'
+                c: i + 'c',
+                d: i/10
             });
         }
 
@@ -65,8 +79,16 @@ describe("Ext.grid.column.Widget", function() {
         navModel = view.getNavigationModel();
         colRef = grid.getColumnManager().getColumns();
     }
+    
+    beforeEach(function() {
+        // Override so that we can control asynchronous loading
+        Ext.data.ProxyStore.prototype.load = loadStore;
+    });
 
     afterEach(function() {
+        // Undo the overrides.
+        Ext.data.ProxyStore.prototype.load = proxyStoreLoad;
+
         Ext.destroy(grid);
         grid = store = colRef = null;
     });
@@ -80,6 +102,57 @@ describe("Ext.grid.column.Widget", function() {
         var cell = grid.getView().getEl().down(colRef[0].getCellInnerSelector());
         return parseInt(cell.getStyle('padding-left'), 10) + parseInt(cell.getStyle('padding-right'), 10);
     }
+    
+    describe("refocusing after using a column widget to trigger a delete", function() {
+        it("should refocus the next row upon deletion", function() {
+            createGrid([{
+                text: 'Button',
+                xtype: 'widgetcolumn',
+                width: 200,
+                dataIndex: 'a',
+                widget: {
+                    xtype: 'button',
+                    text: 'Delete row',
+                    handler: function(button) {
+                        var rec = button.getWidgetRecord();
+                        store.remove(rec);
+                    }
+                }
+            }]);
+
+            var widget0 = getWidget(0),
+                rec0 = store.getAt(0),
+                rec1 = store.getAt(1),
+                toDelete = widget0.getWidgetRecord(),
+                newTop = getWidget(1).getWidgetRecord(),
+                storeCount = store.getCount();
+
+            expect(toDelete).toBe(rec0);
+            expect(newTop).toBe(rec1);
+
+            // Focus the button, and enter actionable mode, then click the button.
+            jasmine.fireMouseEvent(widget0.focusEl, 'mousedown');
+            widget0.focusEl.focus();
+            jasmine.fireKeyEvent(widget0.focusEl, 'keydown', Ext.event.Event.SPACE);
+
+            // That should have deleted a record
+            expect(store.getCount()).toBe(storeCount - 1);
+
+            // The widget's record must have gone
+            expect(store.contains(toDelete)).toBe(false);
+
+            // Widget 0 must receive focus when any async focus events have run their course
+            waitsFor(function() {
+                widget0 = getWidget(0);
+                return widget0.hasFocus;
+            });
+
+            runs(function() {
+                // Widget 0 record must be what we got from widget 1 initially
+                expect(widget0.getWidgetRecord()).toBe(newTop);
+            });
+        });
+    });
 
     describe("Widget recycling across refresh", function() {
         it("should recycle widgets", function() {
@@ -118,6 +191,48 @@ describe("Ext.grid.column.Widget", function() {
                 xtype: 'button',
                 cls: 'foo'
             });
+        });
+    });
+
+    describe("Focusing the widget", function() {
+        beforeEach(function() {
+            createGrid();
+        });
+
+        // TODO: Add tests when Widgets are genuinely focusable.
+        it("should not throw an error", function() {
+            expect(function() {
+                getWidget(0).focus();
+            }).not.toThrow();
+        });
+    });
+
+    describe("widget refocus on row delete", function() {
+        // Test that focus reversion upon delete of focus-containing row works.
+        webkitIt("should not cause an error when deleting the focused row using an actionable widget", function() {
+            createGrid([{
+                itemId: 'ct',
+                columns: [getColCfg({
+                    xtype: 'button',
+                    handler: function(btn) {
+                        var rec = btn.getWidgetRecord();
+                        store.remove(rec);
+                    }
+                })]
+            }]);
+            var btn = colRef[0].getWidget(store.last());
+
+            // The mousedown part will focus the button, and flip into actionable mode.
+            // The click phase will delete the row.
+            // Focus should revert to the previous row
+            jasmine.fireMouseEvent(btn.el.dom, 'click');
+
+            // Should remove the last record
+            expect(view.all.getCount()).toBe(3);
+
+            // And focus should have jumped from the mousedowned button (which has gone)
+            // to the button above it.
+            expect(colRef[0].getWidget(store.last()).hasFocus).toBe(true);
         });
     });
 
@@ -227,7 +342,7 @@ describe("Ext.grid.column.Widget", function() {
                     checkPositions();
                 });
 
-                it('should not bust the row height when showing a button', function() {
+                it("should not bust the row height when showing a button", function() {
                     var columns = [getColCfg({
                             xtype: 'button'
                         }), {
@@ -401,60 +516,102 @@ describe("Ext.grid.column.Widget", function() {
                     cfg.onWidgetAttach = spy;
                     makeGrid([cfg]);
                     spy.reset();
-                    var rec = store.insert(2, {})[0],
-                        spyCall = withBuffered ? spy.calls[2] : spy.mostRecentCall;
+                    var rec = store.insert(2, {})[0];
 
-                    // Buffering on add triggers a view refresh
-                    expect(spy.callCount).toBe(withBuffered ? 5 : 1);
-                    expect(spyCall.args[0]).toBe(colRef[0]);
-                    expect(spyCall.args[1].isButton).toBe(true);
-                    expect(spyCall.args[2]).toBe(rec);
+                    expect(spy.calls[0].args[0]).toBe(colRef[0]);
+                    expect(spy.calls[0].args[1].isButton).toBe(true);
+                    expect(spy.calls[0].args[2]).toBe(rec);
+                });
+                
+                it("should be called after rendering the widget", function() {
+                    var isAttached = false,
+                        cfg = getColCfg({
+                            xtype: 'button'
+                        });
+
+                    cfg.onWidgetAttach = spy;
+                    
+                    makeGrid([cfg]);
+                    
+                    spy.andCallFake(function(column, widget) {
+                        isAttached = Ext.getBody().isAncestor(widget.el);
+                    });
+                    
+                    store.insert(2, {});
+                    
+                    expect(isAttached).toBe(true);
                 });
 
                 if (withBuffered) {
-                    it("should only be called for records in the view", function() {
-                         var cfg = getColCfg({
-                            xtype: 'button'
-                        });
-                        cfg.onWidgetAttach = spy;
-                        var data = [],
-                            i = 0,
-                            recordSize = 10000;
-
-                        for (i = 1; i <= recordSize; ++i) {
-                            data.push({
-                                id: 'rec' + i
+                    describe("buffered rendering", function() {
+                        var recordSize = 10000,
+                            data, i;
+                        
+                        beforeEach(function() {
+                             var cfg = getColCfg({
+                                xtype: 'button'
                             });
-                        }
-                        makeGrid([cfg], data);
-
-                        var view = grid.getView(),
-                            nodes = view.getNodes(),
-                            firstNode = nodes[0],
-                            len = nodes.length;
-
-                        expect(spy.callCount).toBeLessThan(recordSize);
-                        for (i = 0; i < len; ++i) {
-                            expect(spy.calls[i].args[2]).toBe(store.getAt(i));
-                        }
-                        checkPositions();
-
-                        spy.reset();
-                        // Force it to the end, wait for the re-render
-                        grid.bufferedRenderer.scrollTo(recordSize * 100);
-                        waitsFor(function() {
-                            return view.getNodes()[0] !== firstNode;
-                        });
-
-                        runs(function() {
-                            nodes = view.getNodes();
-                            len = nodes.length;
-                            var offset = recordSize - len;
-
-                            for (i = 0; i < len; ++i) {
-                                expect(spy.calls[i].args[2]).toBe(store.getAt(i + offset));
+                            
+                            cfg.onWidgetAttach = spy;
+                            
+                            data = [];
+                            
+                            for (i = 1; i <= recordSize; ++i) {
+                                data.push({
+                                    id: 'rec' + i
+                                });
                             }
-                            checkPositions(offset);
+                            
+                            makeGrid([cfg], data);
+                        });
+                        
+                        it("should only be called for records in the view", function() {
+                            var view = grid.getView(),
+                                nodes = view.getNodes(),
+                                firstNode = nodes[0],
+                                len = nodes.length;
+    
+                            expect(spy.callCount).toBeLessThan(recordSize);
+                            for (i = 0; i < len; ++i) {
+                                expect(spy.calls[i].args[2]).toBe(store.getAt(i));
+                            }
+                            checkPositions();
+    
+                            spy.reset();
+                            // Force it to the end, wait for the re-render
+                            grid.bufferedRenderer.scrollTo(recordSize * 100);
+                            waitsFor(function() {
+                                return view.getNodes()[0] !== firstNode;
+                            });
+    
+                            runs(function() {
+                                nodes = view.getNodes();
+                                len = nodes.length;
+                                var offset = recordSize - len;
+    
+                                for (i = 0; i < len; ++i) {
+                                    expect(spy.calls[i].args[2]).toBe(store.getAt(i + offset));
+                                }
+                                checkPositions(offset);
+                            });
+                        });
+                        
+                        // https://sencha.jira.com/browse/EXTJS-19251
+                        it("should be called after reattaching the widget to DOM", function() {
+                            var isAttached = false;
+                            
+                            spy.andCallFake(function(column, widget) {
+                                isAttached = isAttached || Ext.getBody().isAncestor(widget.el);
+                            });
+                            spy.reset();
+                            
+                            grid.bufferedRenderer.scrollTo(recordSize * 100);
+                            
+                            waitForSpy(spy, 'scrolling to occur', 1000);
+                            
+                            runs(function() {
+                                expect(isAttached).toBe(true);
+                            });
                         });
                     });
                 }
@@ -704,19 +861,19 @@ describe("Ext.grid.column.Widget", function() {
 
                     it("should not cause an error when adding records", function() {
                         expect(function() {
-                            var rec = store.add({});
+                            store.add({});
                         }).not.toThrow();
                     });
 
                     it("should not cause an error when removing items", function() {
                         expect(function() {
-                            var rec = store.removeAt(0);
+                            store.removeAt(0);
                         }).not.toThrow();
                     });
 
                     it("should not cause an error when updating items", function() {
                         expect(function() {
-                            var rec = store.first().set('a', 'X');
+                            store.first().set('a', 'X');
                         }).not.toThrow();
                     });
 
@@ -773,7 +930,7 @@ describe("Ext.grid.column.Widget", function() {
                         }).hasCls(view.dirtyCls)).toBe(false);
                     });
 
-                    it('should render with a cell dirty class set if the record is already modified', function() {
+                    it("should render with a cell dirty class set if the record is already modified", function() {
                         // The beforeEach one cannot be used.
                         grid.destroy();
 
@@ -923,9 +1080,9 @@ describe("Ext.grid.column.Widget", function() {
                 });
             });
 
-            describe('on refresh', function () {
-                describe('beforerefresh', function () {
-                    it('should recycle the widget dom tree hierarchy when refreshed', function () {
+            describe("on refresh", function () {
+                describe("beforerefresh", function () {
+                    it("should recycle the widget dom tree hierarchy when refreshed", function () {
                         // See EXTJS-14874.
                         // We need the view to overflow to cause the bug in IE 8.
                         var data = generateData(100),
@@ -1026,6 +1183,186 @@ describe("Ext.grid.column.Widget", function() {
                     expect(function() {
                         grid.down('#ct').hide();
                     }).not.toThrow();
+                });
+            });
+
+            describe("RadioGroup as a widget", function() {
+                it("should be able to update value from column's dataIndex", function() {
+                    var changed = false,
+                        widget;
+                    createGrid([getColCfg({
+                        xtype: 'radiogroup',
+                        // The local config means child Radio names are scoped to this RadioGroup
+                        local: true,
+                        items: [{
+                            name: 'value',
+                            inputValue: '1'
+                        }, {
+                            name: 'value',
+                            inputValue: '2'
+                        }]
+                    })], [{
+                        a: {
+                            value: '2'
+                        }
+                    }]);
+
+                    widget = getWidget(0);
+                    widget.on({
+                        change: {
+                            fn: function(radioGroup, newValue) {
+                                radioGroup.getWidgetRecord().set('a', newValue);
+                                changed = true;
+                            }
+                        }
+                    });
+
+                    if (Ext.isIE9m) {
+                        // jasmine fireMouseEvent doesn't work properly to simulate clicks on a radion button on legacy browsers
+                        widget.items.first().setValue(true);
+                    } else {
+                        jasmine.fireMouseEvent(widget.items.first().inputEl.el, 'click');
+                    }
+
+                    waitsFor(function() {
+                        return changed;
+                    });
+
+                    runs(function() {
+                        expect(store.first().get('a').value).toBe('1');
+                    });
+                });
+
+                it("should be able to sort a column", function() {
+                    createGrid([getColCfg({
+                        xtype: 'radiogroup',
+                        // The local config means child Radio names are scoped to this RadioGroup
+                        local: true,
+                        items: [{
+                            name: 'value',
+                            inputValue: '1'
+                        }, {
+                            name: 'value',
+                            inputValue: '2'
+                        }],
+                        listeners: {
+                            change: function(radioGroup, newValue) {
+                                radioGroup.getWidgetRecord().set('a', newValue);
+                            }
+                        }
+                    }),{
+                        text: 'Name',
+                        dataIndex: 'b',
+                        sortable: true
+                    }], [{
+                        a: {
+                            value: '2'
+                        },
+                        b: 'Vince'
+                    },{
+                        a: {
+                            value: '1'
+                        },
+                        b: 'John'
+                    }]);
+                    store.sort('b', 'ASC');
+                    expect(getWidget(0).items.first().checked).toBe(true);
+                });
+            });
+
+            describe("Combobox as a widget", function() {
+                it("should be able to expand and collapse the field by clicking on the trigger", function() {
+                    createGrid([
+                        getColCfg({
+                            xtype: 'combobox',
+                            queryMode: 'local',
+                            displayField: 'a',
+                            valueField: 'b'
+                        })
+                    ]);
+
+                    getWidget(0).bindStore(store);
+                    jasmine.fireMouseEvent(getWidget(0).triggers.picker.el, 'click');
+                    expect(getWidget(0).isExpanded).toBe(true);
+                    jasmine.fireMouseEvent(getWidget(0).triggers.picker.el, 'click');
+                    expect(getWidget(0).isExpanded).toBe(false);
+                });
+            });
+
+            describe("Button as a widget", function() {
+                it("should be able to show and hide a button menu", function() {
+                    createGrid([
+                        getColCfg({
+                            xtype: 'button',
+                            menu: [{
+                                text: 'Button1'
+                            }, {
+                                text: 'Button2'
+                            }]
+                        })
+                    ]);
+
+                    jasmine.fireMouseEvent(getWidget(0).focusEl, 'click');
+                    expect(getWidget(0).menu.isVisible()).toBe(true);
+                    expect(grid.actionableMode).toBe(true);
+
+                    jasmine.fireMouseEvent(getWidget(0).focusEl, 'click');
+                    expect(getWidget(0).menu.isVisible()).toBe(false);
+                    
+                    jasmine.fireMouseEvent(view.getCellByPosition({
+                        row: 0,
+                        column: 0
+                    }), 'click');
+
+                    // Should focus the cell and exit actionable mode.
+                    // Some browsers fire async focus events, so wait for it.
+                    waitsFor(function() {
+                        return grid.actionableMode === false;
+                    });
+                });
+            });
+
+            describe("in a tabpanel", function() {
+                var panel;
+
+                beforeEach(function() {
+                    createGrid([{
+                        xtype: 'widgetcolumn',
+                        width: 200,
+                        dataIndex: 'd',
+                        widget: {
+                            xtype: 'progressbarwidget',
+                            textTpl: '{value:percent}'
+                        }
+                    }], null, {
+                        renderTo: null
+                    });
+
+                    panel = new Ext.tab.Panel({
+                        width: 800,
+                        height: 300,
+
+                        items: [
+                            grid, {
+                                xtype: 'panel',
+                                title: 'TAB2'
+                            }
+                        ],
+                        renderTo: document.body
+                    });    
+                });
+
+                afterEach(function() {
+                    panel.destroy();
+                    panel = null;
+                });
+
+                it("should display the widget if it's record was added while the grid was in an inactive panel", function() {
+                    panel.setActiveTab(1);
+                    store.add({ id: 'rec5', a: '5a',  b: '5b', c: '5c', d: 0.5 });
+                    panel.setActiveTab(0);
+
+                    expect(getWidget(4, 0).textEl.dom.innerHTML).toBe('50%');
                 });
             });
         });

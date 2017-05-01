@@ -1,5 +1,4 @@
-$horizontal-slider-thumb-width: 16px !dynamic;
-$horizontal-slider-thumb-height: 16px !dynamic;
-$vertical-slider-thumb-width: 16px !dynamic;
-$vertical-slider-thumb-height: 16px !dynamic;
-
+$horizontal-slider-thumb-width: dynamic(16px);
+$horizontal-slider-thumb-height: dynamic(16px);
+$vertical-slider-thumb-width: dynamic(16px);
+$vertical-slider-thumb-height: dynamic(16px);

@@ -24,7 +24,7 @@ describe('Ext.field.Toggle', function() {
                 });
 
                 it("should return a value", function() {
-                    expect(field.getValue()).toEqual(1);
+                    expect(field.getValue()).toBe(true);
                 });
             });
 
@@ -34,7 +34,7 @@ describe('Ext.field.Toggle', function() {
                 });
 
                 it("should return a boolean", function() {
-                    expect(field.getValue()).toEqual(0);
+                    expect(field.getValue()).toBe(false);
                 });
             });
         });

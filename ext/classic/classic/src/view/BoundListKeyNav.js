@@ -24,7 +24,7 @@ Ext.define('Ext.view.BoundListKeyNav', {
         if (!me.keyNav) {
             me.callParent([view]);
 
-            // Add ESC handling to the View's KeyMap to caollapse the field
+            // Add ESC handling to the View's KeyMap to collapse the field
             me.keyNav.map.addBinding({
                 key: Ext.event.Event.ESC,
                 fn: me.onKeyEsc,
@@ -102,11 +102,15 @@ Ext.define('Ext.view.BoundListKeyNav', {
     onItemMouseDown: function(view, record, item, index, event) {
         this.callParent([view, record, item, index, event]);
         
-        // Stop the mousedown from blurring the input field
-        event.preventDefault();
+        if (event.pointerType === 'mouse') {
+            // Stop the mousedown from blurring the input field
+            // We can't do this for touch events otherwise scrolling
+            // won't work.
+            event.preventDefault();
+        }
     },
 
-    onKeyUp: function() {
+    onKeyUp: function(e) {
         var me = this,
             boundList = me.view,
             allItems = boundList.all,
@@ -115,6 +119,9 @@ Ext.define('Ext.view.BoundListKeyNav', {
             newItemIdx = oldItemIdx > 0 ? oldItemIdx - 1 : allItems.getCount() - 1; //wraps around
 
         me.setPosition(newItemIdx);
+
+        // Stop this from moving the cursor in the field
+        e.preventDefault();
     },
 
     onKeyDown: function(e) {
@@ -126,6 +133,9 @@ Ext.define('Ext.view.BoundListKeyNav', {
             newItemIdx = oldItemIdx < allItems.getCount() - 1 ? oldItemIdx + 1 : 0; //wraps around
 
         me.setPosition(newItemIdx);
+
+        // Stop this from moving the cursor in the field
+        e.preventDefault();
     },
 
     onKeyLeft: Ext.returnTrue,
@@ -168,7 +178,11 @@ Ext.define('Ext.view.BoundListKeyNav', {
         }
 
         // Stop propagation of the ENTER keydown event so that any Editor which owns the field
-        // does not completeEdit.
+        // does not completeEdit, but we also need to still fire the specialkey event for ENTER, 
+        // so lets add fromBoundList to eOpts, and this will be handled by CellEditor#onSpecialKey.
+        field.fireEvent('specialkey', field, e, {
+            fromBoundList: true
+        });
         return false;
     },
 

@@ -2,7 +2,14 @@ describe("Ext.tab.Tab", function() {
     var tab, card;
     
     function createTab(config) {
-        return new Ext.tab.Tab(Ext.apply({}, config));
+        if (tab) {
+            tab.destroy();
+            tab = null;
+        }
+        
+        tab = new Ext.tab.Tab(Ext.apply({}, config));
+        
+        return tab;
     }
     
     beforeEach(function() {
@@ -10,6 +17,11 @@ describe("Ext.tab.Tab", function() {
             title: 'Some title',
             iconCls: 'some-iconCls'
         };
+    });
+    
+    afterEach(function() {
+        Ext.destroy(tab, card);
+        tab = card = null;
     });
     
     describe("if a card is specified", function() {
@@ -121,6 +133,10 @@ describe("Ext.tab.Tab", function() {
     });
     
     describe("deactivating", function() {
+        beforeEach(function() {
+            tab = createTab();
+        });
+        
         it("should set active to false", function() {
             tab.deactivate();
             
@@ -147,6 +163,10 @@ describe("Ext.tab.Tab", function() {
     });
     
     describe("setting closable", function() {
+        beforeEach(function() {
+            tab = createTab();
+        });
+        
         it("should set closable to true", function() {
             delete tab.closable;
             
@@ -157,6 +177,10 @@ describe("Ext.tab.Tab", function() {
     });
     
     describe("setting not closable", function() {
+        beforeEach(function() {
+            tab = createTab();
+        });
+        
         it("should set closable to false", function() {
             delete tab.closable;
             
@@ -238,6 +262,99 @@ describe("Ext.tab.Tab", function() {
                 tab.onCloseClick();
                 
                 expect(tabBar.closeTab).toHaveBeenCalledWith(tab);
+            });
+        });
+    });
+    
+    describe("keyboard interaction", function() {
+        var enterSpy, deleteSpy, closeSpy, clickSpy;
+        
+        beforeEach(function() {
+            createTab({
+                renderTo: undefined
+            });
+            
+            enterSpy  = spyOn(tab, 'onEnterKey').andCallThrough();
+            deleteSpy = spyOn(tab, 'onDeleteKey').andCallThrough();
+            closeSpy  = spyOn(tab, 'onCloseClick').andCallThrough();
+            clickSpy  = jasmine.createSpy('onClick');
+            
+            tab.tabBar = {
+                onClick: clickSpy,
+                closeTab: Ext.emptyFn
+            };
+            
+            tab.render(Ext.getBody());
+        });
+        
+        afterEach(function() {
+            tab.tabBar = null;
+            enterSpy = deleteSpy = closeSpy = clickSpy = null;
+        });
+        
+        describe("Space key", function() {
+            beforeEach(function() {
+                jasmine.pressKey(tab.el, 'space');
+                
+                waitForSpy(enterSpy);
+            });
+            
+            it("should call tabBar.onClick", function() {
+                expect(clickSpy).toHaveBeenCalled();
+            });
+            
+            it("should stop the keydown event", function() {
+                var args = enterSpy.mostRecentCall.args;
+                
+                expect(args[0].stopped).toBe(true);
+            });
+            
+            it("should return false to stop Event propagation loop", function() {
+                expect(enterSpy.mostRecentCall.result).toBe(false);
+            });
+        });
+        
+        describe("Enter key", function() {
+            beforeEach(function() {
+                jasmine.pressKey(tab.el, 'enter');
+                
+                waitForSpy(enterSpy);
+            });
+            
+            it("should call tabBar.onClick", function() {
+                expect(clickSpy).toHaveBeenCalled();
+            });
+            
+            it("should stop the keydown event", function() {
+                var args = enterSpy.mostRecentCall.args;
+                
+                expect(args[0].stopped).toBe(true);
+            });
+            
+            it("should return false to stop Event propagation loop", function() {
+                expect(enterSpy.mostRecentCall.result).toBe(false);
+            });
+        });
+        
+        describe("Delete key", function() {
+            beforeEach(function() {
+                jasmine.pressKey(tab.el, 'delete');
+                
+                waitForSpy(deleteSpy);
+            });
+            
+            it("should call onCloseClick", function() {
+                expect(closeSpy).toHaveBeenCalled();
+            });
+            
+            it("should stop the keydown event", function() {
+                var args = deleteSpy.mostRecentCall.args;
+                
+                expect(args[0].stopped).toBe(true);
+            });
+            
+            it("should return false to stop Event propagation loop", function() {
+                expect(deleteSpy.mostRecentCall.result).toBe(false);
             });
         });
     });

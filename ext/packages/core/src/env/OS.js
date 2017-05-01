@@ -1,4 +1,6 @@
 /**
+ * @class Ext.env.OS
+ *
  * Provides information about operating system environment.
  *
  * Should not be manually instantiated unless for unit-testing.
@@ -12,8 +14,8 @@ Ext.env.OS = function(userAgent, platform, browserScope) {
 // @require Ext.env.Browser
 
     var me = this,
-        names = me.names,
-        prefixes = me.prefixes,
+        names = Ext.Boot.osNames,
+        prefixes = Ext.Boot.osPrefixes,
         name,
         version = '',
         is = me.is,
@@ -56,6 +58,13 @@ Ext.env.OS = function(userAgent, platform, browserScope) {
     this.name = name;
     this.version = version;
 
+    // This is added as a workaround for Chrome iPad emulation mode
+    // it will report the platform of the machine (MacIntel, Win32, etc) instead
+    // of an emulated platform
+    if (userAgent.match(/ipad/i)) {
+        platform = 'iPad';
+    }
+
     if (platform) {
         this.setFlag(platform.replace(/ simulator$/i, ''));
     }
@@ -86,7 +95,6 @@ Ext.env.OS = function(userAgent, platform, browserScope) {
         // Ext.browser.version.shortVersion == 501 is for debugging off device
         if (this.is.Android2 || this.is.Android3 || browserScope.version.shortVersion === 501) {
             browserScope.setFlag("AndroidStock");
-            browserScope.setFlag("AndroidStock2");
         }
         if (this.is.Android4) {
             browserScope.setFlag("AndroidStock");
@@ -97,34 +105,6 @@ Ext.env.OS = function(userAgent, platform, browserScope) {
 
 Ext.env.OS.prototype = {
     constructor: Ext.env.OS,
-
-    names: {
-        ios: 'iOS',
-        android: 'Android',
-        windowsPhone: 'WindowsPhone',
-        webos: 'webOS',
-        blackberry: 'BlackBerry',
-        rimTablet: 'RIMTablet',
-        mac: 'MacOS',
-        win: 'Windows',
-        tizen: 'Tizen',
-        linux: 'Linux',
-        bada: 'Bada',
-        chrome: 'ChromeOS',
-        other: 'Other'
-    },
-    prefixes: {
-        tizen: '(Tizen )',
-        ios: 'i(?:Pad|Phone|Pod)(?:.*)CPU(?: iPhone)? OS ',
-        android: '(Android |HTC_|Silk/)', // Some HTC devices ship with an OSX userAgent by default,
-                                    // so we need to add a direct check for HTC_
-        windowsPhone: 'Windows Phone ',
-        blackberry: '(?:BlackBerry|BB)(?:.*)Version\/',
-        rimTablet: 'RIM Tablet OS ',
-        webos: '(?:webOS|hpwOS)\/',
-        bada: 'Bada\/',
-        chrome: 'CrOS '
-    },
 
     /**
      * A "hybrid" property, can be either accessed as a method call, i.e:
@@ -165,6 +145,7 @@ Ext.env.OS.prototype = {
      * - Windows
      * - Linux
      * - Other
+     * @member Ext.os
      * @param {String} name The OS name to check.
      * @return {Boolean}
      */
@@ -175,6 +156,7 @@ Ext.env.OS.prototype = {
     /**
      * @property {String} [name=null]
      * @readonly
+     * @member Ext.os
      * The full name of the current operating system. Possible values are:
      *
      * - iOS
@@ -191,6 +173,7 @@ Ext.env.OS.prototype = {
     /**
      * @property {Ext.Version} [version=null]
      * Refer to {@link Ext.Version}
+     * @member Ext.os
      * @readonly
      */
     version: null,
@@ -294,6 +277,7 @@ Ext.env.OS.prototype = {
      *
      *     http://localhost/mypage.html?deviceType=Tablet
      *
+     * @member Ext.os
      */
     osEnv.setFlag(deviceType, true);
     osEnv.deviceType = deviceType;

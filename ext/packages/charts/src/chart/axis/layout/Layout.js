@@ -29,6 +29,7 @@ Ext.define('Ext.chart.axis.layout.Layout', {
             direction = axis.getDirection(),
             boundSeries = axis.boundSeries,
             i, ln;
+
         if (series) {
             series['coordinate' + direction]();
         } else {
@@ -51,6 +52,7 @@ Ext.define('Ext.chart.axis.layout.Layout', {
             viewMax = attr.min + range * attr.visibleMax,
             estStepSize = attr.estStepSize * zoom,
             out = me.snapEnds(context, attr.min, attr.max, estStepSize);
+
         if (out) {
             me.trimByRange(context, out, viewMin, viewMax);
             context.majorTicks = out;
@@ -89,6 +91,7 @@ Ext.define('Ext.chart.axis.layout.Layout', {
     },
 
     /**
+     * @method
      * Snaps the data bound to the axis to meaningful tick marks.
      * @param {Object} context
      * @param {Number} min

@@ -5,14 +5,16 @@ Ext.define('Ext.AnimationQueue', {
     singleton: true,
 
     constructor: function() {
-        this.queue = [];
-        this.taskQueue = [];
-        this.runningQueue = [];
-        this.idleQueue = [];
-        this.isRunning = false;
-        this.isIdle = true;
+        var me = this;
 
-        this.run = Ext.Function.bind(this.run, this);
+        me.queue = [];
+        me.taskQueue = [];
+        me.runningQueue = [];
+        me.idleQueue = [];
+        me.isRunning = false;
+        me.isIdle = true;
+
+        me.run = Ext.Function.bind(me.run, me);
 
         // iOS has a nasty bug which causes pending requestAnimationFrame to not release
         // the callback when the WebView is switched back and forth from / to being background process
@@ -20,7 +22,7 @@ Ext.define('Ext.AnimationQueue', {
         // This timer has to be set as an interval from the very beginning and we have to keep it running for
         // as long as the app lives, setting it later doesn't seem to work
         if (Ext.os.is.iOS) {
-            Ext.interval(this.watch, 500, this);
+            Ext.interval(me.watch, 500, me);
         }
     },
 
@@ -31,26 +33,28 @@ Ext.define('Ext.AnimationQueue', {
      * @param {Object} [args]
      */
     start: function(fn, scope, args) {
-        this.queue.push(arguments);
+        var me = this;
 
-        if (!this.isRunning) {
-            if (this.hasOwnProperty('idleTimer')) {
-                clearTimeout(this.idleTimer);
-                delete this.idleTimer;
+        me.queue.push(arguments);
+
+        if (!me.isRunning) {
+            if (me.hasOwnProperty('idleTimer')) {
+                clearTimeout(me.idleTimer);
+                delete me.idleTimer;
             }
 
-            if (this.hasOwnProperty('idleQueueTimer')) {
-                clearTimeout(this.idleQueueTimer);
-                delete this.idleQueueTimer;
+            if (me.hasOwnProperty('idleQueueTimer')) {
+                clearTimeout(me.idleQueueTimer);
+                delete me.idleQueueTimer;
             }
 
-            this.isIdle = false;
-            this.isRunning = true;
+            me.isIdle = false;
+            me.isRunning = true;
             //<debug>
-            this.startCountTime = Ext.now();
-            this.count = 0;
+            me.startCountTime = Ext.now();
+            me.count = 0;
             //</debug>
-            this.doStart();
+            me.doStart();
         }
     },
 
@@ -61,38 +65,39 @@ Ext.define('Ext.AnimationQueue', {
     },
 
     run: function() {
-        if (!this.isRunning) {
+        var me = this;
+
+        if (!me.isRunning) {
             return;
         }
 
-        var queue = this.runningQueue,
+        var queue = me.runningQueue,
+            now = Ext.now(),
             i, ln;
 
-        this.lastRunTime = Ext.now();
-        this.frameStartTime = Ext.now();
+        me.lastRunTime = now;
+        me.frameStartTime = now;
 
-        queue.push.apply(queue, this.queue);
+        queue.push.apply(queue, me.queue); // take a snapshot of the current queue and run it
 
         for (i = 0, ln = queue.length; i < ln; i++) {
-            this.invoke(queue[i]);
+            me.invoke(queue[i]);
         }
 
         queue.length = 0;
 
         //<debug>
-        var now = this.frameStartTime,
-            startCountTime = this.startCountTime,
-            elapse = now - startCountTime,
-            count = ++this.count;
+        var elapse = me.frameStartTime - me.startCountTime,
+            count = ++me.count;
 
         if (elapse >= 200) {
-            this.onFpsChanged(count * 1000 / elapse, count, elapse);
-            this.startCountTime = now;
-            this.count = 0;
+            me.onFpsChanged(count * 1000 / elapse, count, elapse);
+            me.startCountTime = me.frameStartTime;
+            me.count = 0;
         }
         //</debug>
 
-        this.doIterate();
+        me.doIterate();
     },
 
     //<debug>
@@ -121,11 +126,13 @@ Ext.define('Ext.AnimationQueue', {
      * @param {Object} [args]
      */
     stop: function(fn, scope, args) {
-        if (!this.isRunning) {
+        var me = this;
+
+        if (!me.isRunning) {
             return;
         }
 
-        var queue = this.queue,
+        var queue = me.queue,
             ln = queue.length,
             i, item;
 
@@ -139,13 +146,13 @@ Ext.define('Ext.AnimationQueue', {
         }
 
         if (ln === 0) {
-            this.doStop();
+            me.doStop();
             //<debug>
-            this.onStop();
+            me.onStop();
             //</debug>
-            this.isRunning = false;
+            me.isRunning = false;
 
-            this.idleTimer = Ext.defer(this.whenIdle, 100, this);
+            me.idleTimer = Ext.defer(me.whenIdle, 100, me);
         }
     },
 
@@ -261,103 +268,149 @@ Ext.define('Ext.AnimationQueue', {
             this.invoke(listener);
             this.processTaskQueue();
         }
+    }
+    //<debug>
+    ,
+
+    /**
+     *
+     * @param {Number} fps Frames per second.
+     * @param {Number} count Actual number of frames rendered during interval.
+     * @param {Number} interval Interval duration.
+     */
+    showFps: function () {
+        var styleTpl = {
+            color: 'white',
+            'background-color': 'black',
+            'text-align': 'center',
+            'font-family': 'sans-serif',
+            'font-size': '8px',
+            'font-weight': 'normal',
+            'font-style': 'normal',
+            'line-height': '20px',
+            '-webkit-font-smoothing': 'antialiased',
+
+            'zIndex': 100000,
+            position: 'absolute'
+        };
+
+        Ext.getBody().append([
+            // --- Average ---
+            {
+                style: Ext.applyIf({
+                    bottom: '50px',
+                    left: 0,
+                    width: '50px',
+                    height: '20px'
+                }, styleTpl),
+                html: 'Average'
+            },
+            {
+                style: Ext.applyIf({
+                    'background-color': 'red',
+                    'font-size': '18px',
+                    'line-height': '50px',
+
+                    bottom: 0,
+                    left: 0,
+                    width: '50px',
+                    height: '50px'
+                }, styleTpl),
+                id: '__averageFps',
+                html: '0'
+            },
+            // --- Min ---
+            {
+                style: Ext.applyIf({
+                    bottom: '50px',
+                    left: '50px',
+                    width: '50px',
+                    height: '20px'
+                }, styleTpl),
+                html: 'Min (Last 1k)'
+            },
+            {
+                style: Ext.applyIf({
+                    'background-color': 'orange',
+                    'font-size': '18px',
+                    'line-height': '50px',
+
+                    bottom: 0,
+                    left: '50px',
+                    width: '50px',
+                    height: '50px'
+                }, styleTpl),
+                id: '__minFps',
+                html: '0'
+            },
+            // --- Max ---
+            {
+                style: Ext.applyIf({
+                    bottom: '50px',
+                    left: '100px',
+                    width: '50px',
+                    height: '20px'
+                }, styleTpl),
+                html: 'Max (Last 1k)'
+            },
+            {
+                style: Ext.applyIf({
+                    'background-color': 'maroon',
+                    'font-size': '18px',
+                    'line-height': '50px',
+
+                    bottom: 0,
+                    left: '100px',
+                    width: '50px',
+                    height: '50px'
+                }, styleTpl),
+                id: '__maxFps',
+                html: '0'
+            },
+            // --- Current ---
+            {
+                style: Ext.applyIf({
+                    bottom: '50px',
+                    left: '150px',
+                    width: '50px',
+                    height: '20px'
+                }, styleTpl),
+                html: 'Current'
+            },
+            {
+                style: Ext.applyIf({
+                    'background-color': 'green',
+                    'font-size': '18px',
+                    'line-height': '50px',
+
+                    bottom: 0,
+                    left: '150px',
+                    width: '50px',
+                    height: '50px'
+                }, styleTpl),
+                id: '__currentFps',
+                html: '0'
+            }
+        ]);
+
+        Ext.AnimationQueue.resetFps();
     },
 
-    showFps: function() {
-        Ext.onInternalReady(function() {
-            Ext.Viewport.add([{
-                    xtype: 'component',
-                    bottom: 50,
-                    left: 0,
-                    width: 50,
-                    height: 20,
-                    html: 'Average',
-                    style: 'background-color: black; color: white; text-align: center; line-height: 20px; font-size: 8px;'
-                },
-                {
-                    id: '__averageFps',
-                    xtype: 'component',
-                    bottom: 0,
-                    left: 0,
-                    width: 50,
-                    height: 50,
-                    html: '0',
-                    style: 'background-color: red; color: white; text-align: center; line-height: 50px;'
-                },
-                {
-                    xtype: 'component',
-                    bottom: 50,
-                    left: 50,
-                    width: 50,
-                    height: 20,
-                    html: 'Min (Last 1k)',
-                    style: 'background-color: black; color: white; text-align: center; line-height: 20px; font-size: 8px;'
-                },
-                {
-                    id: '__minFps',
-                    xtype: 'component',
-                    bottom: 0,
-                    left: 50,
-                    width: 50,
-                    height: 50,
-                    html: '0',
-                    style: 'background-color: orange; color: white; text-align: center; line-height: 50px;'
-                },
-                {
-                    xtype: 'component',
-                    bottom: 50,
-                    left: 100,
-                    width: 50,
-                    height: 20,
-                    html: 'Max (Last 1k)',
-                    style: 'background-color: black; color: white; text-align: center; line-height: 20px; font-size: 8px;'
-                },
-                {
-                    id: '__maxFps',
-                    xtype: 'component',
-                    bottom: 0,
-                    left: 100,
-                    width: 50,
-                    height: 50,
-                    html: '0',
-                    style: 'background-color: yellow; color: black; text-align: center; line-height: 50px;'
-                },
-                {
-                    xtype: 'component',
-                    bottom: 50,
-                    left: 150,
-                    width: 50,
-                    height: 20,
-                    html: 'Current',
-                    style: 'background-color: black; color: white; text-align: center; line-height: 20px; font-size: 8px;'
-                },
-                {
-                    id: '__currentFps',
-                    xtype: 'component',
-                    bottom: 0,
-                    left: 150,
-                    width: 50,
-                    height: 50,
-                    html: '0',
-                    style: 'background-color: green; color: white; text-align: center; line-height: 50px;'
-                }
-            ]);
-            Ext.AnimationQueue.resetFps();
-        });
-
-    },
-
-    resetFps: function() {
-        var currentFps = Ext.getCmp('__currentFps'),
-            averageFps = Ext.getCmp('__averageFps'),
-            minFps = Ext.getCmp('__minFps'),
-            maxFps = Ext.getCmp('__maxFps'),
+    resetFps: function () {
+        var currentFps = Ext.get('__currentFps'),
+            averageFps = Ext.get('__averageFps'),
+            minFps = Ext.get('__minFps'),
+            maxFps = Ext.get('__maxFps'),
             min = 1000,
             max = 0,
             count = 0,
             sum = 0;
 
-        Ext.AnimationQueue.onFpsChanged = function(fps) {
+        if (!currentFps) {
+            return;
+        }
+
+        Ext.AnimationQueue.onFpsChanged = function (fps) {
             count++;
 
             if (!(count % 10)) {
@@ -369,23 +422,23 @@ Ext.define('Ext.AnimationQueue', {
             min = Math.min(min, fps);
             max = Math.max(max, fps);
             currentFps.setHtml(Math.round(fps));
+            // All-time average since last reset.
             averageFps.setHtml(Math.round(sum / count));
             minFps.setHtml(Math.round(min));
             maxFps.setHtml(Math.round(max));
         };
     }
-}, function() {
+
+}, function () {
     /*
         Global FPS indicator. Add ?showfps to use in any application. Note that this REQUIRES true requestAnimationFrame
         to be accurate.
      */
-    //<debug>
     var paramsString = window.location.search.substr(1),
         paramsArray = paramsString.split("&");
 
     if (Ext.Array.contains(paramsArray, "showfps")) {
-        Ext.AnimationQueue.showFps();
+        Ext.onReady(Ext.Function.bind(this.showFps, this));
     }
-    //</debug>
-
+//</debug>
 });

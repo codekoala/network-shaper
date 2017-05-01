@@ -37,19 +37,19 @@ Ext.define('Ext.layout.container.Fit', {
     /* End Definitions */
 
     /**
-     * @inheritdoc
+     * @inheritdoc Ext.layout.container.Container#cfg-itemCls
      */
     itemCls: Ext.baseCSSPrefix + 'fit-item',
     type: 'fit',
    
     manageMargins: true,
 
-    sizePolicies: {
-        0: { readsWidth: 1, readsHeight: 1, setsWidth: 0, setsHeight: 0 },
-        1: { readsWidth: 0, readsHeight: 1, setsWidth: 1, setsHeight: 0 },
-        2: { readsWidth: 1, readsHeight: 0, setsWidth: 0, setsHeight: 1 },
-        3: { readsWidth: 0, readsHeight: 0, setsWidth: 1, setsHeight: 1 }
-    },
+    sizePolicies: [
+        { readsWidth: 1, readsHeight: 1, setsWidth: 0, setsHeight: 0 },
+        { readsWidth: 0, readsHeight: 1, setsWidth: 1, setsHeight: 0 },
+        { readsWidth: 1, readsHeight: 0, setsWidth: 0, setsHeight: 1 },
+        { readsWidth: 0, readsHeight: 0, setsWidth: 1, setsHeight: 1 }
+    ],
 
     getItemSizePolicy: function (item, ownerSizeModel) {
         // this layout's sizePolicy is derived from its owner's sizeModel:
@@ -321,7 +321,7 @@ Ext.define('Ext.layout.container.Fit', {
             itemContext.setProp('x', margins.left);
         }
 
-        if (margins.width) {
+        if (margins.width && info.ownerContext.widthModel.shrinkWrap) {
             // Need the margins for shrink-wrapping but old IE sometimes collapses the left margin into the padding
             itemContext.setProp('margin-right', margins.width);
         }
@@ -334,7 +334,7 @@ Ext.define('Ext.layout.container.Fit', {
             itemContext.setProp('y', margins.top);
         }
 
-        if (margins.height) {
+        if (margins.height && info.ownerContext.heightModel.shrinkWrap) {
             // Need the margins for shrink-wrapping but old IE sometimes collapses the top margin into the padding
             itemContext.setProp('margin-bottom', margins.height);
         }

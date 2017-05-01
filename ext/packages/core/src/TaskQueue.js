@@ -87,6 +87,10 @@ Ext.define('Ext.TaskQueue', {
             task = tasks[i];
             fn = task[0];
             scope = task[1];
+            
+            if (scope && (scope.destroying || scope.destroyed)) {
+                continue;
+            }
 
             if (typeof fn === 'string') {
                 fn = scope[fn];
@@ -106,4 +110,14 @@ Ext.define('Ext.TaskQueue', {
             this.request(request);
         }
     }
+
+    //<debug>
+    ,privates: {
+        flush: function() {
+            while (this.readQueue.length || this.writeQueue.length) {
+                this.run();
+            }
+        }
+    }
+    //</debug>
 });

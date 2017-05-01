@@ -19,10 +19,28 @@ Ext.define('Ext.form.field.Picker', {
         triggers: {
             picker: {
                 handler: 'onTriggerClick',
-                scope: 'this'
+                scope: 'this',
+                focusOnMousedown: true
             }
         }
     },
+    
+    renderConfig: {
+        /**
+         * @cfg {Boolean} editable
+         * False to prevent the user from typing text directly into the field; the field can only have its value set via
+         * selecting a value from the picker. In this state, the picker can also be opened by clicking directly on the input
+         * field itself.
+         */
+        editable: true
+    },
+    
+    keyMap: {
+        scope: 'this',
+        DOWN: 'onDownArrow',
+        ESC: 'onEsc'
+    },
+    keyMapTarget: 'inputEl',
 
     /**
      * @property {Boolean} isPickerField
@@ -59,14 +77,6 @@ Ext.define('Ext.form.field.Picker', {
      * True if the picker is currently expanded, false if not.
      */
     isExpanded: false,
-
-    /**
-     * @cfg {Boolean} editable
-     * False to prevent the user from typing text directly into the field; the field can only have its value set via
-     * selecting a value from the picker. In this state, the picker can also be opened by clicking directly on the input
-     * field itself.
-     */
-    editable: true,
 
     /**
      * @cfg {String} triggerCls
@@ -107,18 +117,18 @@ Ext.define('Ext.form.field.Picker', {
     
     getSubTplData: function(fieldData) {
         var me = this,
-            data, inputElAttr;
+            data, ariaAttr;
         
         data = me.callParent([fieldData]);
         
-        if (me.ariaRole) {
-            inputElAttr = data.inputElAriaAttributes;
+        if (!me.ariaStaticRoles[me.ariaRole]) {
+            ariaAttr = data.ariaElAttributes;
             
-            if (inputElAttr) {
-                inputElAttr['aria-haspopup'] = true;
+            if (ariaAttr) {
+                ariaAttr['aria-haspopup'] = true;
                 
                 // Picker fields start as collapsed
-                inputElAttr['aria-expanded'] = false;
+                ariaAttr['aria-expanded'] = false;
             }
         }
         
@@ -126,30 +136,24 @@ Ext.define('Ext.form.field.Picker', {
     },
 
     initEvents: function() {
-        var me = this;
-        me.callParent();
-
-        // Add handlers for keys to expand/collapse the picker
-        me.keyNav = new Ext.util.KeyNav(me.inputEl, {
-            down: me.onDownArrow,
-            esc: {
-                handler: me.onEsc,
-                scope: me,
-                defaultEventAction: false
-            },
-            scope: me,
-            forceKeyDown: true
-        });
-
-        // Non-editable allows opening the picker by clicking the field
-        if (!me.editable) {
-            me.mon(me.inputEl, 'click', me.onTriggerClick, me);
-        }
+        this.callParent();
 
         // Disable native browser autocomplete
         if (Ext.isGecko) {
-            me.inputEl.dom.setAttribute('autocomplete', 'off');
+            this.inputEl.dom.setAttribute('autocomplete', 'off');
         }
+    },
+
+    updateEditable: function(editable, oldEditable) {
+        var me = this;
+
+        // Non-editable allows opening the picker by clicking the field
+        if (!editable) {
+            me.inputEl.on('click', me.onTriggerClick, me);
+        } else {
+            me.inputEl.un('click', me.onTriggerClick, me);
+        }
+        me.callParent([editable, oldEditable]);
     },
 
     /**
@@ -183,11 +187,11 @@ Ext.define('Ext.form.field.Picker', {
 
             // Don't call expand() directly as there may be additional processing involved before
             // expanding, e.g. in the case of a ComboBox query.
-            me.onTriggerClick();
+            me.onTriggerClick(e);
             
             me.lastDownArrow = e.time;
         }
-        else if (!e.isStopped && (e.time - me.lastDownArrow) < 150) {
+        else if (!e.stopped && (e.time - me.lastDownArrow) < 150) {
             delete me.lastDownArrow;
         }
     },
@@ -197,13 +201,12 @@ Ext.define('Ext.form.field.Picker', {
      */
     expand: function() {
         var me = this,
-            bodyEl, ariaDom, picker, doc, collapseIf;
+            bodyEl, picker, doc;
 
         if (me.rendered && !me.isExpanded && !me.destroyed) {
             bodyEl = me.bodyEl;
             picker = me.getPicker();
             doc = Ext.getDoc();
-            collapseIf = me.collapseIf;
             picker.setMaxHeight(picker.initialConfig.maxHeight);
             
             if (me.matchFieldWidth) {
@@ -216,19 +219,31 @@ Ext.define('Ext.form.field.Picker', {
             me.alignPicker();
             bodyEl.addCls(me.openCls);
             
-            if (me.ariaRole) {
-                ariaDom = me.ariaEl.dom;
+            if (!me.ariaStaticRoles[me.ariaRole]) {
+                if (!me.ariaEl.dom.hasAttribute('aria-owns')) {
+                    me.ariaEl.dom.setAttribute('aria-owns', picker.listEl ? picker.listEl.id : picker.el.id);
+                }
                 
-                ariaDom.setAttribute('aria-owns', picker.listEl ? picker.listEl.id : picker.el.id);
-                ariaDom.setAttribute('aria-expanded', true);
+                me.ariaEl.dom.setAttribute('aria-expanded', true);
             }
 
-            // monitor touch and mousewheel
-            me.hideListeners = doc.on({
-                mousewheel: me.collapseIf,
+            // Collapse on touch outside this component tree.
+            // Because touch platforms do not focus document.body on touch
+            // so no focusleave would occur to trigger a collapse.
+            me.touchListeners = doc.on({
+                // Do not translate on non-touch platforms.
+                // mousedown will blur the field.
+                translate:false,
                 touchstart: me.collapseIf,
                 scope: me,
                 delegated: false,
+                destroyable: true
+            });
+
+            // Scrolling of anything which causes this field to move should collapse
+            me.scrollListeners = Ext.on({
+                scroll: me.onGlobalScroll,
+                scope: me,
                 destroyable: true
             });
             
@@ -246,11 +261,14 @@ Ext.define('Ext.form.field.Picker', {
      * @protected
      */
     alignPicker: function() {
-        if (!this.destroyed) {
-            var picker = this.getPicker();
+        var me = this,
+            picker;
+
+        if (me.rendered && !me.destroyed) {
+            picker = me.getPicker();
 
             if (picker.isVisible() && picker.isFloating()) {
-                this.doAlign();
+                me.doAlign();
             }
         }
     },
@@ -263,11 +281,19 @@ Ext.define('Ext.form.field.Picker', {
         var me = this,
             picker = me.picker,
             aboveSfx = '-above',
+            newPos,
             isAbove;
 
         // Align to the trigger wrap because the border isn't always on the input element, which
         // can cause the offset to be off
-        me.picker.alignTo(me.triggerWrap, me.pickerAlign, me.pickerOffset);
+        picker.el.alignTo(me.triggerWrap, me.pickerAlign, me.pickerOffset);
+
+        // We used *element* alignTo to bypass the automatic reposition on scroll which
+        // Floating#alignTo does. So we must sync the Component state.
+        newPos = picker.floatParent ? picker.getOffsetsTo(picker.floatParent.getTargetEl()) : picker.getXY();
+        picker.x = newPos[0];
+        picker.y = newPos[1];
+
         // add the {openCls}-above class if the picker was aligned above
         // the field due to hitting the bottom of the viewport
         isAbove = picker.el.getY() < me.inputEl.getY();
@@ -294,12 +320,13 @@ Ext.define('Ext.form.field.Picker', {
             me.bodyEl.removeCls([openCls, openCls + aboveSfx]);
             picker.el.removeCls(picker.baseCls + aboveSfx);
             
-            if (me.ariaRole) {
+            if (!me.ariaStaticRoles[me.ariaRole]) {
                 me.ariaEl.dom.setAttribute('aria-expanded', false);
             }
 
             // remove event listeners
-            me.hideListeners.destroy();
+            me.touchListeners.destroy();
+            me.scrollListeners.destroy();
             Ext.un('resize', me.alignPicker, me);
             me.fireEvent('collapse', me);
             me.onCollapse();
@@ -308,10 +335,9 @@ Ext.define('Ext.form.field.Picker', {
 
     onCollapse: Ext.emptyFn,
 
-
     /**
      * @private
-     * Runs on mousewheel of doc to check to see if we should collapse the picker
+     * Runs on touchstart of doc to check to see if we should collapse the picker.
      */
     collapseIf: function(e) {
         var me = this;
@@ -346,9 +372,8 @@ Ext.define('Ext.form.field.Picker', {
     // When focus leaves the picker component, if it's to outside of this
     // Component's hierarchy
     onFocusLeave: function(e) {
-        var me = this;
-        me.collapse();
-        me.callParent([e]);
+        this.collapse();
+        this.callParent([e]);
     },
 
     /**
@@ -386,15 +411,26 @@ Ext.define('Ext.form.field.Picker', {
         }
     },
 
-    beforeDestroy : function(){
+    doDestroy: function(){
         var me = this,
             picker = me.picker;
 
-        me.callParent();
         Ext.un('resize', me.alignPicker, me);
         Ext.destroy(me.keyNav, picker);
+        
         if (picker) {
             me.picker = picker.pickerField = null;
+        }
+
+        me.callParent();
+    },
+
+    privates: {
+        onGlobalScroll: function (scroller) {
+            // Collapse if the scroll is anywhere but inside the picker
+            if (!this.picker.owns(scroller.getElement())) {
+                this.collapse();
+            }
         }
     }
 });

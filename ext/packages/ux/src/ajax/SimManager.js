@@ -146,7 +146,7 @@ Ext.define('Ext.ux.ajax.SimManager', {
 
             me._openRequest = Ext.data.Connection.prototype.openRequest;
 
-            Ext.data.Connection.override({
+            Ext.data.request.Ajax.override({
                 openRequest: function (options, requestOptions, async) {
                     var xhr = !options.nosim &&
                               me.getXhr(requestOptions.method, requestOptions.url, options, async);

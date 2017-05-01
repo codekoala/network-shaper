@@ -1,5 +1,5 @@
 describe('Ext.form.field.Field', function () {
-    var ajaxRequestCfg, ct, action;
+    var ajaxRequestCfg, ct, action, form;
 
     function makeContainer(items) {
         ct = new Ext.container.Container({
@@ -23,8 +23,67 @@ describe('Ext.form.field.Field', function () {
     }
 
     afterEach(function () {
-        Ext.destroy(ct);
-        ct = action = ajaxRequestCfg = null;
+        Ext.destroy(ct, action, form);
+        ct = action = form = ajaxRequestCfg = null;
+    });
+
+    describe("quicktips/validation", function() {
+        var tf, errorDom, tip;
+
+        function createForm(required, cfg) {
+            // we're creating textields for testing, but any type that supports validation will do.
+            form = Ext.create('Ext.form.Panel', Ext.apply({
+                renderTo: Ext.getBody(),
+                width: 400,
+                height: 200,
+                items: [
+                    {
+                        xtype: 'textfield',
+                        fieldLabel: 'tf',
+                        msgTarget: 'side',
+                        allowBlank: !!!required
+                    },
+                    {
+                        xtype: 'textfield',
+                        fieldLabel: 'dummy'
+                    }
+                ]
+            }, cfg || {}));
+            tf = form.down('textfield');
+            errorDom = tf.errorEl.dom;
+        }
+        
+        afterEach(function() {
+            tip = Ext.destroy(tip);
+        });
+
+        it("should create a validation error icon to the right of the field", function() {
+            createForm(); 
+            //debugger
+            tf.validate();
+            expect(tf.errorEl.dom.firstChild).toBeNull();
+            tf.allowBlank = false;
+            tf.validate();
+            expect(tf.errorEl.dom.firstChild).not.toBeNull();
+        });
+
+        it("should show a quicktip if mouse over the invalid icon", function() {
+            createForm(true, {
+                title: 'quicktip'
+            });
+            tf.validate();
+     
+            tip = Ext.form.Labelable.tip;
+            expect(tip.hidden).toBe(true);
+            jasmine.fireMouseEvent(errorDom, 'mouseover');
+            waitsFor(function() {
+                return tip.hidden === false;
+            });
+            runs(function() {
+                expect(tip.hidden).toBe(false);
+                tip.hide();
+            });
+        });
     });
 
     describe("data binding", function() {
@@ -108,17 +167,27 @@ describe('Ext.form.field.Field', function () {
         });
 
         describe("with records", function() {
-            var rec;
+            var rec, validator;
             beforeEach(function() {
+                Ext.define('Ext.data.validator.Custom', {
+                    extend: 'Ext.data.validator.Validator',
+                    alias: 'data.validator.custom'
+                });
+
+                validator = Ext.data.validator.Validator.create({
+                    type: 'custom'
+                });
+                
                 Ext.define('spec.Person', {
                     extend: 'Ext.data.Model',
-                    fields: [{
-                        name: 'name',
-                        validators: {
-                            type: 'length',
-                            min: 3
-                        }
-                    }, 'age']
+                    fields: ['name', 'age', 'address'],
+                    validators : {
+                        name : {
+                            type : 'length',
+                            min : 3
+                        },
+                        address : validator
+                    }
                 });
 
                 rec = new spec.Person({
@@ -130,6 +199,8 @@ describe('Ext.form.field.Field', function () {
 
             afterEach(function() {
                 Ext.undefine('spec.Person');
+                Ext.undefine('Ext.data.validator.Custom');
+                Ext.Factory.dataValidator.instance.clearCache();
                 Ext.data.Model.schema.clear(true);
             });
 
@@ -173,6 +244,20 @@ describe('Ext.form.field.Field', function () {
                 expect(field.getErrors()).toEqual(['Must be present']);
             });
 
+            it("should pass value and record to the model validator", function() {
+                spyOn(validator,'validate').andCallThrough();
+
+                makeField({
+                    renderTo: Ext.getBody(),
+                    modelValidation: true,
+                    bind: '{thePerson.address}'
+                });
+                viewModel.notify();
+                field.setValue('Foo');
+
+                expect(validator.validate.mostRecentCall.args).toEqual(['Foo', viewModel.get('thePerson')]);
+            });
+
             it("should combine with field validations", function() {
                 makeField({
                     renderTo: Ext.getBody(),
@@ -214,6 +299,8 @@ describe('Ext.form.field.Field', function () {
 
             expect(field1.getModelData()).toEqual({field1: 'foo'});
             expect(field2.getModelData()).toEqual({field2: ''});
+            
+            Ext.destroy(field1, field2);
         });
 
         describe('in a form with jsonSubmit', function () {
@@ -244,8 +331,15 @@ describe('Ext.form.field.Field', function () {
     });
 
     describe('getSubmitData', function () {
+        var file;
+        
+        afterEach(function() {
+            Ext.destroy(file);
+            file = null;
+        });
+        
         it('should not be able to get the submit data for a filefield by default, non-submission', function () {
-            var file = new Ext.form.field.File({
+            file = new Ext.form.field.File({
                 name: 'foo'
             });
 
@@ -253,7 +347,7 @@ describe('Ext.form.field.Field', function () {
         });
 
         it('should be able to get the submit data for a filefield when configured with submitValue: true, non-submission', function () {
-            var file = new Ext.form.field.File({
+            file = new Ext.form.field.File({
                 name: 'foo',
                 submitValue: true
             });
@@ -303,12 +397,12 @@ describe('Ext.form.field.Field', function () {
                     value: 'bar'
                 })
             ]);
-
-            createAction({
-                form: new Ext.form.Basic(ct, {
-                    jsonSubmit: true
-                })
+            
+            form = new Ext.form.Basic(ct, {
+                jsonSubmit: true
             });
+            
+            createAction({ form: form });
 
             action.run();
             expect(ajaxRequestCfg.jsonData).toEqual({field1: 'foo', field2: 'bar'});
@@ -328,11 +422,11 @@ describe('Ext.form.field.Field', function () {
                 })
             ]);
 
-            createAction({
-                form: new Ext.form.Basic(ct, {
-                    jsonSubmit: true
-                })
+            form = new Ext.form.Basic(ct, {
+                jsonSubmit: true
             });
+            
+            createAction({ form: form });
 
             action.run();
             expect(ajaxRequestCfg.jsonData).toEqual({field1: 'foo'});
@@ -351,11 +445,11 @@ describe('Ext.form.field.Field', function () {
                 })
             ]);
 
-            createAction({
-                form: new Ext.form.Basic(ct, {
-                    jsonSubmit: true
-                })
+            form = new Ext.form.Basic(ct, {
+                jsonSubmit: true
             });
+            
+            createAction({ form: form });
 
             action.run();
             expect(ajaxRequestCfg.jsonData).toEqual({field1: 'foo'});
@@ -378,11 +472,11 @@ describe('Ext.form.field.Field', function () {
                 })
             ]);
 
-            createAction({
-                form: new Ext.form.Basic(ct, {
-                    jsonSubmit: true
-                })
+            form = new Ext.form.Basic(ct, {
+                jsonSubmit: true
             });
+            
+            createAction({ form: form });
 
             action.run();
             expect(ajaxRequestCfg.jsonData).toEqual({field1: 'foo', field3: 'baz'});

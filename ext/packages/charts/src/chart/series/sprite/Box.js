@@ -128,7 +128,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
             isHorizontal = attr.orientation === 'horizontal',
             isTransparent = attr.globalAlpha < 1,
             fillStyle = attr.fillStyle,
-            color = Ext.draw.Color.create(
+            color = Ext.util.Color.create(
                 fillStyle.isGradient ?
                     fillStyle.getStops()[0].color :
                     fillStyle
@@ -138,10 +138,11 @@ Ext.define('Ext.chart.series.sprite.Box', {
             colorSpread = attr.colorSpread,
             hsv = color.getHSV(),
             bbox = {},
+            roundX, roundY,
             temp;
 
         if (!attr.showStroke) {
-            ctx.strokeStyle = Ext.draw.Color.RGBA_NONE;
+            ctx.strokeStyle = Ext.util.Color.RGBA_NONE;
         }
 
         if (isNegative) {
@@ -156,7 +157,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
         me.topGradient.setStops([
             {
                 offset: 0,
-                color: Ext.draw.Color.fromHSV(
+                color: Ext.util.Color.fromHSV(
                     hsv[0],
                     Ext.Number.constrain(hsv[1] * saturationFactor, 0, 1),
                     Ext.Number.constrain((0.5 + colorSpread * 0.10) * brightnessFactor, 0, 1)
@@ -164,7 +165,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
             },
             {
                 offset: 1,
-                color: Ext.draw.Color.fromHSV(
+                color: Ext.util.Color.fromHSV(
                     hsv[0],
                     Ext.Number.constrain(hsv[1] * saturationFactor, 0, 1),
                     Ext.Number.constrain((0.5 - colorSpread * 0.11) * brightnessFactor, 0, 1)
@@ -176,7 +177,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
         me.rightGradient.setStops([
             {
                 offset: 0,
-                color: Ext.draw.Color.fromHSV(
+                color: Ext.util.Color.fromHSV(
                     hsv[0],
                     Ext.Number.constrain(hsv[1] * saturationFactor, 0, 1),
                     Ext.Number.constrain((0.5 - colorSpread * 0.14) * brightnessFactor, 0, 1)
@@ -184,7 +185,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
             },
             {
                 offset: 1,
-                color: Ext.draw.Color.fromHSV(
+                color: Ext.util.Color.fromHSV(
                     hsv[0],
                     Ext.Number.constrain(hsv[1] * (1.0 + colorSpread * 0.4) * saturationFactor, 0, 1),
                     Ext.Number.constrain((0.5 - colorSpread * 0.32) * brightnessFactor, 0, 1)
@@ -201,7 +202,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
         me.frontGradient.setStops([
             {
                 offset: 0,
-                color: Ext.draw.Color.fromHSV(
+                color: Ext.util.Color.fromHSV(
                     hsv[0],
                     Ext.Number.constrain(hsv[1] * (1.0 - colorSpread * 0.1) * saturationFactor, 0, 1),
                     Ext.Number.constrain((0.5 + colorSpread * 0.1) * brightnessFactor, 0, 1)
@@ -209,7 +210,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
             },
             {
                 offset: 1,
-                color: Ext.draw.Color.fromHSV(
+                color: Ext.util.Color.fromHSV(
                     hsv[0],
                     Ext.Number.constrain(hsv[1] * (1.0 + colorSpread * 0.1) * saturationFactor, 0, 1),
                     Ext.Number.constrain((0.5 - colorSpread * 0.23) * brightnessFactor, 0, 1)
@@ -225,7 +226,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
             ctx.lineTo(center - halfWidth + depth, bottom + depth);
             ctx.lineTo(center + halfWidth + depth, bottom + depth);
             ctx.lineTo(center + halfWidth, bottom);
-            ctx.lineTo(center - halfWidth, bottom);
+            ctx.closePath();
 
             bbox.x = center - halfWidth;
             bbox.y = top;
@@ -245,7 +246,7 @@ Ext.define('Ext.chart.series.sprite.Box', {
             ctx.lineTo(center - halfWidth + depth, top + depth);
             ctx.lineTo(center - halfWidth + depth, bottom + depth);
             ctx.lineTo(center - halfWidth, bottom);
-            ctx.lineTo(center - halfWidth, top);
+            ctx.closePath();
 
             bbox.x = center + halfWidth;
             bbox.y = bottom;
@@ -259,12 +260,13 @@ Ext.define('Ext.chart.series.sprite.Box', {
 
         // Top side.
 
+        roundY = surface.roundPixel(top);
         ctx.beginPath();
-        ctx.moveTo(center - halfWidth, top);
+        ctx.moveTo(center - halfWidth, roundY);
         ctx.lineTo(center - halfWidth + depth, top + depth);
         ctx.lineTo(center + halfWidth + depth, top + depth);
-        ctx.lineTo(center + halfWidth, top);
-        ctx.lineTo(center - halfWidth, top);
+        ctx.lineTo(center + halfWidth, roundY);
+        ctx.closePath();
 
         bbox.x = center - halfWidth;
         bbox.y = top;
@@ -277,12 +279,13 @@ Ext.define('Ext.chart.series.sprite.Box', {
 
         // Right side.
 
+        roundX = surface.roundPixel(center + halfWidth);
         ctx.beginPath();
-        ctx.moveTo(center + halfWidth, top);
+        ctx.moveTo(roundX, surface.roundPixel(top));
         ctx.lineTo(center + halfWidth + depth, top + depth);
         ctx.lineTo(center + halfWidth + depth, bottom + depth);
-        ctx.lineTo(center + halfWidth, bottom);
-        ctx.lineTo(center + halfWidth, top);
+        ctx.lineTo(roundX, bottom);
+        ctx.closePath();
 
         bbox.x = center + halfWidth;
         bbox.y = bottom;
@@ -295,12 +298,14 @@ Ext.define('Ext.chart.series.sprite.Box', {
 
         // Front side.
 
+        roundX = surface.roundPixel(center + halfWidth);
+        roundY = surface.roundPixel(top);
         ctx.beginPath();
         ctx.moveTo(center - halfWidth, bottom);
-        ctx.lineTo(center - halfWidth, top);
-        ctx.lineTo(center + halfWidth, top);
-        ctx.lineTo(center + halfWidth, bottom);
-        ctx.lineTo(center - halfWidth, bottom);
+        ctx.lineTo(center - halfWidth, roundY);
+        ctx.lineTo(roundX, roundY);
+        ctx.lineTo(roundX, bottom);
+        ctx.closePath();
 
         bbox.x = center - halfWidth;
         bbox.y = bottom;

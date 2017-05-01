@@ -9,10 +9,10 @@
  *            {name: 'framework', type: 'string'},
  *            {name: 'rocks', type: 'boolean'}
  *        ],
- *        data:{'items':[
- *            { 'framework': "Ext JS",     'rocks': true  },
- *            { 'framework': "Ext GWT",      'rocks': true  },
- *            { 'framework': "Other Guys",   'rocks': false }
+ *        data:{ items:[
+ *            { framework: "Ext JS",     rocks: true  },
+ *            { framework: "Ext GWT",    rocks: true  },
+ *            { framework: "Other Guys", rocks: false }
  *        ]}
  *     });
  *
@@ -35,6 +35,8 @@
 Ext.define('Ext.grid.column.Boolean', {
     extend: 'Ext.grid.column.Column',
 
+    requires: ['Ext.grid.cell.Boolean'],
+
     xtype: 'booleancolumn',
 
     config: {
@@ -42,34 +44,26 @@ Ext.define('Ext.grid.column.Boolean', {
          * @cfg {String} trueText
          * The string returned by the renderer when the column value is not falsey.
          */
-        trueText: 'True',
+        trueText: null,
 
         /**
          * @cfg {String} falseText
          * The string returned by the renderer when the column value is falsey (but not undefined).
          */
-        falseText: 'False',
+        falseText: null,
 
         /**
          * @cfg {String} undefinedText
          * The string returned by the renderer when the column value is undefined.
          */
-        undefinedText: '&#160;',
+        undefinedText: null,
 
         defaultEditor: {
             xtype: 'checkboxfield'
-        }
-    },
+        },
 
-    defaultRenderer: function(value) {
-        if (value === undefined) {
-            return this.getUndefinedText();
+        cell: {
+            xtype: 'booleancell'
         }
-
-        if (!value || value === 'false') {
-            return this.getFalseText();
-        }
-
-        return this.getTrueText();
     }
 });

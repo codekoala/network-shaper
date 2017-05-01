@@ -19,6 +19,18 @@ Ext.define('Ext.view.NodeCache', {
         this.clear();
         this.el = new Ext.dom.Fly();
     },
+    
+    destroy: function() {
+        var me = this;
+        
+        if (!me.destroyed) {
+            me.el.destroy();
+            me.el = me.view = null;
+            me.destroyed = true;
+        }
+        
+        me.callParent();
+    },
 
     /**
     * Removes all elements from this NodeCache.
@@ -31,7 +43,8 @@ Ext.define('Ext.view.NodeCache', {
             key;
 
         if (me.count && removeDom) {
-            if (range) {
+            // Some browsers throw error if Range used on detached DOM
+            if (range && Ext.getBody().contains(elements[0])) {
                 range.setStartBefore(elements[me.startIndex]);
                 range.setEndAfter(elements[me.endIndex]);
                 range.deleteContents();
@@ -79,7 +92,7 @@ Ext.define('Ext.view.NodeCache', {
         // If not inserting into empty cache, validate, and possibly shuffle.
         if (me.count) {
             //<debug>
-            if (insertPoint > me.endIndex + 1 || insertPoint + nodes.length - 1 < me.startIndex) {
+            if (insertPoint > me.endIndex + 1 || insertPoint + nodes.length < me.startIndex) {
                 Ext.raise('Discontiguous range would result from inserting ' + nodes.length + ' nodes at ' + insertPoint);
             }
             //</debug>
@@ -248,6 +261,33 @@ Ext.define('Ext.view.NodeCache', {
         return -1;
     },
 
+    clip: function(removeEnd, removeCount) {
+        var me = this,
+            elements = me.elements,
+            removed = [],
+            start, end, el, i;
+
+        // Clipping from start
+        if (removeEnd === 1) {
+            start = me.startIndex;
+            me.startIndex += removeCount;
+        }
+        // Clipping from end
+        else {
+            me.endIndex -= removeCount;
+            start = me.endIndex + 1;
+        }
+        for (i = start, end = start + removeCount - 1; i <= end; i++) {
+            el = elements[i];
+
+            removed.push(el);
+            Ext.removeNode(el);
+            delete elements[i];
+        }
+        me.count -= removeCount;
+        me.view.fireItemMutationEvent('itemremove', me.view.dataSource.getRange(start, end), start, removed, me.view);
+    },
+
     removeRange: function(start, end, removeDom) {
         var me = this,
             elements = me.elements,
@@ -370,43 +410,45 @@ Ext.define('Ext.view.NodeCache', {
     scroll: function(newRecords, direction, removeCount) {
         var me = this,
             view = me.view,
+            vm = view.lookupViewModel(),
             store = view.store,
             elements = me.elements,
             recCount = newRecords.length,
             nodeContainer = view.getNodeContainer(),
-            fireItemRemove = view.hasListeners.itemremove,
-            fireItemAdd = view.hasListeners.itemadd,
             range = me.statics().range,
-            i, el, removeEnd, children, result;
+            i, el, removeEnd, children, result,
+            removeStart, removedRecords, removedItems;
 
-        if (!newRecords.length) {
+        if (!(newRecords.length || removeCount)) {
             return;
         }
 
         // Scrolling up (content moved down - new content needed at top, remove from bottom)
         if (direction === -1) {
             if (removeCount) {
+                removedRecords = [];
+                removedItems = [];
+                removeStart = (me.endIndex - removeCount) + 1;
                 if (range) {
-                    range.setStartBefore(elements[(me.endIndex - removeCount) + 1]);
+                    range.setStartBefore(elements[removeStart]);
                     range.setEndAfter(elements[me.endIndex]);
                     range.deleteContents();
-                    for (i = (me.endIndex - removeCount) + 1; i <= me.endIndex; i++) {
+                    for (i = removeStart; i <= me.endIndex; i++) {
                         el = elements[i];
                         delete elements[i];
-                        if (fireItemRemove) {
-                            view.fireEvent('itemremove', store.getByInternalId(el.getAttribute('data-recordId')), i, el, view);
-                        }
+                        removedRecords.push(store.getByInternalId(el.getAttribute('data-recordId')));
+                        removedItems.push(el);
                     }
                 } else {
-                    for (i = (me.endIndex - removeCount) + 1; i <= me.endIndex; i++) {
+                    for (i = removeStart; i <= me.endIndex; i++) {
                         el = elements[i];
                         delete elements[i];
                         Ext.removeNode(el);
-                        if (fireItemRemove) {
-                            view.fireEvent('itemremove', store.getByInternalId(el.getAttribute('data-recordId')), i, el, view);
-                        }
+                        removedRecords.push(store.getByInternalId(el.getAttribute('data-recordId')));
+                        removedItems.push(el);
                     }
                 }
+                view.fireItemMutationEvent('itemremove', removedRecords, removeStart, removedItems, view);
                 me.endIndex -= removeCount;
             }
 
@@ -423,15 +465,15 @@ Ext.define('Ext.view.NodeCache', {
                 nodeContainer.insertBefore(result.fragment, nodeContainer.firstChild);
 
                 // pass the new DOM to any interested parties
-                if (fireItemAdd) {
-                    view.fireEvent('itemadd', newRecords, me.startIndex, children);
-                }
+                view.fireItemMutationEvent('itemadd', newRecords, me.startIndex, children, view);
             }
         }
 
         // Scrolling down (content moved up - new content needed at bottom, remove from top)
         else {
             if (removeCount) {
+                removedRecords = [];
+                removedItems = [];
                 removeEnd = me.startIndex + removeCount;
                 if (range) {
                     range.setStartBefore(elements[me.startIndex]);
@@ -440,20 +482,19 @@ Ext.define('Ext.view.NodeCache', {
                     for (i = me.startIndex; i < removeEnd; i++) {
                         el = elements[i];
                         delete elements[i];
-                        if (fireItemRemove) {
-                            view.fireEvent('itemremove', store.getByInternalId(el.getAttribute('data-recordId')), i, el, view);
-                        }
+                        removedRecords.push(store.getByInternalId(el.getAttribute('data-recordId')));
+                        removedItems.push(el);
                     }
                 } else {
                     for (i = me.startIndex; i < removeEnd; i++) {
                         el = elements[i];
                         delete elements[i];
                         Ext.removeNode(el);
-                        if (fireItemRemove) {
-                            view.fireEvent('itemremove', store.getByInternalId(el.getAttribute('data-recordId')), i, el, view);
-                        }
+                        removedRecords.push(store.getByInternalId(el.getAttribute('data-recordId')));
+                        removedItems.push(el);
                     }
                 }
+                view.fireItemMutationEvent('itemremove', removedRecords, me.startIndex, removedItems, view);
                 me.startIndex = removeEnd;
             }
 
@@ -467,13 +508,16 @@ Ext.define('Ext.view.NodeCache', {
             nodeContainer.appendChild(result.fragment);
 
             // pass the new DOM to any interested parties
-            if (fireItemAdd) {
-                view.fireEvent('itemadd', newRecords, me.endIndex + 1, children);
-            }
+            view.fireItemMutationEvent('itemadd', newRecords, me.endIndex + 1, children, view);
         }
         // Keep count consistent.
         me.count = me.endIndex - me.startIndex + 1;
-        
+
+        // The content height MUST be measurable by the caller (the buffered renderer), so data must be flushed to it immediately.
+        if (vm) {
+            vm.notify();
+        }
+ 
         return children;
     },
 

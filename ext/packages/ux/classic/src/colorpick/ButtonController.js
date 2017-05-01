@@ -45,6 +45,11 @@ Ext.define('Ext.ux.colorpick.ButtonController', {
                 cancel: 'onColorPickerCancel',
                 scope: this
             });
+
+            popup.on({
+                close: 'onColorPickerCancel',
+                scope: this
+            });
         }
 
         return popup;

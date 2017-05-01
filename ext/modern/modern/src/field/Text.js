@@ -58,7 +58,7 @@
  *
  * These configurations will be picked up by the native browser, which will enable the options at the OS level.
  *
- * Text field inherits from {@link Ext.field.Field}, which is the base class for all fields in Sencha Touch and provides
+ * Text field inherits from {@link Ext.field.Field}, which is the base class for all fields and provides
  * a lot of shared functionality for all fields, including setting values, clearing and basic validation. See the
  * {@link Ext.field.Field} documentation to see how to leverage its capabilities.
  */
@@ -66,6 +66,10 @@ Ext.define('Ext.field.Text', {
     extend: 'Ext.field.Field',
     xtype: 'textfield',
     alternateClassName: 'Ext.form.Text',
+
+    requires: [
+        'Ext.field.trigger.Clear'
+    ],
 
     /**
      * @event focus
@@ -97,7 +101,7 @@ Ext.define('Ext.field.Text', {
 
     /**
      * @event keyup
-     * @preventable doKeyUp
+     * @preventable
      * Fires when a key is released on the input element
      * @param {Ext.field.Text} this This field
      * @param {Ext.event.Event} e
@@ -105,23 +109,24 @@ Ext.define('Ext.field.Text', {
 
     /**
      * @event clearicontap
-     * @preventable doClearIconTap
+     * @preventable
      * Fires when the clear icon is tapped
      * @param {Ext.field.Text} this This field
+     * @param {Ext.field.Input} input The field's input component.
      * @param {Ext.event.Event} e
      */
 
     /**
      * @event change
-     * Fires just before the field blurs if the field value has changed
+     * Fires when the value has changed.
      * @param {Ext.field.Text} this This field
-     * @param {Mixed} newValue The new value
-     * @param {Mixed} oldValue The original value
+     * @param {String} newValue The new value
+     * @param {String} oldValue The original value
      */
 
     /**
      * @event action
-     * @preventable doAction
+     * @preventable
      * Fires whenever the return key or go is pressed. FormPanel listeners
      * for this event, and submits itself whenever it fires. Also note
      * that this event bubbles up to parent containers.
@@ -134,13 +139,16 @@ Ext.define('Ext.field.Text', {
          * @cfg
          * @inheritdoc
          */
-        ui: 'text',
+        clearIcon: true,
 
         /**
-         * @cfg
+         * @cfg {'top'/'left'/'bottom'/'right'/'placeholder'} labelAlign
+         * When value is `'placeholder'`, the label text will be rendered as placeholder
+         * text inside the empty input and will animated to "top" alignment when the input
+         * is focused or contains text.
          * @inheritdoc
+         * @accessor
          */
-        clearIcon: true,
 
         /**
          * @cfg {String} placeHolder A string value displayed in the input (if supported) when the control is empty.
@@ -187,13 +195,86 @@ Ext.define('Ext.field.Text', {
          * @accessor
          */
         component: {
-            xtype: 'input',
-            type: 'text',
-            fastFocus: false
+            xtype: 'textinput'
         },
 
-        bubbleEvents: ['action']
+        // @cmd-auto-dependency {aliasPrefix: "trigger.", isKeyedObject: true}
+        /**
+         * @cfg {Object} triggers
+         * {@link Ext.field.trigger.Trigger Triggers} to use in this field.  The keys in
+         * this object are unique identifiers for the triggers. The values in this object
+         * are {@link Ext.field.trigger.Trigger Trigger} configuration objects.
+         *
+         *     Ext.create('Ext.field.Text', {
+         *         label: 'My Custom Field',
+         *         triggers: {
+         *             foo: {
+         *                 cls: 'my-foo-trigger',
+         *                 handler: function() {
+         *                     console.log('foo trigger clicked');
+         *                 }
+         *             },
+         *             bar: {
+         *                 cls: 'my-bar-trigger',
+         *                 handler: function() {
+         *                     console.log('bar trigger clicked');
+         *                 }
+         *             }
+         *         }
+         *     });
+         *
+         * The weight value may be a negative value in order to position custom triggers
+         * ahead of default triggers like that of a DatePicker field.
+         *
+         *     Ext.create('Ext.form.DatePicker', {
+         *         label: 'Pick a Date',
+         *         triggers: {
+         *             foo: {
+         *                 cls: 'my-foo-trigger',
+         *                 weight: -2, // negative to place before default triggers
+         *                 handler: function() {
+         *                     console.log('foo trigger clicked');
+         *                 }
+         *             },
+         *             bar: {
+         *                 cls: 'my-bar-trigger',
+         *                 weight: -1,
+         *                 handler: function() {
+         *                     console.log('bar trigger clicked');
+         *                 }
+         *             }
+         *         }
+         *     });
+         */
+        triggers: {
+            clear: {
+                type: 'clear'
+            }
+        },
+
+        bubbleEvents: ['action'],
+
+        bodyAlign: 'stretch',
+
+        /**
+          * @cfg {'left'/'center'/'right'} [textAlign='left'].
+          * The text alignment of this field.
+          */
+        textAlign: null
     },
+
+    defaultBindProperty: 'value',
+    twoWayBindable: {
+        value: 1
+    },
+    
+    publishes: {
+        value: 1
+    },
+
+    classCls: Ext.baseCSSPrefix + 'textfield',
+    focusedCls: Ext.baseCSSPrefix + 'focused',
+    emptyCls: Ext.baseCSSPrefix + 'empty',
 
     /**
      * @private
@@ -204,15 +285,13 @@ Ext.define('Ext.field.Text', {
         me.callParent();
 
         me.getComponent().on({
-            scope: this,
-
-            keyup       : 'onKeyUp',
-            change      : 'onChange',
-            focus       : 'onFocus',
-            blur        : 'onBlur',
-            paste       : 'onPaste',
-            mousedown   : 'onMouseDown',
-            clearicontap: 'onClearIconTap'
+            keyup: 'onKeyUp',
+            input: 'onInput',
+            focus: 'onFocus',
+            blur: 'onBlur',
+            paste: 'onPaste',
+            mousedown: 'onMouseDown',
+            scope: this
         });
 
         // set the originalValue of the textfield, if one exists
@@ -222,49 +301,71 @@ Ext.define('Ext.field.Text', {
         me.syncEmptyCls();
     },
 
-    syncEmptyCls: function() {
-        var empty = (this._value) ? this._value.length : false,
-            cls = Ext.baseCSSPrefix + 'empty';
-
-        if (empty) {
-            this.removeCls(cls);
-        } else {
-            this.addCls(cls);
-        }
+    applyValue: function(value) {
+        return Ext.isEmpty(value) ? '' : value;
     },
 
     /**
      * @private
      */
-    updateValue: function(newValue) {
-        var component  = this.getComponent(),
-            // allows newValue to be zero but not undefined or null (other falsey values)
-            valueValid = newValue !== undefined && newValue !== null && newValue !== "";
+    updateValue: function(value, oldValue) {
+        var me = this,
+            component  = me.getComponent(),
+            // allows value to be zero but not undefined or null (other falsey values)
+            valueValid = value !== undefined && value !== null && value !== '';
 
         if (component) {
-            component.setValue(newValue);
+            component.setValue(value);
         }
 
-        this[valueValid && this.isDirty() ? 'showClearIcon' : 'hideClearIcon']();
-
-        this.syncEmptyCls();
-    },
-
-    getValue: function() {
-        var me = this;
-
-        me._value = me.getComponent().getValue();
+        me.toggleClearTrigger(valueValid && me.isDirty());
 
         me.syncEmptyCls();
 
-        return me._value;
+        if (me.initialized) {
+            me.fireEvent('change', me, value, oldValue);
+        }
+    },
+
+    updateLabel: function (newLabel, oldLabel) {
+        this.callParent(arguments);
+
+        if (this.getLabelAlign() === 'placeholder') {
+            this.setPlaceHolder(newLabel);
+        }
+    },
+
+    updateLabelAlign: function(labelAlign, oldLabelAlign) {
+
+        this.callParent([labelAlign, oldLabelAlign]);
+    },
+
+    updateTextAlign: function(newAlign, oldAlign) {
+        var element = this.element;
+ 
+        if (oldAlign) {
+            element.removeCls(Ext.baseCSSPrefix + 'text-align-' + oldAlign);
+        }
+ 
+        if (newAlign) {
+            element.addCls(Ext.baseCSSPrefix + 'text-align-' + newAlign);
+        }
     },
 
     /**
      * @private
      */
     updatePlaceHolder: function(newPlaceHolder) {
-        this.getComponent().setPlaceHolder(newPlaceHolder);
+        var me = this,
+            label = me.getLabel();
+
+        //<debug>
+        if ((me.getLabelAlign() === 'placeholder') && newPlaceHolder !== label) {
+            Ext.log.warn('PlaceHolder should not be set when using "labelAlign: \'placeholder\'"');
+        }
+        //</debug>
+
+        me.getComponent().setPlaceHolder(newPlaceHolder);
     },
 
     /**
@@ -299,12 +400,7 @@ Ext.define('Ext.field.Text', {
      * @private
      */
     updateReadOnly: function(newReadOnly) {
-        if (newReadOnly) {
-            this.hideClearIcon();
-        } else {
-            this.showClearIcon();
-        }
-
+        this.toggleClearTrigger(!newReadOnly);
         this.getComponent().setReadOnly(newReadOnly);
     },
 
@@ -349,34 +445,75 @@ Ext.define('Ext.field.Text', {
         }
     },
 
-    updateDisabled: function(disabled) {
-        var me = this;
+    updateDisabled: function(disabled, oldDisabled) {
+        this.callParent([disabled, oldDisabled]);
+        this.toggleClearTrigger(!disabled);
+    },
 
-        me.callParent(arguments);
+    applyTriggers: function(triggers) {
+        var me = this,
+            instances = {},
+            // String lookup is necessary to prevent cmd from requiring the Trigger class
+            Trigger = Ext.field.trigger['Trigger'],
+            clearable = me.getClearIcon(),
+            name, trigger;
 
-        var component = me.getComponent();
-        if (component) {
-            component.setDisabled(disabled);
+        for (name in triggers) {
+            if (!clearable && (name === 'clear')) {
+                continue;
+            }
+
+            trigger = triggers[name];
+
+            if (trigger === true) {
+                trigger = {
+                    type: name
+                };
+            } else if (typeof trigger === 'string') {
+                trigger = {
+                    type: trigger
+                };
+            }
+
+            trigger = Ext.apply({
+                field: me
+            }, trigger);
+
+            trigger = trigger.xtype ? Ext.create(trigger) : Trigger.create(trigger);
+
+            instances[name] = trigger;
         }
 
-        if (disabled) {
-            me.hideClearIcon();
-        } else {
-            me.showClearIcon();
+        return instances;
+    },
+
+    updateTriggers: function(triggers, oldTriggers) {
+        var name;
+
+        for (name in oldTriggers) {
+            oldTriggers[name].destroy();
         }
+
+        this.syncTriggers();
     },
 
     /**
      * @private
      */
-    showClearIcon: function() {
-        var me         = this,
-            value      = me.getValue(),
+    showClearTrigger: function() {
+        var me = this,
+            value = me.getValue(),
             // allows value to be zero but not undefined or null (other falsey values)
-            valueValid = value !== undefined && value !== null && value !== "";
+            valueValid = value !== undefined && value !== null && value !== "",
+            triggers, clearTrigger;
 
         if (me.getClearIcon() && !me.getDisabled() && !me.getReadOnly() && valueValid) {
-            me.element.addCls(Ext.baseCSSPrefix + 'field-clearable');
+            triggers = me.getTriggers();
+            clearTrigger = triggers && triggers.clear;
+
+            if (clearTrigger) {
+                clearTrigger.show();
+            }
         }
 
         return me;
@@ -385,9 +522,12 @@ Ext.define('Ext.field.Text', {
     /**
      * @private
      */
-    hideClearIcon: function() {
-        if (this.getClearIcon()) {
-            this.element.removeCls(Ext.baseCSSPrefix + 'field-clearable');
+    hideClearTrigger: function() {
+        var triggers = this.getTriggers(),
+            clearTrigger = triggers && triggers.clear;
+
+        if (clearTrigger) {
+            clearTrigger.hide();
         }
     },
 
@@ -403,9 +543,9 @@ Ext.define('Ext.field.Text', {
         // getValue to ensure that we are in sync with the dom
         var value      = me.getValue(),
             // allows value to be zero but not undefined or null (other falsey values)
-            valueValid = value !== undefined && value !== null && value !== "";
+            valueValid = value !== undefined && value !== null && value !== '';
 
-        this[valueValid ? 'showClearIcon' : 'hideClearIcon']();
+        me.toggleClearTrigger(valueValid);
 
         if (e.browserEvent.keyCode === 13) {
             me.fireAction('action', [me, e], 'doAction');
@@ -416,8 +556,14 @@ Ext.define('Ext.field.Text', {
         this.blur();
     },
 
-    onClearIconTap: function(e) {
-        this.fireAction('clearicontap', [this, e], 'doClearIconTap');
+    onClearIconTap: function(input, e) {
+        this.fireAction('clearicontap', [this, input, e], 'doClearIconTap');
+
+        //focus the field after cleartap happens, but only on android.
+        //this is to stop the keyboard from hiding. TOUCH-2064
+        if (Ext.os.is.Android) {
+            this.getComponent().focus();
+        }
     },
 
     /**
@@ -425,26 +571,34 @@ Ext.define('Ext.field.Text', {
      */
     doClearIconTap: function(me, e) {
         me.setValue('');
-
-        //sync with the input
-        me.getValue();
     },
 
-    onChange: function(me, value, startValue) {
-        me.fireEvent('change', this, value, startValue);
+    onInput: function(component, value) {
+        this.setValue(value);
     },
 
     onFocus: function(e) {
-        this.addCls(Ext.baseCSSPrefix + 'field-focused');
-        this.isFocused = true;
-        this.fireEvent('focus', this, e);
+        var me = this;
+
+        me.addCls(me.focusedCls);
+        me.isFocused = true;
+
+        if (me.getLabelAlign() === 'placeholder' && !me.getValue()) {
+            me.animatePlaceholderToLabel();
+        }
+
+        me.fireEvent('focus', me, e);
     },
 
     onBlur: function(e) {
         var me = this;
 
-        this.removeCls(Ext.baseCSSPrefix + 'field-focused');
-        this.isFocused = false;
+        me.removeCls(me.focusedCls);
+        me.isFocused = false;
+
+        if (me.getLabelAlign() === 'placeholder' && !me.getValue()) {
+            me.animateLabelToPlaceholder();
+        }
 
         me.fireEvent('blur', me, e);
 
@@ -489,21 +643,25 @@ Ext.define('Ext.field.Text', {
     },
 
     resetOriginalValue: function() {
-        this.callParent();
-        var component = this.getComponent();
+        var me = this,
+            component;
+
+        me.callParent();
+        component = me.getComponent();
         if(component && component.hasOwnProperty("originalValue")) {
-            this.getComponent().originalValue = this.originalValue;
+            me.getComponent().originalValue = me.originalValue;
         }
-        this.reset();
+        me.reset();
     },
 
     reset: function() {
-        this.getComponent().reset();
+        var me = this;
+        me.getComponent().reset();
 
         //we need to call this to sync the input with this field
-        this.getValue();
+        this.callParent();
 
-        this[this.isDirty() ? 'showClearIcon' : 'hideClearIcon']();
+        me.toggleClearTrigger(me.isDirty());
     },
 
     isDirty: function() {
@@ -512,6 +670,157 @@ Ext.define('Ext.field.Text', {
             return component.isDirty();
         }
         return false;
+    },
+
+    doDestroy: function() {
+        this.setTriggers(null);
+        this.triggerGroups = null;
+        this.callParent();
+    },
+
+    privates: {
+        animateLabelToPlaceholder: function() {
+            var me = this,
+                animInfo = me.getPlaceholderAnimInfo();
+
+            me.labelElement.animate({
+                from: {
+                    left: 0,
+                    top: 0,
+                    opacity: 1
+                },
+                to: animInfo,
+                preserveEndState: true,
+                duration: 250,
+                easing: 'ease-out',
+                callback: function() {
+                    me.setPlaceHolder(me.getLabel());
+                }
+            });
+
+            me.lastPlaceholderAnimInfo = animInfo;
+        },
+
+        animatePlaceholderToLabel: function() {
+            var me = this;
+
+            me.labelElement.animate({
+                from: me.lastPlaceholderAnimInfo || me.getPlaceholderAnimInfo(),
+                to: {
+                    left: 0,
+                    top: 0,
+                    opacity: 1
+                },
+                easing: 'ease-out',
+                preserveEndState: true,
+                duration: 250
+            });
+
+            me.setPlaceHolder(null);
+
+            me.lastPlaceholderAnimInfo = null;
+        },
+
+        getPlaceholderAnimInfo: function() {
+            var me = this,
+                element = me.element,
+                labelElement = me.labelElement,
+                inputElement = me.getComponent().inputElement,
+                labelOffsets = labelElement.getOffsetsTo(element),
+                inputOffsets = inputElement.getOffsetsTo(element),
+                labelPadding = labelElement.getPadding('l'),
+                inputPadding = inputElement.getPadding('l'),
+                translateX = inputOffsets[0] - labelOffsets[0] + (inputPadding - labelPadding),
+                translateY = inputOffsets[1] - labelOffsets[1];
+
+            return {
+                left: translateX,
+                top: translateY,
+                opacity: 0
+            };
+        },
+
+        syncEmptyCls: function() {
+            this.toggleCls(this.emptyCls, !this.getValue());
+        },
+
+        /**
+         * Synchronizes the DOM to match the triggers' configured weight, side, and grouping
+         * @private
+         */
+        syncTriggers: function() {
+            var me = this,
+                triggers = me.getTriggers(),
+                input = me.getComponent(),
+                triggerGroups = me.triggerGroups || (me.triggerGroups = {}),
+                beforeTriggers = [],
+                afterTriggers = [],
+                triggersByGroup = {},
+                Trigger = Ext.field.trigger['Trigger'],
+                name, trigger, groupName, triggerGroup, i, ln;
+
+            for (name in triggers) {
+                trigger = triggers[name];
+
+                groupName = trigger.getGroup();
+
+                if (groupName) {
+                    (triggersByGroup[groupName] || (triggersByGroup[groupName] = [])).push(trigger);
+                } else if (trigger.getSide() === 'left') {
+                    beforeTriggers.push(trigger);
+                } else {
+                    afterTriggers.push(trigger);
+                }
+            }
+
+            for (groupName in triggersByGroup) {
+                triggerGroup = triggerGroups[groupName];
+
+                if (!triggerGroup) {
+                    triggerGroup = triggers[groupName]; // just in case the user configured a group trigger
+
+                    if (!triggerGroup) {
+                        triggerGroup = new Trigger();
+                    }
+
+                    triggerGroups[groupName] = triggerGroup;
+                }
+
+                triggerGroup.setTriggers(Trigger.sort(triggersByGroup[groupName]));
+
+                if (triggerGroup.getSide() === 'left') {
+                    beforeTriggers.push(triggerGroup);
+                } else {
+                    afterTriggers.push(triggerGroup);
+                }
+            }
+
+            for (i = 0, ln = beforeTriggers.length; i < ln; i++) {
+                input.beforeElement.appendChild(beforeTriggers[i].element);
+            }
+
+            for (i = 0, ln = afterTriggers.length; i < ln; i++) {
+                input.afterElement.appendChild(afterTriggers[i].element);
+            }
+
+            for (groupName in triggerGroups) {
+                if (!(groupName in triggersByGroup)) {
+                    // group no longer has any triggers. it can be removed.
+                    triggerGroup = triggerGroups[groupName];
+                    triggerGroup.setTriggers(null);
+                    triggerGroup.destroy();
+                    delete triggerGroups[groupName];
+                }
+            }
+        },
+
+        toggleClearTrigger: function(state) {
+            if (state) {
+                this.showClearTrigger();
+            } else {
+                this.hideClearTrigger();
+            }
+        }
     }
 });
 

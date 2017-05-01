@@ -66,34 +66,45 @@ Ext.define('Ext.mixin.Accessible', {
     
     privates: {
         /**
-         * Find an element that labels or describes the given component,
-         * and return its id.
+         * Find component(s) that label or describe this component,
+         * and return the id(s) of their ariaEl elements.
          *
-         * @param {Function/String} [selector] Element selector, or a function
-         * that should return the proper element id. The function will be
-         * called in the context of the labelled component.
+         * @param {Function/String/String[]} [reference] Component reference,
+         * or array of component references, or a function that should return
+         * the proper attribute string. The function will be called in the
+         * context of the labelled component.
          *
-         * @return {Ext.Element} Element id, or null
+         * @return {Ext.Element} Element id string, or null
          * @private
          */
         getAriaLabelEl: function(selector) {
-            var idRe = Ext.startsWithHashRe,
-                el;
-        
+            var ids = [],
+                refHolder, i, len, cmp, result;
+            
             if (selector) {
                 if (Ext.isFunction(selector)) {
                     return selector.call(this);
                 }
-                else if (idRe.test(selector)) {
-                    selector = selector.replace(idRe, '');
-                    el = Ext.get(selector);
-                }
                 else {
-                    el = this.el.down(selector);
+                    if (!Ext.isArray(selector)) {
+                        selector = [selector];
+                    }
+                    
+                    refHolder = this.lookupReferenceHolder();
+                    
+                    if (refHolder) {
+                        for (i = 0, len = selector.length; i < len; i++) {
+                            cmp = refHolder.lookupReference(selector[i]);
+                            
+                            if (cmp) {
+                                ids.push(cmp.ariaEl.id);
+                            }
+                        }
+                    }
                 }
             }
         
-            return el ? el.id : null;
+            return ids.length ? ids.join(' ') : null;
         }
     }
 });

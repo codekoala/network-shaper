@@ -1,7 +1,8 @@
-$form-field-border-width: 2px !dynamic;
-$form-field-border-color: #737b8c !dynamic;
-$form-field-background-color: #34383f !dynamic;
-$form-field-color: #fff !dynamic;
-$form-field-focus-border-color: #ff9c33 !dynamic;
-$form-field-invalid-background-color: #15171A !dynamic;
-$form-field-invalid-border-color: #C30 !dynamic;
+$form-field-border-width: dynamic(2px);
+$form-field-border-color: dynamic(#737b8c);
+$form-field-background-color: dynamic(#34383f);
+$form-field-color: dynamic(#fff);
+$form-field-focus-border-color: dynamic(#ff9c33);
+$form-field-invalid-background-color: dynamic(#15171A);
+$form-field-invalid-border-color: dynamic(#C30);
+$form-field-padding: dynamic(1px 6px 2px);

@@ -131,6 +131,9 @@ Ext.define('Ext.data.proxy.Proxy', {
     constructor: function(config) {
         // Will call initConfig
         this.mixins.observable.constructor.call(this, config);
+        
+        // We need to abort all pending operations when destroying
+        this.pendingOperations = {};
     },
      
     applyModel: function(model) {
@@ -148,6 +151,15 @@ Ext.define('Ext.data.proxy.Proxy', {
     },
     
     applyReader: function(reader) {
+        // Synchronous proxies need to force keepRawData to allow Grid features
+        // like Summary and Grouping access rawData after the Reader processed records.
+        // It doesn't do much harm since synchronous proxies are Client side ones,
+        // which will keep their datasets in memory or local storage anyway.
+        if (this.isSynchronous) {
+            reader = reader || {};
+            reader.keepRawData = true;
+        }
+        
         return Ext.Factory.reader(reader);
     },
     
@@ -163,11 +175,6 @@ Ext.define('Ext.data.proxy.Proxy', {
                 }
             } else {
                 reader.setModel(model);
-            }
-
-            // TODO: an event here?
-            if (reader.onMetaChange) {
-                 reader.onMetaChange = Ext.Function.createSequence(reader.onMetaChange, me.onMetaChange, me);
             }
         }
     },
@@ -374,11 +381,36 @@ Ext.define('Ext.data.proxy.Proxy', {
     
     createOperation: function(action, config) {
         var operation = Ext.createByAlias('data.operation.' + action, config);
+        
         operation.setProxy(this);
+        
+        this.pendingOperations[operation._internalId] = operation;
+        
         return operation;  
+    },
+    
+    completeOperation: function(operation) {
+        delete this.pendingOperations[operation._internalId];
     },
 
     clone: function() {
         return new this.self(this.getInitialConfig());
+    },
+    
+    destroy: function() {
+        var ops = this.pendingOperations,
+            opId, op;
+        
+        for (opId in ops) {
+            op = ops[opId];
+            
+            if (op && op.isRunning()) {
+                op.abort();
+            }
+        }
+        
+        this.pendingOperations = null;
+        
+        this.callParent();
     }
 });

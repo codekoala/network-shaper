@@ -38,8 +38,6 @@ Ext.define('Ext.layout.Box', {
          * - ** end ** : child items are packed together at right side of container
          * - **stretch** : child items are stretched vertically to fill the height of the container
          *
-         * Please see the 'Pack and Align' section of the [Layout guide](#!/guide/layouts) for a detailed example and
-         * explanation.
          * @accessor
          */
         align: 'start',
@@ -54,36 +52,36 @@ Ext.define('Ext.layout.Box', {
          * - ** end ** : child items are packed together at right side of container
          * - ** justify ** : child items are packed evenly across the container. Uses the 'justify-content: space-between' css property
          *
-         * Please see the 'Pack and Align' section of the [Layout guide](#!/guide/layouts) for a detailed example and
-         * explanation.
          * @accessor
          */
-        pack: 'start'
+        pack: 'start',
+
+        /**
+         * @cfg {Boolean} vertical
+         * `true` to layout items vertically, otherwise horizontally.
+         *
+         * @since 6.2.0
+         */
+        vertical: false
     },
 
     alias: 'layout.tablebox',
 
-    layoutBaseClass: 'x-layout-tablebox',
+    cls: Ext.baseCSSPrefix + 'layout-tablebox',
 
-    itemClass: 'x-layout-tablebox-item',
+    itemCls: Ext.baseCSSPrefix + 'layout-tablebox-item',
 
     setContainer: function(container) {
-        this.callParent(arguments);
-
-        container.innerElement.addCls(this.layoutBaseClass);
+        this.callParent([container]);
 
         container.on('flexchange', 'onItemFlexChange', this, {
             delegate: '> component'
         });
     },
 
-    onItemInnerStateChange: function(item, isInner) {
-        this.callParent(arguments);
-
-        item.toggleCls(this.itemClass, isInner);
+    updateVertical: function(vertical) {
+        this.setOrient(vertical ? 'vertical' : 'horizontal');
     },
 
-    onItemFlexChange: function() {
-
-    }
+    onItemFlexChange: Ext.emptyFn
 });

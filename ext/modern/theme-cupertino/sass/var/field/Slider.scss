@@ -6,10 +6,10 @@
  * @var {measurement} $form-thumb-size
  * Default size of "thumbs" for form sliders/toggles.
  */
-$form-thumb-size: 2.1em !dynamic;
+$form-thumb-size: dynamic(2.1em);
 
 /**
  * @var {measurement} $form-slider-size
  * Height of the slider "track."
  */
-$form-slider-size: .2em !dynamic;
+$form-slider-size: dynamic(.2em);

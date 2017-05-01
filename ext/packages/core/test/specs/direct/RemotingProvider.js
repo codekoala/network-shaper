@@ -1,6 +1,7 @@
 describe("Ext.direct.RemotingProvider", function() {
     var RP = Ext.direct.RemotingProvider,
         provider,
+        responseText,
         
         api = {
             actions: {
@@ -133,7 +134,7 @@ describe("Ext.direct.RemotingProvider", function() {
             }
         };
     
-    // This simulation stub is *asynchronous*
+    // This simulation stub is *asynchronous* to allow call batching
     function simulateDirectRequest(options) {
         var callback = options.callback,
             scope = options.scope,
@@ -141,6 +142,7 @@ describe("Ext.direct.RemotingProvider", function() {
             isForm = options.form !== undefined,
             isUpload = options.isUpload,
             arg = {},
+            success = true, // *Communication* success, i.e. connected to "server"
             data, tid, action, method, arg, fn, success,
             result, response, xhr, opt, metadata;
         
@@ -180,9 +182,10 @@ describe("Ext.direct.RemotingProvider", function() {
                 message: "Can't connect to the server"
             };
             
+            // Not connected
             success = false;
         }
-        else {
+        else if (responseText == null) {
             try {
                 result   = fn.apply({}, arg);
                 response = {
@@ -202,13 +205,10 @@ describe("Ext.direct.RemotingProvider", function() {
                     where: 'internal'
                 };
             }
-            
-            // Success only means *communication* success
-            success = true;
         }
         
         xhr = {
-            responseText: Ext.encode(response)
+            responseText: responseText != null ? responseText : Ext.encode(response)
         };
         
         opt = {
@@ -220,6 +220,7 @@ describe("Ext.direct.RemotingProvider", function() {
         
     beforeEach(function() {
         provider = new RP(api);
+        provider.maxRetries = 0;
     });
     
     afterEach(function() {
@@ -229,7 +230,7 @@ describe("Ext.direct.RemotingProvider", function() {
         
         Ext.direct.Manager.clearAllMethods();
         
-        provider = null;
+        provider = responseText = null;
         
         try {
             delete window.Direct;
@@ -404,7 +405,40 @@ describe("Ext.direct.RemotingProvider", function() {
         });
         
         describe("handles call mechanics", function() {
+            describe("Ajax headers", function() {
+                beforeEach(function() {
+                    provider.enableBuffer = false;
+                    provider.maxRetries = 0;
+                    provider.headers = { blergo: 'frobbe', zingbong: 42 };
+                    
+                    Ext.Ajax.request.andCallFake(function(request) {
+                        return request;
+                    });
+                });
+                
+                it("should pass the headers", function() {
+                    ns.TestAction.echo('foo', Ext.emptyFn);
+                    
+                    var args = Ext.Ajax.request.mostRecentCall.args;
+                    
+                    expect(args[0].headers).toEqual({
+                        blergo: 'frobbe',
+                        zingbong: 42
+                    });
+                });
+            });
+            
             describe("call batching", function() {
+                afterEach(function() {
+                    // Transactions in this suite have no chance of finishing,
+                    // so we clean them up manually
+                    if (provider.callTask) {
+                        provider.callTask.cancel();
+                    }
+                    
+                    Ext.direct.Manager.transactions.clear();
+                });
+                
                 it("should batch calls within specified enableBuffer timeout", function() {
                     var options, baseTid;
                 
@@ -437,7 +471,7 @@ describe("Ext.direct.RemotingProvider", function() {
                         }]);
                     });
                 });
-            
+                
                 it("should run calls with specified timeout w/o batching", function() {
                     var options = [],
                         baseTid;
@@ -452,6 +486,39 @@ describe("Ext.direct.RemotingProvider", function() {
                     
                         ns.TestAction.echo('baz', Ext.emptyFn);
                         ns.TestAction.echo('qux', Ext.emptyFn, this, { timeout: 1 });
+                    });
+                
+                    waitsFor(function() { return !!options }, 'options never modified', 20);
+                
+                    runs(function() {
+                        expect(options.length).toBe(1);
+                        // AND
+                        expect(options[0].jsonData).toEqual({
+                            action: 'TestAction',
+                            method: 'echo',
+                            type:   'rpc',
+                            tid:    baseTid + 2,
+                            data:   ['qux']
+                        });
+                    });
+                });
+                
+                it("should run calls instantly with disableBatching", function() {
+                    var options = [],
+                        baseTid;
+                
+                    runs(function() {
+                        Ext.Ajax.request.andCallFake(function(opt) {
+                            options.push(opt);
+                        });
+
+                        provider.enableBuffer = 200;
+                        baseTid = Ext.direct.Transaction.TRANSACTION_ID;
+                        
+                        ns.TestAction.echo('baz', Ext.emptyFn);
+                        
+                        ns.TestAction.echo.$directCfg.method.disableBatching = true;
+                        ns.TestAction.echo('qux', Ext.emptyFn);
                     });
                 
                     waitsFor(function() { return !!options }, 'options never modified', 20);
@@ -487,6 +554,187 @@ describe("Ext.direct.RemotingProvider", function() {
                         type: 'rpc',
                         tid: baseTid + 1,
                         data: ['fred']
+                    });
+                });
+                
+                describe("bufferLimit", function() {
+                    var options, baseTid;
+                    
+                    beforeEach(function() {
+                        options = [];
+                        
+                        Ext.Ajax.request.andCallFake(function(opt) {
+                            options.push(opt);
+                        });
+                    
+                        provider.enableBuffer = 200;
+                        provider.bufferLimit = 3;
+                    
+                        baseTid = Ext.direct.Transaction.TRANSACTION_ID;
+                    });
+                    
+                    it("should batch calls up to bufferLimit", function() {
+                        runs(function() {
+                            ns.TestAction.echo('fee', Ext.emptyFn);
+                            ns.TestAction.echo('fie', Ext.emptyFn);
+                            ns.TestAction.echo('foe', Ext.emptyFn);
+                            ns.TestAction.echo('foo', Ext.emptyFn);
+                        });
+                        
+                        waitsFor(function() {
+                            return !!options.length;
+                        }, 'options never modified', 20);
+                        
+                        runs(function() {
+                            expect(options.length).toBe(1);
+                            
+                            expect(options[0].jsonData).toEqual([{
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 1,
+                                data:   ['fee']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 2,
+                                data:   ['fie']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 3,
+                                data:   ['foe']
+                            }]);
+                        });
+                    });
+                    
+                    it("should make 2 batched requests for 6 calls", function() {
+                        runs(function() {
+                            ns.TestAction.echo('frobbe', Ext.emptyFn);
+                            ns.TestAction.echo('throbbe', Ext.emptyFn);
+                            ns.TestAction.echo('gurgle', Ext.emptyFn);
+                            ns.TestAction.echo('bonzo', Ext.emptyFn);
+                            ns.TestAction.echo('mymse', Ext.emptyFn);
+                            ns.TestAction.echo('splurge', Ext.emptyFn);
+                        });
+                        
+                        waitsFor(function() {
+                            return !!options.length;
+                        }, 'options never modified', 20);
+                        
+                        runs(function() {
+                            expect(options.length).toBe(2);
+                            
+                            expect(options[0].jsonData).toEqual([{
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 1,
+                                data:   ['frobbe']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 2,
+                                data:   ['throbbe']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 3,
+                                data:   ['gurgle']
+                            }]);
+                            
+                            expect(options[1].jsonData).toEqual([{
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 4,
+                                data:   ['bonzo']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 5,
+                                data:   ['mymse']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 6,
+                                data:   ['splurge']
+                            }]);
+                        });
+                    });
+                    
+                    it("should make 3 batched requests for 7 calls", function() {
+                        runs(function() {
+                            ns.TestAction.echo('Grumpy', Ext.emptyFn);
+                            ns.TestAction.echo('Sleepy', Ext.emptyFn);
+                            ns.TestAction.echo('Dopey', Ext.emptyFn);
+                            ns.TestAction.echo('Bashful', Ext.emptyFn);
+                            ns.TestAction.echo('Sneezy', Ext.emptyFn);
+                            ns.TestAction.echo('Happy', Ext.emptyFn);
+                            ns.TestAction.echo('Doc', Ext.emptyFn);
+                        });
+                        
+                        waitsFor(function() {
+                            return options.length === 3;
+                        }, '3 Ajax requests', 300);
+                        
+                        runs(function() {
+                            expect(options.length).toBe(3);
+                            
+                            expect(options[0].jsonData).toEqual([{
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 1,
+                                data:   ['Grumpy']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 2,
+                                data:   ['Sleepy']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 3,
+                                data:   ['Dopey']
+                            }]);
+                            
+                            expect(options[1].jsonData).toEqual([{
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 4,
+                                data:   ['Bashful']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 5,
+                                data:   ['Sneezy']
+                            }, {
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 6,
+                                data:   ['Happy']
+                            }]);
+                            
+                            expect(options[2].jsonData).toEqual({
+                                action: 'TestAction',
+                                method: 'echo',
+                                type:   'rpc',
+                                tid:    baseTid + 7,
+                                data:   ['Doc']
+                            });
+                        });
                     });
                 });
             });
@@ -549,20 +797,18 @@ describe("Ext.direct.RemotingProvider", function() {
         
         describe("with connection failed", function() {
             it("retries failed transactions", function() {
-                var proto = Ext.direct.Transaction.prototype;
+                var retrySpy = spyOn(Ext.direct.Transaction.prototype, 'retry');
                 
                 runs(function() {
-                    spyOn(proto, 'retry').andCallThrough();
-                
+                    provider.maxRetries = 1;
+                    
                     ns.TestAction.echo('foo', Ext.emptyFn, this, { timeout: 666 });
                 });
                 
-                waitsFor(function() {
-                    return proto.retry.callCount === 1;
-                }, 'transaction.retry() never called', 200);
+                waitsForSpy(retrySpy, 'transaction.retry() never called', 200);
                 
                 runs(function() {
-                    expect(proto.retry).toHaveBeenCalled();
+                    expect(retrySpy).toHaveBeenCalled();
                 });
             });
             
@@ -633,17 +879,100 @@ describe("Ext.direct.RemotingProvider", function() {
         });
         
         describe("successfully connected:", function() {
-            it("fires 'data' event", function() {
-                runs(function() {
-                    provider.on('data', handler);
-            
-                    ns.TestAction.echo('foo', echoResult, this);
+            describe("events", function() {
+                describe("data", function() {
+                    beforeEach(function() {
+                        provider.on('data', handler);
+                        
+                        // Sanity check, this is applied to every it()
+                        expect(handler).not.toHaveBeenCalled();
+                    });
+                    
+                    it("fires for valid responses", function() {
+                        runs(function() {
+                            ns.TestAction.echo('foo', echoResult, this);
+                        });
+                        
+                        waitForEcho();
+                        
+                        runs(function() {
+                            expect(handler).toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("fires for exceptions", function() {
+                        runs(function() {
+                            ns.TestAction.echo('foo', echoStatus, this, { timeout: 666 });
+                        });
+                        
+                        waitForEcho();
+                        
+                        runs(function() {
+                            expect(handler).toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("fires for unbound responses", function() {
+                        runs(function() {
+                            responseText = '{"type":"event","msg":"blerg"}';
+                            ns.TestAction.echo('gurgle', Ext.emptyFn);
+                        });
+                        
+                        waitForSpy(handler);
+                        
+                        runs(function() {
+                            expect(handler).toHaveBeenCalled();
+                        });
+                    });
                 });
                 
-                waitForEcho();
-                
-                runs(function() {
-                    expect(handler).toHaveBeenCalled();
+                describe("exception", function() {
+                    beforeEach(function() {
+                        provider.on('exception', handler);
+                        
+                        // Sanity check
+                        expect(handler).not.toHaveBeenCalled();
+                    });
+                    
+                    it("fires for exceptions", function() {
+                        runs(function() {
+                            ns.TestAction.echo('throbbe', echoStatus, this, { timeout: 666 });
+                        });
+                        
+                        waitForEcho();
+                        
+                        runs(function() {
+                            expect(handler).toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("does NOT fire for valid responses", function() {
+                        runs(function() {
+                            ns.TestAction.echo('blerg', echoResult, this);
+                        });
+                        
+                        waitForEcho();
+                        
+                        runs(function() {
+                            expect(handler).not.toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("does NOT fire for unbound responses", function() {
+                        var dataSpy = jasmine.createSpy('data event handler');
+                        provider.on('data', dataSpy);
+                        
+                        runs(function() {
+                            responseText = '{"type":"event","msg":"zumbo"}';
+                            ns.TestAction.echo('fubaru', Ext.emptyFn);
+                        });
+                        
+                        waitForSpy(dataSpy);
+                        
+                        runs(function() {
+                            expect(handler).not.toHaveBeenCalled();
+                        });
+                    });
                 });
             });
             
@@ -659,6 +988,22 @@ describe("Ext.direct.RemotingProvider", function() {
                     
                     runs(function() {
                         expect(handler).toHaveBeenCalled();
+                    });
+                });
+                
+                it("does not fire 'beforecallback' event for unbound responses", function() {
+                    var dataSpy = jasmine.createSpy('data event handler');
+                    provider.on('data', dataSpy);
+                    
+                    runs(function() {
+                        responseText = '{"type":"event","msg":"fumble"}';
+                        ns.TestAction.echo('throbbe', Ext.emptyFn);
+                    });
+                    
+                    waitForSpy(dataSpy);
+                    
+                    runs(function() {
+                        expect(handler).not.toHaveBeenCalled();
                     });
                 });
                 
@@ -740,6 +1085,93 @@ describe("Ext.direct.RemotingProvider", function() {
                     
                     expectEcho('baz');
                 });
+                
+                it("does not run for unbound responses", function() {
+                    var dataSpy = jasmine.createSpy('data event handler');
+                    provider.on('data', dataSpy);
+                    
+                    runs(function() {
+                        responseText = '{"type":"event","msg":"blerg"}';
+                        ns.TestAction.echo('frobbe', handler);
+                    });
+                    
+                    waitForSpy(dataSpy);
+                    
+                    runs(function() {
+                        expect(handler).not.toHaveBeenCalled();
+                    });
+                });
+                
+                describe("with invalid server responses", function() {
+                    var cb;
+                    
+                    beforeEach(function() {
+                        cb = jasmine.createSpy('direct callback');
+                        
+                        // Console errors are expected
+                        spyOn(Ext, 'raise');
+                    });
+                    
+                    afterEach(function() {
+                        cb = null;
+                    });
+                    
+                    it("runs when server returns empty string", function() {
+                        runs(function() {
+                            responseText = '';
+                            ns.TestAction.echo('foo', cb);
+                        });
+                        
+                        waitForSpy(cb);
+                        
+                        runs(function() {
+                            expect(cb).toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("runs when server returns 'null'", function() {
+                        runs(function() {
+                            responseText = 'null';
+                            ns.TestAction.echo('bar', cb);
+                        });
+                        
+                        waitForSpy(cb);
+                        
+                        runs(function() {
+                            expect(cb).toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("runs when server returns garbage", function() {
+                        runs(function() {
+                            responseText = 'zurg foobaroo';
+                            ns.TestAction.echo('qux', cb);
+                        });
+                        
+                        waitForSpy(cb);
+                        
+                        runs(function() {
+                            expect(cb).toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("runs all callbacks for batched methods", function() {
+                        var cb2 = jasmine.createSpy('direct callback 2');
+                        
+                        runs(function() {
+                            responseText = 'gurgle frob';
+                            ns.TestAction.echo('blerg', cb);
+                            ns.TestAction.echo('throbbe', cb2);
+                        });
+                        
+                        waitForSpy(cb);
+                        
+                        runs(function() {
+                            expect(cb).toHaveBeenCalled();
+                            expect(cb2).toHaveBeenCalled();
+                        });
+                    });
+                });
             });
             
             describe("metadata", function() {
@@ -772,6 +1204,7 @@ describe("Ext.direct.RemotingProvider", function() {
             })
         });
         
+        // Modern specific tests are in Ext.form.Panel
         (Ext.toolkit === 'classic' ? describe : xdescribe)("form calls:", function() {
             var form;
             
@@ -939,6 +1372,34 @@ describe("Ext.direct.RemotingProvider", function() {
                             
                             // JSONified!
                             metadata: '["bram","blam"]'
+                        });
+                    });
+                });
+                
+                describe("timeout", function() {
+                    var ajaxSpy;
+                    
+                    beforeEach(function() {
+                        provider.timeout = 42;
+                        ajaxSpy = Ext.Ajax.request;
+                        ajaxSpy.andCallFake(Ext.emptyFn);
+                    });
+                    
+                    afterEach(function() {
+                        ajaxSpy = null;
+                    });
+                    
+                    it("should respect provider timeout config", function() {
+                        runs(function() {
+                            form.submit({});
+                        });
+                        
+                        waitForSpy(ajaxSpy);
+                        
+                        runs(function() {
+                            var args = ajaxSpy.mostRecentCall.args[0];
+                            
+                            expect(args.timeout).toBe(42);
                         });
                     });
                 });

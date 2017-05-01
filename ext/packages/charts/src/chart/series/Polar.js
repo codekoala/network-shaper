@@ -87,7 +87,7 @@ Ext.define('Ext.chart.series.Polar', {
 
     constructor: function (config) {
         var me = this,
-            configurator = me.getConfigurator(),
+            configurator = me.self.getConfigurator(),
             configs = configurator.configs,
             p;
 
@@ -141,6 +141,8 @@ Ext.define('Ext.chart.series.Polar', {
 
         return count;
     },
+
+    isStoreDependantColorCount: true,
 
     getDefaultSpriteConfig: function () {
         return {

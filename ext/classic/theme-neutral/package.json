@@ -1,18 +1,51 @@
 {
+    /**
+     * The namespace of this package.
+     *
+     * As a general rule, all classes that belong to this package should be under this namespace
+     * if multiple namespaces are part of this package, set this to "".
+     */
+    "namespace": "Ext",
+
     "name": "theme-neutral",
-    "toolkit": "classic",
-    "alternateName": ["ext-theme-neutral"],
     "type": "theme",
+    "extend": "theme-base",
+    "alternateName": [
+        "ext-theme-neutral"
+    ],
+
+    "framework": "ext",
+    "toolkit": "classic",
+    //"requires": [
+    //    ...
+    //],
+
     "creator": "Sencha",
     "summary": "Ext JS Neutral Theme",
-    "detailedDescription": "The neutral theme is a highly configurable, abstract base theme",
-    "version": "6.0.0.415",
-    "compatVersion": "5.0.0",
+    "detailedDescription": "The neutral theme is a highly configurable, abstract base theme for the Ext JS classic toolkit",
+
+    "version": "6.2.0.981",
+    "compatVersion": "6.0.0",
     "format": "1",
-    "slicer": {
-        "js": []
-    },
+
     "output": "${workspace.subpkg.prefix}/${package.name}",
     "local": true,
-    "extend": "theme-base"
+
+    "sass": {
+        "namespace": "Ext",
+
+        "etc": "${package.dir}/sass/etc/all.scss",
+
+        "var": "${package.dir}/sass/var",
+
+        "src": "${package.dir}/sass/src"
+    },
+
+    "classpath": "${package.dir}/src",
+
+    "overrides": "${package.dir}/overrides",
+
+    "slicer": {
+        "js": []
+    }
 }

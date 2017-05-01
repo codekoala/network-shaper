@@ -126,14 +126,14 @@ Ext.define('Ext.navigation.Bar', {
             hidden: true
         }
     },
-    
+
     /**
      * @event back
      * Fires when the back button was tapped.
      * @param {Ext.navigation.Bar} this This bar
      */
 
-    constructor: function(config) {
+    constructor: function (config) {
         config = config || {};
 
         if (!config.items) {
@@ -149,14 +149,14 @@ Ext.define('Ext.navigation.Bar', {
     /**
      * @private
      */
-    applyBackButton: function(config) {
+    applyBackButton: function (config) {
         return Ext.factory(config, Ext.Button, this.getBackButton());
     },
 
     /**
      * @private
      */
-    updateBackButton: function(newBackButton, oldBackButton) {
+    updateBackButton: function (newBackButton, oldBackButton) {
         if (oldBackButton) {
             this.remove(oldBackButton);
         }
@@ -171,14 +171,14 @@ Ext.define('Ext.navigation.Bar', {
         }
     },
 
-    onBackButtonTap: function() {
+    onBackButtonTap: function () {
         this.fireEvent('back', this);
     },
 
     /**
      * @private
      */
-    updateView: function(newView) {
+    updateView: function (newView) {
         var me = this,
             backButton, innerItems, i, backButtonText, item, title, titleText;
 
@@ -215,7 +215,7 @@ Ext.define('Ext.navigation.Bar', {
     /**
      * @private
      */
-    onViewAdd: function(view, item) {
+    onViewAdd: function (view, item) {
         var me = this,
             backButtonStack = me.backButtonStack,
             hasPrevious, title;
@@ -233,7 +233,7 @@ Ext.define('Ext.navigation.Bar', {
     /**
      * @private
      */
-    onViewRemove: function(view) {
+    onViewRemove: function (view) {
         var me = this,
             backButtonStack = me.backButtonStack,
             hasPrevious;
@@ -248,7 +248,7 @@ Ext.define('Ext.navigation.Bar', {
     /**
      * @private
      */
-    doChangeView: function(view, hasPrevious, reverse) {
+    doChangeView: function (view, hasPrevious, reverse) {
         var me = this,
             leftBox = me.leftBox,
             leftBoxElement = leftBox.element,
@@ -277,23 +277,17 @@ Ext.define('Ext.navigation.Bar', {
 
             me.isAnimating = true;
             me.animate(leftBoxElement, leftProps.element);
-            me.animate(titleElement, titleProps.element, function() {
+            me.animate(titleElement, titleProps.element, function () {
                 titleElement.setLeft(properties.titleLeft);
                 me.isAnimating = false;
                 me.refreshTitlePosition();
             });
 
-            if (Ext.browser.is.AndroidStock2 && !this.getAndroid2Transforms()) {
+            me.animate(leftGhost.ghost, leftProps.ghost);
+            me.animate(titleGhost.ghost, titleProps.ghost, function () {
                 leftGhost.ghost.destroy();
                 titleGhost.ghost.destroy();
-            }
-            else {
-                me.animate(leftGhost.ghost, leftProps.ghost);
-                me.animate(titleGhost.ghost, titleProps.ghost, function() {
-                    leftGhost.ghost.destroy();
-                    titleGhost.ghost.destroy();
-                });
-            }
+            });
         }
         else {
             if (hasPrevious) {
@@ -311,7 +305,7 @@ Ext.define('Ext.navigation.Bar', {
      * Calculates and returns the position values needed for the back button when you are pushing a title.
      * @private
      */
-    measureView: function(oldLeft, oldTitle, reverse) {
+    measureView: function (oldLeft, oldTitle, reverse) {
         var me = this,
             barElement = me.element,
             newLeftElement = me.leftBox.element,
@@ -321,64 +315,46 @@ Ext.define('Ext.navigation.Bar', {
             barX = barElement.getX(),
             barWidth = barElement.getWidth(),
             titleX = titleElement.getX(),
-            titleLeft = titleElement.getLeft(),
+            titleLeft = titleElement.getLeft(true),
             titleWidth = titleElement.getWidth(),
             oldLeftX = oldLeft.x,
             oldLeftWidth = oldLeft.width,
             oldLeftLeft = oldLeft.left,
-            useLeft = Ext.browser.is.AndroidStock2 && !this.getAndroid2Transforms(),
             newOffset, oldOffset, leftAnims, titleAnims, omega, theta;
 
         theta = barX - oldLeftX - oldLeftWidth;
         if (reverse) {
             newOffset = theta;
             oldOffset = Math.min(titleX - oldLeftWidth, minOffset);
-        }
-        else {
+        } else {
             oldOffset = theta;
             newOffset = Math.min(titleX - barX, minOffset);
         }
 
-        if (useLeft) {
-            leftAnims = {
-                element: {
-                    from: {
-                        left: newOffset,
-                        opacity: 1
+        leftAnims = {
+            element: {
+                from: {
+                    transform: {
+                        translateX: newOffset
                     },
-                    to: {
-                        left: 0,
-                        opacity: 1
-                    }
-                }
-            };
-        }
-        else {
-            leftAnims = {
-                element: {
-                    from: {
-                        transform: {
-                            translateX: newOffset
-                        },
-                        opacity: 0
-                    },
-                    to: {
-                        transform: {
-                            translateX: 0
-                        },
-                        opacity: 1
-                    }
+                    opacity: 0
                 },
-                ghost: {
-                    to: {
-                        transform: {
-                            translateX: oldOffset
-                        },
-                        opacity: 0
-                    }
+                to: {
+                    transform: {
+                        translateX: 0
+                    },
+                    opacity: 1
                 }
-            };
-        }
+            },
+            ghost: {
+                to: {
+                    transform: {
+                        translateX: oldOffset
+                    },
+                    opacity: 0
+                }
+            }
+        };
 
         theta = barX - titleX + newLeftWidth;
         if ((oldLeftLeft + titleWidth) > titleX) {
@@ -392,64 +368,45 @@ Ext.define('Ext.navigation.Bar', {
 
             if (omega !== undefined) {
                 newOffset = omega;
-            }
-            else {
+            } else {
                 newOffset = theta;
             }
-        }
-        else {
+        } else {
             newOffset = barX + barWidth - titleX - titleWidth;
 
             if (omega !== undefined) {
                 oldOffset = omega;
-            }
-            else {
+            } else {
                 oldOffset = theta;
             }
 
             newOffset = Math.max(titleLeft, newOffset);
         }
 
-        if (useLeft) {
-            titleAnims = {
-                element: {
-                    from: {
-                        left: newOffset,
-                        opacity: 1
+        titleAnims = {
+            element: {
+                from: {
+                    transform: {
+                        translateX: newOffset
                     },
-                    to: {
-                        left: titleLeft,
-                        opacity: 1
-                    }
-                }
-            };
-        }
-        else {
-            titleAnims = {
-                element: {
-                    from: {
-                        transform: {
-                            translateX: newOffset
-                        },
-                        opacity: 0
-                    },
-                    to: {
-                        transform: {
-                            translateX: titleLeft
-                        },
-                        opacity: 1
-                    }
+                    opacity: 0
                 },
-                ghost: {
-                    to: {
-                        transform: {
-                            translateX: oldOffset
-                        },
-                        opacity: 0
-                    }
+                to: {
+                    transform: {
+                        translateX: titleLeft
+                    },
+                    opacity: 1
                 }
-            };
-        }
+            },
+            ghost: {
+                to: {
+                    transform: {
+                        translateX: oldOffset
+                    },
+                    opacity: 0
+                }
+            }
+        };
 
         return {
             left: leftAnims,
@@ -469,7 +426,7 @@ Ext.define('Ext.navigation.Bar', {
      * If it is anything else, it will use transform.
      * @private
      */
-    animate: function(element, config, callback) {
+    animate: function (element, config, callback) {
         var me = this,
             animation;
 
@@ -484,7 +441,7 @@ Ext.define('Ext.navigation.Bar', {
         });
 
         animation = new Ext.fx.Animation(config);
-        animation.on('animationend', function() {
+        animation.on('animationend', function () {
             if (callback) {
                 callback.call(me);
             }
@@ -494,7 +451,7 @@ Ext.define('Ext.navigation.Bar', {
         me.activeAnimations.push(animation);
     },
 
-    endAnimation: function() {
+    endAnimation: function () {
         var activeAnimations = this.activeAnimations,
             animation, i, ln;
 
@@ -513,7 +470,7 @@ Ext.define('Ext.navigation.Bar', {
         }
     },
 
-    refreshTitlePosition: function() {
+    refreshTitlePosition: function () {
         if (!this.isAnimating) {
             this.callParent();
         }
@@ -523,7 +480,7 @@ Ext.define('Ext.navigation.Bar', {
      * Returns the text needed for the current back button at anytime.
      * @private
      */
-    getBackButtonText: function() {
+    getBackButtonText: function () {
         var text = this.backButtonStack[this.backButtonStack.length - 2],
             useTitleForBackButtonText = this.getUseTitleForBackButtonText();
 
@@ -540,7 +497,7 @@ Ext.define('Ext.navigation.Bar', {
      * Returns the text needed for the current title at anytime.
      * @private
      */
-    getTitleText: function() {
+    getTitleText: function () {
         return this.backButtonStack[this.backButtonStack.length - 1];
     },
 
@@ -548,7 +505,7 @@ Ext.define('Ext.navigation.Bar', {
      * Handles removing back button stacks from this bar
      * @private
      */
-    beforePop: function(count) {
+    beforePop: function (count) {
         count--;
         for (var i = 0; i < count; i++) {
             this.backButtonStack.pop();
@@ -561,7 +518,7 @@ Ext.define('Ext.navigation.Bar', {
      * this bar at any time.
      * @private
      */
-    updateHidden: function(hidden) {
+    updateHidden: function (hidden) {
         if (!hidden) {
             this.element.setStyle({
                 position: 'relative',
@@ -584,7 +541,7 @@ Ext.define('Ext.navigation.Bar', {
      * The createNavigationBarProxy method uses this to create proxies of the backButton and the title elements.
      * @private
      */
-    createProxy: function(element) {
+    createProxy: function (element) {
         var ghost, x, y, left, width;
 
         ghost = element.dom.cloneNode(true);
@@ -597,7 +554,7 @@ Ext.define('Ext.navigation.Bar', {
         ghost = Ext.get(ghost);
         x = element.getX();
         y = element.getY();
-        left = element.getLeft();
+        left = element.getLeft(true);
         width = element.getWidth();
         ghost.setStyle('position', 'absolute');
         ghost.setX(x);

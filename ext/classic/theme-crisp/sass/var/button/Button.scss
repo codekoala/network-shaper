@@ -1,11 +1,11 @@
-$button-default-background-gradient: null !dynamic;
-$button-default-background-gradient-over: null !dynamic;
-$button-default-background-gradient-pressed: null !dynamic;
-$button-default-background-gradient-disabled: null !dynamic;
-$button-toolbar-background-gradient: null !dynamic;
-$button-toolbar-background-gradient-over: null !dynamic;
-$button-toolbar-background-gradient-pressed: null !dynamic;
-$button-toolbar-background-gradient-disabled: null !dynamic;
+$button-default-background-gradient: dynamic(null);
+$button-default-background-gradient-over: dynamic(null);
+$button-default-background-gradient-pressed: dynamic(null);
+$button-default-background-gradient-disabled: dynamic(null);
+$button-toolbar-background-gradient: dynamic(null);
+$button-toolbar-background-gradient-over: dynamic(null);
+$button-toolbar-background-gradient-pressed: dynamic(null);
+$button-toolbar-background-gradient-disabled: dynamic(null);
 
-$button-default-border-color: $base-color !dynamic;
-$button-toolbar-border-color: $neutral-medium-dark-color !dynamic;
+$button-default-border-color: dynamic($base-color);
+$button-toolbar-border-color: dynamic($neutral-medium-dark-color);

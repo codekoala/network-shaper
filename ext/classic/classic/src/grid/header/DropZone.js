@@ -16,8 +16,8 @@ Ext.define('Ext.grid.header.DropZone', {
     },
 
     destroy: function () {
-        this.callParent();
         Ext.destroy(this.topIndicator, this.bottomIndicator);
+        this.callParent();
     },
 
     getDDGroup: function() {
@@ -236,6 +236,9 @@ Ext.define('Ext.grid.header.DropZone', {
     },
 
     onNodeDrop: function(node, dragZone, e, data) {
+        // Do not process the upcoming click after this mouseup. It's not a click gesture
+        this.headerCt.blockNextEvent();
+
         // Note that dropLocation.pos refers to whether the header is dropped before or after the target node!
         if (!this.valid) {
             return;
@@ -253,7 +256,7 @@ Ext.define('Ext.grid.header.DropZone', {
             // The HeaderContainer translates this to visible columns for informing the view and firing events.
             visibleColumnManager = me.headerCt.visibleColumnManager,
             visibleFromIdx = visibleColumnManager.getHeaderIndex(dragHeader),
-            visibleToIdx, colsToMove, moveMethod, scrollerOwner, savedWidth;
+            visibleToIdx, colsToMove, scrollerOwner, savedWidth;
 
         // If we are dragging in between two HeaderContainers that have had the lockable mixin injected we will lock/unlock
         // headers in between sections, and then continue with another execution of onNodeDrop to ensure the header is
@@ -296,7 +299,8 @@ Ext.define('Ext.grid.header.DropZone', {
             // Both remove and add handling inform the owning grid.
             // The isDDMoveInGrid flag will prevent the remove operation from doing this.
             // See Ext.grid.header.Container#onRemove.
-            fromCt.isDDMoveInGrid = toCt.isDDMoveInGrid = !data.crossPanel;
+            // It's enough to inform the root container about the move
+            fromCtRoot.isDDMoveInGrid = !data.crossPanel;
 
             // ***Move the headers***
             //
@@ -327,11 +331,9 @@ Ext.define('Ext.grid.header.DropZone', {
             // component rather than trying to pass indices, which is too ambiguous and could refer to any
             // collection at any level of (grouped) header containers.
             if (dropPosition === 'before') {
-                targetHeader.insertNestedHeader(dragHeader);
+                toCt.moveBefore(dragHeader, targetHeader);
             } else {
-                // Capitalize the first letter. This will call either ct.moveAfter() or ct.moveBefore().
-                moveMethod = 'move' + dropPosition.charAt(0).toUpperCase() + dropPosition.substr(1);
-                toCt[moveMethod](dragHeader, targetHeader);
+                toCt.moveAfter(dragHeader, targetHeader);
             }
 
             // ***Move the view data columns***
@@ -339,7 +341,13 @@ Ext.define('Ext.grid.header.DropZone', {
             // to refresh the view as the headers and the corrresponding data columns will already be correctly
             // aligned (think of the group header sitting directly atop the last header in the group).
             // Also, it's not necessary to refresh the view if the indices are the same.
-            if (visibleToIdx >= 0 && !(targetHeader.isGroupHeader && !targetHeader.items.length) && visibleFromIdx !== visibleToIdx) {
+            // NOTE that targetHeader can be destroyed by this point if it was a group header
+            // and we just dragged the last column out of it; in that case header's items collection
+            // will be nulled.
+            if (visibleToIdx >= 0 && 
+                !(targetHeader.isGroupHeader && (!targetHeader.items || !targetHeader.items.length)) &&
+                visibleFromIdx !== visibleToIdx)
+            {
                 colsToMove = dragHeader.isGroupHeader ?
                     dragHeader.query(':not([hidden]):not([isGroupHeader])').length :
                     1;
@@ -360,7 +368,7 @@ Ext.define('Ext.grid.header.DropZone', {
             // grouped header.
             fromCtRoot.fireEvent('columnmove', fromCt, dragHeader, visibleFromIdx, visibleToIdx);
 
-            fromCt.isDDMoveInGrid = toCt.isDDMoveInGrid = false;
+            fromCtRoot.isDDMoveInGrid = false;
 
             // Group headers skrinkwrap their child headers.
             // Therefore a child header may not flex; it must contribute a fixed width.
@@ -384,6 +392,12 @@ Ext.define('Ext.grid.header.DropZone', {
             }
 
             Ext.resumeLayouts(true);
+            // The grid must lay out so that its headerCt lays out.
+            // It will not be thrown into the mix by BorderLayout#getLayoutItems
+            // if it's floated, so we have to force the issue.
+            if (me.headerCt.grid.floated) {
+                me.headerCt.grid.updateLayout();
+            }
             // Ext.grid.header.Container will handle the removal of empty groups, don't handle it here.
         }
     }

@@ -22,6 +22,11 @@
     .#{$prefix}slider-vert & {
         bottom: 0;
     }
+    // IE uses cursor:text
+    cursor: default;
+
+    // Disable magnifier on touchhold
+    -webkit-user-callout: none;
 
     @if $enable-font-icons {
         // vertical and horizontal centering of the glyph

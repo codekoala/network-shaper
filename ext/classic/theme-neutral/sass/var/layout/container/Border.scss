@@ -6,4 +6,4 @@
  * @var {color}
  * The background-color of the Border layout element
  */
-$border-layout-ct-background-color: $neutral-color !dynamic;
+$border-layout-ct-background-color: dynamic($neutral-color);

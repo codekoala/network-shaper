@@ -39,17 +39,6 @@ Ext.define('Ext.fx.Animation', {
         }
 
         if (type) {
-            if (Ext.browser.is.AndroidStock2) {
-                if (type == 'pop') {
-                    type = 'fade';
-                }
-                if (type == 'popIn') {
-                    type = 'fadeIn';
-                }
-                if (type == 'popOut') {
-                    type = 'fadeOut';
-                }
-            }
             defaultClass = Ext.ClassManager.getByAlias('animation.' + type);
 
             //<debug>

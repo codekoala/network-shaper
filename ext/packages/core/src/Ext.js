@@ -41,7 +41,7 @@
  */
 var Ext = Ext || {}; // jshint ignore:line
 // @define Ext
-Ext._startTime = Date.now ? Date.now() : (+ new Date());
+
 (function() {
     var global = this,
         objectPrototype = Object.prototype,
@@ -64,10 +64,37 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
 
     Ext.global = global;
 
+    /**
+     * Returns the current timestamp.
+     * @return {Number} Milliseconds since UNIX epoch.
+     * @method now
+     * @member Ext
+     */
+    Ext.now = Date.now || (Date.now = function() {
+        return +new Date();
+    });
+
+    /**
+     * Returns the current high-resolution timestamp.
+     * @return {Number} Milliseconds ellapsed since arbitrary epoch.
+     * @method ticks
+     * @member Ext
+     * @since 6.0.1
+     */
+    Ext.ticks = (global.performance && global.performance.now) ? function() {
+        return performance.now(); // jshint ignore:line
+    } : Ext.now;
+
+    Ext._startTime = Ext.ticks();
+
     // Mark these special fn's for easy identification:
     emptyFn.$nullFn = identityFn.$nullFn = emptyFn.$emptyFn = identityFn.$identityFn =
         privateFn.$nullFn = true;
     privateFn.$privacy = 'framework';
+    
+    // We also want to prevent these functions from being cleaned up on destroy
+    emptyFn.$noClearOnDestroy = identityFn.$noClearOnDestroy = true;
+    privateFn.$noClearOnDestroy = true;
 
     // These are emptyFn's in core and are redefined only in Ext JS (we use this syntax
     // so Cmd does not detect them):
@@ -125,6 +152,34 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
 
         return object;
     };
+
+    // Used by Ext.override
+    function addInstanceOverrides(target, owner, overrides) {
+        var name, value;
+
+        for (name in overrides) {
+            if (overrides.hasOwnProperty(name)) {
+                value = overrides[name];
+
+                if (typeof value === 'function') {
+                    //<debug>
+                    if (owner.$className) {
+                        value.name = owner.$className + '#' + name;
+                    }
+                    //</debug>
+
+                    value.$name = name;
+                    value.$owner = owner;
+
+                    value.$previous = target.hasOwnProperty(name) ?
+                        target[name] // already hooked, so call previous hook
+                        : callOverrideParent; // calls by name on prototype
+                }
+
+                target[name] = value;
+            }
+        }
+    }
 
     Ext.buildSettings = Ext.apply({
         baseCSSPrefix: 'x-'
@@ -201,7 +256,7 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
          * It is only reliable during dom-event-initiated cycles and
          * {@link Ext.draw.Animator} initiated cycles.
          */
-        frameStartTime: +new Date(),
+        frameStartTime: Ext.now(),
 
         /**
          * This object is initialized prior to loading the framework (Ext JS or Sencha
@@ -290,24 +345,35 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
         /**
          * @property {Boolean} [enableAria=true] This property is provided for backward
          * compatibility with previous versions of Ext JS. Accessibility is always enabled
-         * in Ext JS 6.0+
+         * in Ext JS 6.0+.
+         *
+         * This property is deprecated. To disable WAI-ARIA compatibility warnings,
+         * override `Ext.ariaWarn` function in your application startup code:
+         *
+         *      Ext.application({
+         *          launch: function() {
+         *              Ext.ariaWarn = Ext.emptyFn;
+         *          }
+         *      });
+         *
+         * For stricter compatibility with WAI-ARIA requirements, replace `Ext.ariaWarn`
+         * with a function that will raise an error instead:
+         *
+         *      Ext.application({
+         *          launch: function() {
+         *              Ext.ariaWarn = function(target, msg) {
+         *                  Ext.raise({
+         *                      msg: msg,
+         *                      component: target
+         *                  });
+         *              };
+         *          }
+         *      });
+         *
          * @since 6.0.0
+         * @deprecated 6.0.2
          */
         enableAria: true,
-        
-        /**
-         * @property {Boolean} [enableAriaButtons=true] Set to `false` to disable WAI-ARIA
-         * compatibility checks for buttons.
-         * @since 6.0.0
-         */
-        enableAriaButtons: true,
-        
-        /**
-         * @property {Boolean} [enableAriaPanels=true] Set to `false` to disable WAI-ARIA
-         * compatibility checks for panels.
-         * @since 6.0.0
-         */
-        enableAriaPanels: true,
         
         startsWithHashRe: /^#/,
         
@@ -412,7 +478,7 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
 
         // Vendor-specific events do not work if lower-cased.  This regex specifies event
         // prefixes for names that should NOT be lower-cased by Ext.canonicalEventName()
-        $vendorEventRe: /^(Moz.+|MS.+|webkit.+)/,
+        $vendorEventRe: /^(DOMMouse|Moz.+|MS.+|webkit.+)/,
 
         // TODO: inlinable function - SDKTOOLS-686
         /**
@@ -443,17 +509,6 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
 
             return object;
         },
-
-        /**
-         * Returns the current timestamp.
-         * @return {Number} Milliseconds since UNIX epoch.
-         * @method
-         */
-        now: (global.performance && global.performance.now) ? function() {
-            return performance.now(); // jshint ignore:line
-        } : (Date.now || (Date.now = function() {
-            return +new Date();
-        })),
 
         /**
          * Destroys all of the given objects. If arrays are passed, the elements of these
@@ -541,31 +596,17 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
                 Ext.apply(target.prototype, overrides);
             } else {
                 var owner = target.self,
-                    name, value;
+                    privates;
 
                 if (owner && owner.$isClass) { // if (instance of Ext.define'd class)
-                    for (name in overrides) {
-                        if (overrides.hasOwnProperty(name)) {
-                            value = overrides[name];
-
-                            if (typeof value === 'function') {
-                                //<debug>
-                                if (owner.$className) {
-                                    value.name = owner.$className + '#' + name;
-                                }
-                                //</debug>
-
-                                value.$name = name;
-                                value.$owner = owner;
-
-                                value.$previous = target.hasOwnProperty(name) ?
-                                    target[name] // already hooked, so call previous hook
-                                    : callOverrideParent; // calls by name on prototype
-                            }
-
-                            target[name] = value;
-                        }
+                    privates = overrides.privates;
+                    if (privates) {
+                        overrides = Ext.apply({}, overrides);
+                        delete overrides.privates;
+                        addInstanceOverrides(target, owner, privates);
                     }
+
+                    addInstanceOverrides(target, owner, overrides);
                 } else {
                     Ext.apply(target, overrides);
                 }
@@ -833,9 +874,10 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
          * see {@link Ext.data.Model#copy Model.copy}.
          *
          * @param {Object} item The variable to clone
+         * @param {Boolean} [cloneDom=true] `true` to clone DOM nodes.
          * @return {Object} clone
          */
-        clone: function(item) {
+        clone: function(item, cloneDom) {
             if (item === null || item === undefined) {
                 return item;
             }
@@ -843,7 +885,7 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
             // DOM nodes
             // TODO proxy this to Ext.Element.clone to handle automatic id attribute changing
             // recursively
-            if (item.nodeType && item.cloneNode) {
+            if (cloneDom !== false && item.nodeType && item.cloneNode) {
                 return item.cloneNode(true);
             }
 
@@ -862,7 +904,7 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
                 clone = [];
 
                 while (i--) {
-                    clone[i] = Ext.clone(item[i]);
+                    clone[i] = Ext.clone(item[i], cloneDom);
                 }
             }
             // Object
@@ -870,7 +912,7 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
                 clone = {};
 
                 for (key in item) {
-                    clone[key] = Ext.clone(item[key]);
+                    clone[key] = Ext.clone(item[key], cloneDom);
                 }
 
                 if (enumerables) {
@@ -990,6 +1032,25 @@ Ext._startTime = Date.now ? Date.now() : (+ new Date());
                 throw new Error(message);
             },
             deprecate: emptyFn
+        },
+        
+        ariaWarn: function(target, msg) {
+            // The checks still can be disabled by setting Ext.enableAria to false;
+            // this is for backwards compatibility. Also make sure we're not running
+            // under the slicer, warnings are pointless in that case.
+            if (Ext.enableAria && !Ext.slicer) {
+                if (!Ext.ariaWarn.first) {
+                    Ext.ariaWarn.first = true;
+                    Ext.log.warn("WAI-ARIA compatibility warnings can be suppressed " +
+                                 "by adding the following to application startup code:");
+                    Ext.log.warn("    Ext.ariaWarn = Ext.emptyFn;");
+                }
+                
+                Ext.log.warn({
+                    msg: msg,
+                    dump: target
+                });
+            }
         },
 
         /**

@@ -44,27 +44,35 @@ Ext.define('Ext.chart.interactions.Abstract', {
     stopAnimationBeforeSync: false,
 
     constructor: function (config) {
-        var me = this;
-        me.mixins.observable.constructor.call(me, config);
-        me.getId();
-        Ext.ComponentManager.register(me);
-    },
+        var me = this,
+            id;
 
-    /**
-     * @protected
-     * A method to be implemented by subclasses where all event attachment should occur.
-     */
-    initialize: Ext.emptyFn,
+        config = config || {};
+
+        if ('id' in config) {
+            id = config.id;
+        } else if ('id' in me.config) {
+            id = me.config.id;
+        } else {
+            id = me.getId();
+        }
+        me.setId(id);
+
+        me.mixins.observable.constructor.call(me, config);
+    },
 
     updateChart: function (newChart, oldChart) {
         var me = this;
+
         if (oldChart === newChart) {
             return;
         }
         if (oldChart) {
+            oldChart.unregister(me);
             me.removeChartListener(oldChart);
         }
         if (newChart) {
+            newChart.register(me);
             me.addChartListener();
         }
     },
@@ -83,13 +91,15 @@ Ext.define('Ext.chart.interactions.Abstract', {
     },
 
     /**
+     * @method
      * @protected
      * Placeholder method.
      */
     onGesture: Ext.emptyFn,
 
     /**
-     * @protected Find and return a single series item corresponding to the given event,
+     * @protected
+     * Find and return a single series item corresponding to the given event,
      * or null if no matching item is found.
      * @param {Event} e
      * @return {Object} the item object or null if none found.
@@ -103,7 +113,8 @@ Ext.define('Ext.chart.interactions.Abstract', {
     },
 
     /**
-     * @protected Find and return all series items corresponding to the given event.
+     * @protected
+     * Find and return all series items corresponding to the given event.
      * @param {Event} e
      * @return {Array} array of matching item objects
      */
@@ -198,15 +209,6 @@ Ext.define('Ext.chart.interactions.Abstract', {
         return chart.lockedEvents || (chart.lockedEvents = {});
     },
 
-    isMultiTouch: function () {
-        if (Ext.browser.is.IE10) {
-            return true;
-        }
-        return !(Ext.browser.is.AndroidStock2 || Ext.os.is.Desktop);
-    },
-
-    initializeDefaults: Ext.emptyFn,
-
     doSync: function () {
         var me = this,
             chart = me.getChart();
@@ -248,18 +250,15 @@ Ext.define('Ext.chart.interactions.Abstract', {
     },
 
     destroy: function () {
-        var me = this,
-            chart = me.getChart();
+        var me = this;
 
-        me.removeChartListener(chart);
-        Ext.ComponentManager.unregister(me);
+        me.setChart(null);
         delete me.listeners;
         me.callParent();
     }
+
 }, function () {
-    if (Ext.browser.is.AndroidStock2) {
-        this.prototype.throttleGap = 20;
-    } else if (Ext.os.is.Android4) {
+    if (Ext.os.is.Android4) {
         this.prototype.throttleGap = 40;
     }
 });

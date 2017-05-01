@@ -3,43 +3,52 @@
  */
 
 /**
- * @var {measurement} $form-fieldset-radius
- * Default border-radius for form fieldsets.
+ * @var {number/list}
+ * FieldSet border-radius
  */
-$form-fieldset-radius: .4em !dynamic;
+$fieldset-border-radius: dynamic(null);
 
 /**
- * @var {color} $form-fieldset-light
- * Light color for form fieldsets, mostly used on field borders.
+ * @var {color}
+ * FieldSet border-color
  */
-$form-fieldset-light: #ddd !dynamic;
+$fieldset-border-color: dynamic($neutral-color);
 
 /**
- * @var {color} $form-fieldset-dark
- * Dark color for form fields, mostly used on labels/text.
+ * @var {number/list}
+ * FieldSet border-width
  */
-$form-fieldset-dark: #333 !dynamic;
-
- /**
- * @var {color} $form-fieldset-border-color
- * Default fieldset border color.
- */
-$form-fieldset-border-color: $form-fieldset-light !dynamic;
-
- /**
- * @var {measurement} $form-fieldset-border-width
- * Default fieldset border width.
- */
-$form-fieldset-border-width: 1px !dynamic;
+$fieldset-border-width: dynamic(1px);
 
 /**
- * @var {boolean} $form-fieldset-title-text-shadow
- * Default text shadow setting for the fieldset title.
+ * @var {style}
+ * FieldSet border-style
  */
-$form-fieldset-title-text-shadow: true !dynamic;
+$fieldset-border-style: dynamic(solid);
 
 /**
- * @var {color} $form-fieldset-title-color
- * Default text color setting for the fieldset title.
+ * @var {color}
+ * FieldSet title text color
  */
-$form-fieldset-title-color: $form-fieldset-dark !dynamic;
+$fieldset-title-color: dynamic($highlight-color);
+
+$fieldset-padding: dynamic(.6rem);
+$fieldset-margin: dynamic(1rem);
+
+$fieldset-title-font-weight: dynamic(null);
+$fieldset-title-line-height: dynamic(null);
+$fieldset-title-line-height-big: dynamic(null);
+$fieldset-title-font-family: dynamic($font-family);
+$fieldset-title-font-size: dynamic(.8em);
+$fieldset-title-font-size-big: dynamic(.8em);
+$fieldset-title-margin: dynamic(1em .7em .3em);
+
+$fieldset-instructions-color: dynamic(lighten($fieldset-title-color, 20%));
+$fieldset-instructions-margin: dynamic(1em .7em .3em);
+$fieldset-instructions-font-weight: dynamic(null);
+$fieldset-instructions-font-size: dynamic(null);
+$fieldset-instructions-font-size-big: dynamic(null);
+$fieldset-instructions-line-height: dynamic(null);
+$fieldset-instructions-line-height-big: dynamic(null);
+$fieldset-instructions-font-family: dynamic(null);
+$fieldset-instructions-text-align: dynamic(null);

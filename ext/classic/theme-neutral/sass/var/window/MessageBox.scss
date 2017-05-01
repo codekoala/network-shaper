@@ -6,94 +6,94 @@
  * @var {color}
  * The background-color of the MessageBox body
  */
-$messagebox-body-background-color: $window-body-background-color !dynamic;
+$messagebox-body-background-color: dynamic($window-body-background-color);
 
 /**
  * @var {number}
  * The border-width of the MessageBox body
  */
-$messagebox-body-border-width: 0 !dynamic;
+$messagebox-body-border-width: dynamic(0);
 
 /**
  * @var {color}
  * The border-color of the MessageBox body
  */
-$messagebox-body-border-color: $window-body-border-color !dynamic;
+$messagebox-body-border-color: dynamic($window-body-border-color);
 
 /**
  * @var {string}
  * The border-style of the MessageBox body
  */
-$messagebox-body-border-style: $window-body-border-style !dynamic;
+$messagebox-body-border-style: dynamic($window-body-border-style);
 
 /**
  * @var {list}
  * The background-position of the MessageBox icon
  */
-$messagebox-icon-background-position: left top !dynamic;
+$messagebox-icon-background-position: dynamic(left top);
 
 /**
  * @var {number}
  * The size of the MessageBox icon
  */
-$messagebox-icon-size: 32px !dynamic;
+$messagebox-icon-size: dynamic(32px);
 
 /**
  * @var {number}
  * The amount of space between the MessageBox icon and the message text
  */
-$messagebox-icon-spacing: 10px !dynamic;
+$messagebox-icon-spacing: dynamic(10px);
 
 /**
  * @var {number}
  * The font size to use for MessageBox icons when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-glyph-font-size: $messagebox-icon-size !dynamic;
+$messagebox-glyph-font-size: dynamic($messagebox-icon-size);
 
 /**
  * @var {string/list}
  * Glyph for the "info" icon when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-info-glyph: $fa-var-info-circle $messagebox-glyph-font-size $font-icon-font-family !dynamic;
+$messagebox-info-glyph: dynamic($fa-var-info-circle $messagebox-glyph-font-size $font-icon-font-family);
 
 /**
  * @var {color}
  * The color to use for the "info" icon when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-info-glyph-color: #808080 !dynamic;
+$messagebox-info-glyph-color: dynamic(#808080);
 
 /**
  * @var {string/list}
  * Glyph for the "warning" icon when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-warning-glyph: $fa-var-exclamation-triangle $messagebox-glyph-font-size $font-icon-font-family !dynamic;
+$messagebox-warning-glyph: dynamic($fa-var-exclamation-triangle $messagebox-glyph-font-size $font-icon-font-family);
 
 /**
  * @var {color}
  * The color to use for the "warning" icon when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-warning-glyph-color: #f8d400 !dynamic;
+$messagebox-warning-glyph-color: dynamic(#f8d400);
 
 /**
  * @var {string/list}
  * Glyph for the "question" icon when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-question-glyph: $fa-var-question-circle $messagebox-glyph-font-size $font-icon-font-family !dynamic;
+$messagebox-question-glyph: dynamic($fa-var-question-circle $messagebox-glyph-font-size $font-icon-font-family);
 
 /**
  * @var {color}
  * The color to use for the "question" icon when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-question-glyph-color: #808080 !dynamic;
+$messagebox-question-glyph-color: dynamic(#808080);
 
 /**
  * @var {string/list}
  * Glyph for the "error" icon when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-error-glyph: $fa-var-times-circle $messagebox-glyph-font-size $font-icon-font-family !dynamic;
+$messagebox-error-glyph: dynamic($fa-var-times-circle $messagebox-glyph-font-size $font-icon-font-family);
 
 /**
  * @var {color}
  * The color to use for the "error" icon when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$messagebox-error-glyph-color: #ee611f !dynamic;
+$messagebox-error-glyph-color: dynamic(#ee611f);

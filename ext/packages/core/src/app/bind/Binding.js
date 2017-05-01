@@ -1,6 +1,6 @@
 /**
- * This class is created to manage a direct bind. Both `Ext.data.Session`
- * and `Ext.app.ViewModel` return these objects from their `bind` method.
+ * This class is created to manage a direct bind.  `Ext.app.ViewModel` returns this from 
+ * its {@link Ext.app.ViewModel#method-bind bind} method.
  */
 Ext.define('Ext.app.bind.Binding', {
     extend: 'Ext.app.bind.BaseBinding',
@@ -108,14 +108,9 @@ Ext.define('Ext.app.bind.Binding', {
      */
     getValue: function () {
         var me = this,
-            stub = me.stub,
-            ret = stub && stub.getValue();
+            stub = me.stub;
 
-        if (me.transform) {
-            ret = me.transform(ret);
-        }
-
-        return ret;
+        return stub && stub.getValue();
     },
 
     /**
@@ -123,7 +118,7 @@ Ext.define('Ext.app.bind.Binding', {
      * that the value is just not available yet. In specific cases, when the bound property
      * is an `Ext.data.Model` it means that a request to the server is in progress to get
      * the record. For an `Ext.data.Store` it means that
-     * `{@link Ext.data.Store#load load}` has been called on the store but it is
+     * `{@link Ext.data.Store#method-load load}` has been called on the store but it is
      * still in progress.
      * @return {Boolean}
      * @since 5.0.0
@@ -137,20 +132,21 @@ Ext.define('Ext.app.bind.Binding', {
      * This method returns `true` if this binding can only be read. If this method returns
      * `false` then the binding can be set using `setValue` (meaning this binding can be
      * a two-way binding).
-     * @return {boolean}
+     * @return {Boolean}
      * @since 5.0.0
      */
     isReadOnly: function () {
         var stub = this.stub,
-            options = this.options;
+            options = this.options,
+            ret = true;
 
         if (!(options && options.twoWay === false)) {
             if (stub) {
-                return stub.isReadOnly();
+                ret = stub.isReadOnly();
             }
         }
 
-        return true; // readOnly so just one-way
+        return ret;
     },
 
     /**
@@ -186,14 +182,9 @@ Ext.define('Ext.app.bind.Binding', {
 
         getRawValue: function () {
             var me = this,
-                stub = me.stub,
-                ret = stub && stub.getRawValue();
+                stub = me.stub;
 
-            if (me.transform) {
-                ret = me.transform(ret);
-            }
-
-            return ret;
+            return stub && stub.getRawValue();
         },
 
         isDescendantOf: function (item) {

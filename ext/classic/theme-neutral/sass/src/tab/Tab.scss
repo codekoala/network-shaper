@@ -1584,6 +1584,16 @@
         $table: true
     );
 
+    @if $include-ie {
+        @mixin ie-tab-rotate($rotate) {
+            -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$rotate})";
+        }
+
+        @mixin ie-tab-alpharotate($alpha, $rotate) {
+            -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=#{$alpha * 100}),progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$rotate})";
+        }
+    }
+
     .#{$prefix}tab-#{$ui} {
         border-color: $ui-border-color;
         @if not is-null($ui-cursor) {
@@ -1594,9 +1604,40 @@
         }
         @if ($ui-opacity != null) and ($ui-opacity != 1) {
             @include opacity($ui-opacity);
+
+            @if $include-ie {
+                &.#{$prefix}tab-rotate-left {
+                    .#{$prefix}ie8 & {
+                        @include ie-tab-alpharotate($ui-opacity, 3);
+                    }
+                }
+
+                &.#{$prefix}tab-rotate-right {
+                    .#{$prefix}ie8 & {
+                        @include ie-tab-alpharotate($ui-opacity, 1);
+                    }
+                }
+            }
         }
         @if ($ui-background-opacity != null) and ($ui-background-opacity != 1) {
             @include background-opacity($ui-background-color, $ui-background-opacity);
+
+            @if $include-ie {
+                // Background opacity uses a filter in IE8, which overrides the rotation filter
+                // Unfortunately rotation and opacity cannot coexist, or the tab background
+                // turns black, so we will just have to do without background opacity in IE8
+                &.#{$prefix}tab-rotate-left {
+                    .#{$prefix}ie8 & {
+                        @include ie-tab-rotate(3);
+                    }
+                }
+
+                &.#{$prefix}tab-rotate-right {
+                    .#{$prefix}ie8 & {
+                        @include ie-tab-rotate(1);
+                    }
+                }
+            }
         }
 
         @if $ui-plain-background-color != $ui-background-color {
@@ -2092,7 +2133,7 @@
 
         // inner el requires max-width in order for ellipsis to work.
         max-width: 100%;
-        
+
         .#{$prefix}tab-icon-right > &,
         .#{$prefix}tab-icon-left > & {
             // since calc is only supported in IE9+ ellipsis will not work in IE8 when
@@ -2112,7 +2153,7 @@
             min-width: $ui-icon-width;
         }
 
-        line-height: $ui-icon-height;
+        min-height: $ui-icon-height;
         background-position: $ui-icon-background-position;
         font-size: $ui-icon-height;
         line-height: $ui-icon-height;
@@ -2179,10 +2220,41 @@
 
         @if ($ui-opacity-focus != null) {
             @include opacity($ui-opacity-focus);
+
+            @if $include-ie {
+                &.#{$prefix}tab-rotate-left {
+                    .#{$prefix}ie8 & {
+                        @include ie-tab-alpharotate($ui-opacity-focus, 3);
+                    }
+                }
+
+                &.#{$prefix}tab-rotate-right {
+                    .#{$prefix}ie8 & {
+                        @include ie-tab-alpharotate($ui-opacity-focus, 1);
+                    }
+                }
+            }
         }
 
         @if ($ui-background-opacity-focus != null) {
             @include background-opacity($ui-background-color-focus, $ui-background-opacity-focus);
+
+            @if $include-ie {
+                // Background opacity uses a filter in IE8, which overrides the rotation filter
+                // Unfortunately rotation and opacity cannot coexist, or the tab background
+                // turns black, so we will just have to do without background opacity in IE8
+                &.#{$prefix}tab-rotate-left {
+                    .#{$prefix}ie8 & {
+                        @include ie-tab-rotate(3);
+                    }
+                }
+
+                &.#{$prefix}tab-rotate-right {
+                    .#{$prefix}ie8 & {
+                        @include ie-tab-rotate(1);
+                    }
+                }
+            }
         } @else {
             background-color: $ui-background-color-focus;
         }
@@ -2284,10 +2356,41 @@
 
             @if ($ui-opacity-over != null) {
                 @include opacity($ui-opacity-over);
+
+                @if $include-ie {
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-over, 3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-over, 1);
+                        }
+                    }
+                }
             }
 
             @if ($ui-background-opacity-over != null) {
                 @include background-opacity($ui-background-color-over, $ui-background-opacity-over);
+
+                @if $include-ie {
+                    // Background opacity uses a filter in IE8, which overrides the rotation filter
+                    // Unfortunately rotation and opacity cannot coexist, or the tab background
+                    // turns black, so we will just have to do without background opacity in IE8
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(1);
+                        }
+                    }
+                }
             } @else {
                 background-color: $ui-background-color-over;
             }
@@ -2365,10 +2468,41 @@
 
             @if ($ui-opacity-focus-over != null) {
                 @include opacity($ui-opacity-focus-over);
+
+                @if $include-ie {
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-focus-over, 3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-focus-over, 1);
+                        }
+                    }
+                }
             }
 
             @if ($ui-background-opacity-focus-over != null) {
                 @include background-opacity($ui-background-color-focus-over, $ui-background-opacity-focus-over);
+
+                @if $include-ie {
+                    // Background opacity uses a filter in IE8, which overrides the rotation filter
+                    // Unfortunately rotation and opacity cannot coexist, or the tab background
+                    // turns black, so we will just have to do without background opacity in IE8
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(1);
+                        }
+                    }
+                }
             } @else {
                 background-color: $ui-background-color-focus-over;
             }
@@ -2449,10 +2583,41 @@
 
             @if ($ui-opacity-active != null) {
                 @include opacity($ui-opacity-active);
+
+                @if $include-ie {
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-active, 3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-active, 1);
+                        }
+                    }
+                }
             }
 
             @if ($ui-background-opacity-active != null) {
                 @include background-opacity($ui-background-color-active, $ui-background-opacity-active);
+
+                @if $include-ie {
+                    // Background opacity uses a filter in IE8, which overrides the rotation filter
+                    // Unfortunately rotation and opacity cannot coexist, or the tab background
+                    // turns black, so we will just have to do without background opacity in IE8
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(1);
+                        }
+                    }
+                }
             } @else {
                 background-color: $ui-background-color-active;
             }
@@ -2529,10 +2694,41 @@
 
             @if ($ui-opacity-focus-active != null) {
                 @include opacity($ui-opacity-focus-active);
+
+                @if $include-ie {
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-focus-active, 3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-focus-active, 1);
+                        }
+                    }
+                }
             }
 
             @if ($ui-background-opacity-focus-active != null) {
                 @include background-opacity($ui-background-color-focus-active, $ui-background-opacity-focus-active);
+
+                @if $include-ie {
+                    // Background opacity uses a filter in IE8, which overrides the rotation filter
+                    // Unfortunately rotation and opacity cannot coexist, or the tab background
+                    // turns black, so we will just have to do without background opacity in IE8
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(1);
+                        }
+                    }
+                }
             } @else {
                 background-color: $ui-background-color-focus-active;
             }
@@ -2612,12 +2808,43 @@
         &.#{$prefix}tab-#{$ui} {
             border-color: $ui-border-color-disabled;
 
-            @if $ui-opacity-disabled != 1 {
+            @if $ui-opacity-disabled != null {
                 @include opacity($ui-opacity-disabled);
+
+                @if $include-ie {
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-disabled, 3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-alpharotate($ui-opacity-disabled, 1);
+                        }
+                    }
+                }
             }
 
-            @if $ui-background-opacity-disabled != 1 {
+            @if $ui-background-opacity-disabled != null {
                 @include background-opacity($ui-background-color-disabled, $ui-background-opacity-disabled);
+
+                @if $include-ie {
+                    // Background opacity uses a filter in IE8, which overrides the rotation filter
+                    // Unfortunately rotation and opacity cannot coexist, or the tab background
+                    // turns black, so we will just have to do without background opacity in IE8
+                    &.#{$prefix}tab-rotate-left {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(3);
+                        }
+                    }
+
+                    &.#{$prefix}tab-rotate-right {
+                        .#{$prefix}ie8 & {
+                            @include ie-tab-rotate(1);
+                        }
+                    }
+                }
             } @else {
                 background-color: $ui-background-color-disabled;
             }
@@ -2713,19 +2940,18 @@
         }
 
         $states:
-            (over '.#{$prefix}tab-over' 'tab-over' $ui-background-color-over)
-            (focus '.#{$prefix}tab-focus' 'tab-focus' $ui-background-color-focus)
-            (focus-over '.#{$prefix}tab-focus.#{$prefix}tab-over' 'tab-focus.#{$prefix}tab-over' $ui-background-color-focus-over)
-            (active '.#{$prefix}tab.#{$prefix}tab-active' 'tab-active' $ui-background-color-active)
-            (focus-active '.#{$prefix}tab-focus.#{$prefix}tab-active' 'tab-focus.#{$prefix}tab-active' $ui-background-color-focus-active)
-            (disabled '.#{$prefix}tab.#{$prefix}tab-disabled' 'tab-disabled' $ui-background-color-disabled);
+            (over '.#{$prefix}tab-over' 'tab-over')
+            (focus '.#{$prefix}tab-focus' 'tab-focus')
+            (focus-over '.#{$prefix}tab-focus.#{$prefix}tab-over' 'tab-focus.#{$prefix}tab-over')
+            (active '.#{$prefix}tab.#{$prefix}tab-active' 'tab-active')
+            (focus-active '.#{$prefix}tab-focus.#{$prefix}tab-active' 'tab-focus.#{$prefix}tab-active')
+            (disabled '.#{$prefix}tab.#{$prefix}tab-disabled' 'tab-disabled');
 
         @each $side in top right bottom left {
             @each $item in $states {
                 $state: nth($item, 1);
                 $cls: nth($item, 2);
                 $id-prefix: nth($item, 3);
-                $bgcolor: nth($item, 4);
 
                 #{$cls} {
                     .#{$prefix}tab-#{$ui}-#{$side}-tl,
@@ -2743,7 +2969,6 @@
                     }
 
                     .#{$prefix}tab-#{$ui}-#{$side}-mc {
-                        background-color: $bgcolor;
                         background-repeat: repeat-x;
                         background-image: slicer-frame-background-image('#{$id-prefix}.#{$prefix}tab-#{$ui}-#{$side}', 'tab/tab-#{$ui}-#{$side}-#{$state}-fbg');
                     }
@@ -2758,7 +2983,7 @@
         .#{$prefix}tab-#{$ui}-tr,
         .#{$prefix}tab-#{$ui}-br {
             // hack to make IE8 render partially transparent pixels in corners of rotated tabs:
-            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#00FFFFFF,endColorstr=#00FFFFFF);
+            -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#00FFFFFF,endColorstr=#00FFFFFF)";
         }
     }
 

@@ -73,12 +73,23 @@ Ext.define('Ext.form.field.Date', {
 
     //<locale>
     /**
-     * @cfg {String} format
+     * @cfg {String} [format="m/d/Y"]
      * The default date format string which can be overriden for localization support. The format must be valid
      * according to {@link Ext.Date#parse}.
      */
     format : "m/d/Y",
     //</locale>
+    
+    //<locale>
+    /**
+     * @cfg {String} [ariaFormat="M j Y"]
+     * This date format will be used to format ARIA attributes in the field and its Picker,
+     * to provide Assistive Technologies such as screen readers with user friendly text.
+     * The format must be valid {@link Ext.Date#format}.
+     */
+    ariaFormat: 'M j Y',
+    //</locale>
+    
     //<locale>
     /**
      * @cfg {String} altFormats
@@ -90,10 +101,19 @@ Ext.define('Ext.form.field.Date', {
     //<locale>
     /**
      * @cfg {String} disabledDaysText
-     * The tooltip to display when the date falls on a disabled day.
+     * The tooltip to display when the date falls on a disabled day of week.
      */
     disabledDaysText : "Disabled",
     //</locale>
+    
+    //<locale>
+    /**
+     * @cfg {String} ariaDisabledDaysText The text that Assistive Technologies such as screen readers
+     * will announce when the date falls on a disabled day of week.
+     */
+    ariaDisabledDaysText: "This day of week is disabled",
+    //</locale>
+    
     //<locale>
     /**
      * @cfg {String} disabledDatesText
@@ -101,6 +121,15 @@ Ext.define('Ext.form.field.Date', {
      */
     disabledDatesText : "Disabled",
     //</locale>
+    
+    //<locale>
+    /**
+     * @cfg {String} ariaDisabledDatesText The text that Assistive Technologies such as screen readers
+     * will announce when the date falls on a disabled date.
+     */
+    ariaDisabledDatesText: "This date cannot be selected",
+    //</locale>
+    
     //<locale>
     /**
      * @cfg {String} minText
@@ -108,6 +137,16 @@ Ext.define('Ext.form.field.Date', {
      */
     minText : "The date in this field must be equal to or after {0}",
     //</locale>
+    
+    //<locale>
+    /**
+     * @cfg {String} ariaMinText The text that Assistive Technologies such as screen readers
+     * will announce when the date in the cell is before {@link #minValue}. The date substituted
+     * for {0} will be formatted as per {@link #ariaFormat}.
+     */
+    ariaMinText: "The date must be equal to or after {0}",
+    //</locale>
+    
     //<locale>
     /**
      * @cfg {String} maxText
@@ -115,6 +154,16 @@ Ext.define('Ext.form.field.Date', {
      */
     maxText : "The date in this field must be equal to or before {0}",
     //</locale>
+    
+    //<locale>
+    /**
+     * @cfg {String} ariaMaxText The text that Assistive Technologies such as screen readers
+     * will announce when the date in the cell is after {@link #maxValue}. The date substituted
+     * for {0} will be formatted as per {@link #ariaFormat}.
+     */
+    ariaMaxText: "The date must be equal to or before {0}",
+    //</locale>
+    
     //<locale>
     /**
      * @cfg {String} invalidText
@@ -128,7 +177,7 @@ Ext.define('Ext.form.field.Date', {
      * @cfg {String} formatText The format text to be announced by screen readers
      * when the field is focused.
      */
-    formatText: 'Expected date format: {0}',
+    formatText: 'Expected date format {0}.',
     //</locale>
     
     /**
@@ -219,10 +268,17 @@ Ext.define('Ext.form.field.Date', {
      * @inheritdoc
      */
     valuePublishEvent: ['select', 'blur'],
+
+    componentCls: Ext.baseCSSPrefix + 'form-field-date',
     
     ariaRole: 'combobox',
 
-    initComponent : function(){
+    /** @private */
+    rawDate: null,
+    /** @private */
+    rawDateText: '',
+
+    initComponent: function() {
         var me = this,
             isString = Ext.isString,
             min, max;
@@ -240,6 +296,24 @@ Ext.define('Ext.form.field.Date', {
 
         me.callParent();
     },
+    
+    getSubTplData: function(fieldData) {
+        var me = this,
+            data, ariaAttr;
+        
+        data = me.callParent([fieldData]);
+        
+        if (!me.ariaStaticRoles[me.ariaRole]) {
+            ariaAttr = data.ariaElAttributes;
+            
+            if (ariaAttr) {
+                ariaAttr['aria-owns'] = me.id + '-inputEl ' + me.id + '-picker-eventEl';
+                ariaAttr['aria-autocomplete'] = 'none';
+            }
+        }
+        
+        return data;
+    },
 
     initValue: function() {
         var me = this,
@@ -248,6 +322,13 @@ Ext.define('Ext.form.field.Date', {
         // If a String value was supplied, try to convert it to a proper Date
         if (Ext.isString(value)) {
             me.value = me.rawToValue(value);
+            me.rawDate = me.value;
+            me.rawDateText = me.parseDate(me.value);
+        }
+        else {
+            me.value = value || null;
+            me.rawDate = me.value;
+            me.rawDateText = me.value ? me.parseDate(me.value) : '';
         }
 
         me.callParent();
@@ -408,7 +489,12 @@ Ext.define('Ext.form.field.Date', {
     },
 
     rawToValue: function(rawValue) {
-        return this.parseDate(rawValue) || rawValue || null;
+        var me = this;
+
+        if (rawValue === me.rawDateText) {
+            return me.rawDate;
+        }
+        return me.parseDate(rawValue) || rawValue || null;
     },
 
     valueToRaw: function(value) {
@@ -427,7 +513,8 @@ Ext.define('Ext.form.field.Date', {
      *
      *     //Pass a date object:
      *     var dt = new Date('5/4/2006');
-     *     dateField.setValue(dt);
+     *     dateField.me = this,
+     *     setValue(dt);
      *
      *     //Pass a date string (default format):
      *     dateField.setValue('05/04/2006');
@@ -439,6 +526,55 @@ Ext.define('Ext.form.field.Date', {
      * @param {String/Date} date The date or valid date string
      * @return {Ext.form.field.Date} this
      */
+    setValue: function(v) {
+        var me = this;
+
+        me.lastValue = me.rawDateText;
+        me.lastDate = me.rawDate;
+        if (Ext.isDate(v)) {
+            me.rawDate  = v;
+            me.rawDateText = me.formatDate(v);
+        }
+        else {
+            me.rawDate = me.rawToValue(v);
+            me.rawDateText = me.formatDate(v);
+            if (me.rawDate === v) {
+                me.rawDate = null;
+                me.rawDateText = '';
+            }
+        }
+        me.callParent(arguments);
+    },
+
+   /**
+     * Checks whether the value of the field has changed since the last time it was checked.
+     * If the value has changed, it:
+     *
+     * 1. Fires the {@link #change change event},
+     * 2. Performs validation if the {@link #validateOnChange} config is enabled, firing the
+     *    {@link #validitychange validitychange event} if the validity has changed, and
+     * 3. Checks the {@link #isDirty dirty state} of the field and fires the {@link #dirtychange dirtychange event}
+     *    if it has changed.
+     */
+    checkChange: function() {
+        var me = this,
+            newVal, oldVal, lastDate;
+
+        if (!me.suspendCheckChange) {
+            newVal = me.getRawValue();
+            oldVal = me.lastValue;
+            lastDate = me.lastDate;
+
+            if (!me.destroyed && me.didValueChange(newVal, oldVal)) {
+                me.rawDate = me.rawToValue(newVal);
+                me.rawDateText = me.formatDate(newVal);
+                me.lastValue = newVal;
+                me.lastDate = me.rawDate;
+                me.fireEvent('change', me, me.getValue(), lastDate);
+                me.onChange(newVal, oldVal);
+            }
+        }
+    },
 
     /**
      * Attempts to parse a given string value using a given {@link Ext.Date#parse date format}.
@@ -471,9 +607,28 @@ Ext.define('Ext.form.field.Date', {
      */
     getSubmitValue: function() {
         var format = this.submitFormat || this.format,
-            value = this.getValue();
+            value = this.rawDate;
 
         return value ? Ext.Date.format(value, format) : '';
+    },
+
+    /**
+     * Returns the current data value of the field. The type of value returned is particular to the type of the
+     * particular field (e.g. a Date object for {@link Ext.form.field.Date}), as the result of calling {@link #rawToValue} on
+     * the field's {@link #processRawValue processed} String value. To return the raw String value, see {@link #getRawValue}.
+     * @return {Object} value The field value
+     */
+    getValue: function() {
+        return this.rawDate || null;
+    },
+
+    setRawValue: function(value) {
+        var me = this;
+
+        me.callParent([value]);
+
+        me.rawDate = Ext.isDate(value) ? value : me.rawToValue(value);
+        me.rawDateText = this.formatDate(value);
     },
 
     /**
@@ -504,8 +659,8 @@ Ext.define('Ext.form.field.Date', {
     /**
      * @private
      */
-    formatDate: function(date){
-        return Ext.isDate(date) ? Ext.Date.dateFormat(date, this.format) : date;
+    formatDate: function(date, format) {
+        return Ext.isDate(date) ? Ext.Date.dateFormat(date, format || this.format) : date;
     },
 
     createPicker: function() {
@@ -516,27 +671,34 @@ Ext.define('Ext.form.field.Date', {
         // its ancestor hierarchy (Pickers use their pickerField property as an upward link)
         // for a floating component.
         return new Ext.picker.Date({
+            id: me.id + '-picker',
             pickerField: me,
             floating: true,
-            focusable: false, // Key events are listened from the input field which is never blurred
+            preventRefocus: true,
             hidden: true,
             minDate: me.minValue,
             maxDate: me.maxValue,
             disabledDatesRE: me.disabledDatesRE,
             disabledDatesText: me.disabledDatesText,
+            ariaDisabledDatesText: me.ariaDisabledDatesText,
             disabledDays: me.disabledDays,
             disabledDaysText: me.disabledDaysText,
+            ariaDisabledDaysText: me.ariaDisabledDaysText,
             format: me.format,
             showToday: me.showToday,
             startDay: me.startDay,
             minText: format(me.minText, me.formatDate(me.minValue)),
+            ariaMinText: format(me.ariaMinText, me.formatDate(me.minValue, me.ariaFormat)),
             maxText: format(me.maxText, me.formatDate(me.maxValue)),
+            ariaMaxText: format(me.ariaMaxText, me.formatDate(me.maxValue, me.ariaFormat)),
             listeners: {
                 scope: me,
-                select: me.onSelect
+                select: me.onSelect,
+                tabout: me.onTabOut
             },
             keyNavConfig: {
                 esc: function() {
+                    me.inputEl.focus();
                     me.collapse();
                 }
             }
@@ -547,8 +709,21 @@ Ext.define('Ext.form.field.Date', {
         var me = this;
 
         me.setValue(d);
+        me.rawDate = d;
         me.fireEvent('select', me, d);
-        me.collapse();
+        
+        // Focus the inputEl first and then collapse. We configure
+        // the picker not to revert focus which is a normal thing to do
+        // for floaters; in our case when the picker is focusable it will
+        // lead to unexpected results on Tab key presses.
+        // Note that this focusing might happen synchronously during Tab
+        // key handling in the picker, which is the way we want it.
+        me.onTabOut(m);
+    },
+    
+    onTabOut: function(picker) {
+        this.inputEl.focus();
+        this.collapse();
     },
 
     /**
@@ -556,7 +731,7 @@ Ext.define('Ext.form.field.Date', {
      * Sets the Date picker's value to match the current field value when expanding.
      */
     onExpand: function() {
-        var value = this.getValue();
+        var value = this.rawDate;
         this.picker.setValue(Ext.isDate(value) ? value : new Date());
     },
 
@@ -567,7 +742,7 @@ Ext.define('Ext.form.field.Date', {
         var me = this,
             v = me.rawToValue(me.getRawValue());
 
-        if (Ext.isDate(v)) {
+        if (v === '' || Ext.isDate(v)) {
             me.setValue(v);
         }
         me.callParent([e]);

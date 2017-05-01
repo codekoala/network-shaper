@@ -13,7 +13,7 @@
  *
  * Outputs:
  *
- *     @import url(http://fonts.googleapis.com/css?family=Exo:200,300,400);
+ *     @import url(//fonts.googleapis.com/css?family=Exo:200,300,400);
  *
  * @member Global_CSS
  */
@@ -21,5 +21,5 @@
     $font-name,
     $font-weights: 400
 ) {
-    @import url('http://fonts.googleapis.com/css?family=#{$font-name}:#{$font-weights}');
+    @import url('//fonts.googleapis.com/css?family=#{$font-name}:#{$font-weights}');
 }

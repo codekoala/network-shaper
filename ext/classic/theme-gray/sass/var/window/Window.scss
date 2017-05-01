@@ -1,5 +1,5 @@
 /** @class Ext.window.Window */
 //
 
-$window-background-color: #e8e8e8 !dynamic;
-$window-header-color: #333 !dynamic;
+$window-background-color: dynamic(#e8e8e8);
+$window-header-color: dynamic(#333);

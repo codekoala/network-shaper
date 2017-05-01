@@ -70,6 +70,7 @@ Ext.define('Ext.view.DropZone', {
                 cls: me.indicatorCls,
                 ownerCt: me.view,
                 floating: true,
+                alignOnScroll: false,
                 shadow: false
             });
         }
@@ -90,7 +91,8 @@ Ext.define('Ext.view.DropZone', {
     },
 
     /**
-     * @private Determines whether the record at the specified offset from the passed record
+     * @private
+     * Determines whether the record at the specified offset from the passed record
      * is in the drag payload.
      * @param records
      * @param record
@@ -129,10 +131,7 @@ Ext.define('Ext.view.DropZone', {
                 if (pos === 'after') {
                     indicatorY += Ext.fly(node).getHeight();
                 }
-                // If view is scrolled using CSS translate, account for then when positioning the indicator
-                if (view.touchScroll === 2) {
-                    indicatorY += view.getScrollY();
-                }
+
                 me.getIndicator().setWidth(Ext.fly(view.el).getWidth()).showAt(0, indicatorY);
 
                 // Cache the overRecord and the 'before' or 'after' indicator.

@@ -234,6 +234,8 @@ describe("Ext.ComponentLoader", function(){
             makeLoader();
             loader.setTarget(other);
             expect(loader.getTarget()).toEqual(other);
+            
+            other.destroy();
         });
         
         it("should assign a new target via id", function(){
@@ -339,7 +341,7 @@ describe("Ext.ComponentLoader", function(){
                 loader.load();
                 expect(function(){
                     mockComplete('{"html": "foo"}');
-                }).toRaiseExtError('Components can only be loaded into a container');
+                }).toThrow('Components can only be loaded into a container');
             });
             
             it("should add a single item", function(){
@@ -391,6 +393,63 @@ describe("Ext.ComponentLoader", function(){
                 Ext.global = global;
                 expect(result).toBeFalsy();  
                 expect(comp.items.getCount()).toEqual(0);    
+            });
+        });
+        
+        describe("panel", function(){
+            beforeEach(function(){
+                comp = new Ext.panel.Panel({
+                    title: 'Panel',
+                    height: 400,
+                    width: 600,
+                    renderTo: document.body
+                });
+                makeLoader({
+                    renderer: 'html'
+                });
+            });
+
+            it('should use the component as the scope for inline scripts', function() {
+                var callbackScope = {};
+
+                loader.load({
+                    scripts: true,
+                    success: function() {
+                        this.foo = 'bar';
+                    },
+                    scope: callbackScope
+                });
+                mockComplete('<script>this.setTitle("New title");</script>New content');
+                
+                waitsFor(function() {
+                    return comp.getTitle() === 'New title';
+                }, 'the inline script to be executed');
+
+                runs(function() {
+                    // Check that content is updated.
+                    expect(comp.body.dom.textContent || comp.body.dom.innerText).toBe('New content');
+
+                    // Check that success callback had the right scope
+                    expect(callbackScope.foo).toBe('bar');
+                });
+            });
+            it('should use the rendererScope as the scope for inline scripts', function() {
+                var passedRendererScope = {};
+
+                loader.load({
+                    scripts: true,
+                    rendererScope: passedRendererScope
+                });
+                mockComplete('<script>this.foo = "bar";</script>New content');
+
+                waitsFor(function() {
+                    return passedRendererScope.foo === 'bar'
+                }, 'callback to be executed with the correct scope');
+
+                runs(function() {
+                    // Check that content is updated.
+                    expect(comp.body.dom.textContent || comp.body.dom.innerText).toBe('New content');
+                });
             });
         });
         

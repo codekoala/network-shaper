@@ -1,5 +1,6 @@
 /**
  * @class Ext.dom.Element
+ * @override Ext.dom.Element
  */
 Ext.define('Ext.overrides.dom.Element', (function() {
     var Element, // we cannot do this yet "= Ext.dom.Element"
@@ -72,8 +73,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
 
     //<feature legacyBrowser>
     if (Ext.isIE8) {
-        var removeNode = Ext.removeNode, // save a reference to the removeNode function defined in sencha-core
-            garbageBin = DOC.createElement('div'),
+        var garbageBin = DOC.createElement('div'),
             destroyQueue = [],
 
             // prevent memory leaks in IE8
@@ -90,16 +90,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 garbageBin.innerHTML = '';
                 destroyQueue.length = 0;
             }, 10);
-
-        Ext.removeNode = function(node) {
-            node = node.dom || node;
-            removeNode(node);
-            destroyQueue[destroyQueue.length] = node;
-
-            // Will perform extra IE8 cleanup in 10 milliseconds
-            // see http://social.msdn.microsoft.com/Forums/ie/en-US/c76967f0-dcf8-47d0-8984-8fe1282a94f5/ie-appendchildremovechild-memory-problem?forum=iewebdevelopment
-            clearGarbage();
-        };
     }
     //</feature>
 
@@ -123,6 +113,13 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         _init: function (E) {
             Element = E; // now we can poke this into closure scope
             
+            // We want to expose destroyQueue on the prototype for testing purposes
+            //<debug>
+            if (WIN.__UNIT_TESTING__) {
+                E.destroyQueue = destroyQueue;
+            }
+            //</debug>
+            
             // Allow overriding the attribute name and/or selector; this is
             // done only once for performance reasons
             E.tabbableSelector += ',[' + E.tabbableSavedCounterAttribute + ']';
@@ -131,17 +128,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         statics: {
             selectableCls: Ext.baseCSSPrefix + 'selectable',
             unselectableCls: Ext.baseCSSPrefix + 'unselectable',
-            
-            /**
-             * tabIndex attribute name for DOM lookups; needed in IE8 because
-             * it has a bug: dom.getAttribute('tabindex') will return null
-             * while dom.getAttribute('tabIndex') will return the actual value.
-             * IE9+ and all other browsers normalize attribute names to lowercase.
-             *
-             * @static
-             * @private
-             */
-            tabIndexAttributeName: Ext.isIE8 ? 'tabIndex' : 'tabindex',
             
             // This selector will be modified at runtime in the _init() method above
             // to include the elements with saved tabindex in the returned set
@@ -160,7 +146,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 OBJECT: true,
                 SELECT: true,
                 TEXTAREA: true,
-                HTML: Ext.isIE ? true : false
+                HTML: Ext.isIE ? true : false,
+                BODY: Ext.isIE ? false: true
             },
 
             // <object> element is naturally tabbable only in IE8 and below
@@ -182,96 +169,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 }
                 // For '-ms-foo' we need msFoo
                 return propertyCache[prop] || (propertyCache[prop] = prop.replace(msRe, 'ms-').replace(camelRe, camelReplaceFn));
-            },
-
-            getViewportHeight: function(){
-                return Ext.isIE9m ? DOC.documentElement.clientHeight : WIN.innerHeight;
-            },
-
-            getViewportWidth: function() {
-                return (!Ext.isStrict && !Ext.isOpera) ? document.body.clientWidth :
-                       Ext.isIE9m ? DOC.documentElement.clientWidth : WIN.innerWidth;
             }
-        },
-
-        /**
-         * Sets up event handlers to add and remove a css class when the mouse is down and then up on this element (a click effect)
-         * @param {String} className The class to add
-         * @param {Function} [testFn] A test function to execute before adding the class. The passed parameter
-         * will be the Element instance. If this functions returns false, the class will not be added.
-         * @param {Object} [scope] The scope to execute the testFn in.
-         * @return {Ext.dom.Element} this
-         */
-        addClsOnClick: function(className, testFn, scope) {
-            var me = this,
-                dom = me.dom,
-                hasTest = Ext.isFunction(testFn);
-                
-            me.on("mousedown", function() {
-                if (hasTest && testFn.call(scope || me, me) === false) {
-                    return false;
-                }
-                Ext.fly(dom).addCls(className);
-                var d = Ext.getDoc(),
-                    fn = function() {
-                        Ext.fly(dom).removeCls(className);
-                        d.removeListener("mouseup", fn);
-                    };
-                d.on("mouseup", fn);
-            });
-            return me;
-        },
-
-        /**
-         * Sets up event handlers to add and remove a css class when this element has the focus
-         * @param {String} className The class to add
-         * @param {Function} [testFn] A test function to execute before adding the class. The passed parameter
-         * will be the Element instance. If this functions returns false, the class will not be added.
-         * @param {Object} [scope] The scope to execute the testFn in.
-         * @return {Ext.dom.Element} this
-         */
-        addClsOnFocus: function(className, testFn, scope) {
-            var me = this,
-                dom = me.dom,
-                hasTest = Ext.isFunction(testFn);
-                
-            me.on("focus", function() {
-                if (hasTest && testFn.call(scope || me, me) === false) {
-                    return false;
-                }
-                Ext.fly(dom).addCls(className);
-            });
-            me.on("blur", function() {
-                Ext.fly(dom).removeCls(className);
-            });
-            return me;
-        },
-
-        /**
-         * Sets up event handlers to add and remove a css class when the mouse is over this element
-         * @param {String} className The class to add
-         * @param {Function} [testFn] A test function to execute before adding the class. The passed parameter
-         * will be the Element instance. If this functions returns false, the class will not be added.
-         * @param {Object} [scope] The scope to execute the testFn in.
-         * @return {Ext.dom.Element} this
-         */
-        addClsOnOver: function(className, testFn, scope) {
-            var me = this,
-                dom = me.dom,
-                hasTest = Ext.isFunction(testFn);
-                
-            me.hover(
-                function() {
-                    if (hasTest && testFn.call(scope || me, me) === false) {
-                        return;
-                    }
-                    Ext.fly(dom).addCls(className);
-                },
-                function() {
-                    Ext.fly(dom).removeCls(className);
-                }
-            );
-            return me;
         },
 
         /**
@@ -381,7 +279,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 paused: true,
                 keyframes: config.keyframes,
                 from: config.from || {},
-                to: Ext.apply({}, config)
+                to: Ext.apply({}, config),
+                userConfig: config
             };
             Ext.apply(animConfig.to, config.to);
 
@@ -407,44 +306,47 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         },
 
         /**
-         * Performs custom animation on this Element.
-         *
-         * The following properties may be specified in `from`, `to`, and `keyframe` objects:
-         *
-         *   - `x` - The page X position in pixels.
-         *
-         *   - `y` - The page Y position in pixels
-         *
-         *   - `left` - The element's CSS `left` value. Units must be supplied.
-         *
-         *   - `top` - The element's CSS `top` value. Units must be supplied.
-         *
-         *   - `width` - The element's CSS `width` value. Units must be supplied.
-         *
-         *   - `height` - The element's CSS `height` value. Units must be supplied.
-         *
-         *   - `scrollLeft` - The element's `scrollLeft` value.
-         *
-         *   - `scrollTop` - The element's `scrollTop` value.
-         *
-         *   - `opacity` - The element's `opacity` value. This must be a value between `0` and `1`.
-         *
-         * **Be aware** that animating an Element which is being used by an Ext Component without in some way informing the
-         * Component about the changed element state will result in incorrect Component behaviour. This is because the
-         * Component will be using the old state of the element. To avoid this problem, it is now possible to directly
-         * animate certain properties of Components.
+         * Calls `{@link #addAnimation}` and returns this Element (for call chaining). For
+         * details, see `{@link #addAnimation}`.
          *
          * @param {Object} config  Configuration for {@link Ext.fx.Anim}.
          * Note that the {@link Ext.fx.Anim#to to} config is required.
          * @return {Ext.dom.Element} this
          */
-        animate: function(config) {
+        animate: function (config) {
+            this.addAnimation(config);
+            return this;
+        },
+
+        /**
+         * Starts a custom animation on this Element.
+         *
+         * The following properties may be specified in `from`, `to`, and `keyframe` objects:
+         *
+         *   - `x` - The page X position in pixels.
+         *   - `y` - The page Y position in pixels
+         *   - `left` - The element's CSS `left` value. Units must be supplied.
+         *   - `top` - The element's CSS `top` value. Units must be supplied.
+         *   - `width` - The element's CSS `width` value. Units must be supplied.
+         *   - `height` - The element's CSS `height` value. Units must be supplied.
+         *   - `scrollLeft` - The element's `scrollLeft` value.
+         *   - `scrollTop` - The element's `scrollTop` value.
+         *   - `opacity` - The element's `opacity` value (between `0` and `1`).
+         *
+         * **Be aware** that animating an Element which is being used by an Ext Component
+         * without in some way informing the Component about the changed element state will
+         * result in incorrect Component behaviour. This is because the Component will be
+         * using the old state of the element. To avoid this problem, it is now possible
+         * to directly animate certain properties of Components.
+         *
+         * @param {Object} config  Configuration for {@link Ext.fx.Anim}.
+         * Note that the {@link Ext.fx.Anim#to to} config is required.
+         * @return {Ext.fx.Anim} The new animation.
+         */
+        addAnimation: function (config) {
             var me = this,
                 animId = me.dom.id || Ext.id(me.dom),
-                listeners,
-                anim,
-                end;
-                
+                listeners, anim, end;
 
             if (!Ext.fx.Manager.hasFxBlock(animId)) {
                 // Bit of gymnastics here to ensure our internal listeners get bound first
@@ -473,7 +375,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                     anim.jumpToEnd();
                 }
             }
-            return me;
+
+            return anim;
         },
 
         /**
@@ -667,8 +570,12 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 data = me.getData(),
                 maskEl, maskMsg;
 
-            if (dom && me.isAnimate) {
-                me.stopAnimation();
+            if (dom) {
+                if (me.isAnimate) {
+                    me.stopAnimation();
+                }
+                
+                me.removeAnchor();
             }
 
             me.callParent();
@@ -963,7 +870,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
 
         /**
          * Gets an object with all CSS positioning properties. Useful along with
-         * #setPostioning to get snapshot before performing an update and then restoring
+         * `setPostioning` to get snapshot before performing an update and then restoring
          * the element.
          * @param {Boolean} [autoPx=false] true to return pixel values for "auto" styles.
          * @return {Object}
@@ -1247,7 +1154,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                  */
                 focusable = !!Ext.Element.naturallyFocusableTags[nodeName]            ||
                             ((nodeName === 'A' || nodeName === 'LINK') && !!dom.href) ||
-                            dom.getAttribute('tabindex') != null                      ||
+                            dom.getAttribute('tabIndex') != null                      ||
                             dom.contentEditable === 'true';
                 
                 // In IE8, <input type="hidden"> does not have a corresponding style
@@ -1301,7 +1208,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 // Can't use dom.tabIndex here because IE will return 0 for elements
                 // that have no tabindex attribute defined, regardless of whether they are
                 // naturally tabbable or not.
-                tabIndex = dom.getAttribute('tabindex');
+                tabIndex = dom.getAttribute('tabIndex');
                 hasIndex = tabIndex != null;
                 
                 tabIndex -= 0;
@@ -1480,44 +1387,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         },
 
         /**
-         * Monitors this Element for the mouse leaving. Calls the function after the specified delay only if
-         * the mouse was not moved back into the Element within the delay. If the mouse *was* moved
-         * back in, the function is not called.
-         * @param {Number} delay The delay **in milliseconds** to wait for possible mouse re-entry before calling the handler function.
-         * @param {Function} handler The function to call if the mouse remains outside of this Element for the specified time.
-         * @param {Object} [scope] The scope (`this` reference) in which the handler function executes. Defaults to this Element.
-         * @return {Object} The listeners object which was added to this element so that monitoring can be stopped. Example usage:
-         *
-         *     // Hide the menu if the mouse moves out for 250ms or more
-         *     this.mouseLeaveMonitor = this.menuEl.monitorMouseLeave(250, this.hideMenu, this);
-         *
-         *     ...
-         *     // Remove mouseleave monitor on menu destroy
-         *     this.menuEl.un(this.mouseLeaveMonitor);
-         *
-         */
-        monitorMouseLeave: function(delay, handler, scope) {
-            var me = this,
-                timer,
-                listeners = {
-                    mouseleave: function(e) {
-                        //<feature legacyBrowser>
-                        if (Ext.isIE9m) {
-                            e.enableIEAsync();
-                        }
-                        //</feature>
-                        timer = Ext.defer(handler, delay, scope || me, [e]);
-                    },
-                    mouseenter: function() {
-                        clearTimeout(timer);
-                    }
-                };
-
-            me.on(listeners);
-            return listeners;
-        },
-
-        /**
          * Fades the element out while slowly expanding it in all directions. When the effect is completed, the element will
          * be hidden (visibility = 'hidden') but block elements will still take up space in the document. Usage:
          *
@@ -1628,7 +1497,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          *     Ext.fly('elId').setHeight(150, {
          *         duration : 500, // animation will have a duration of .5 seconds
          *         // will change the content to "finished"
-         *         callback: function(){ this.{@link #setHtml}("finished"); }
+         *         callback: function(){ this.setHtml("finished"); }
          *     });
          *     
          * @param {Number/String} height The new height. This may be one of:
@@ -1713,11 +1582,17 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         /**
          * Updates the innerHTML of this element, optionally searching for and processing scripts.
          * @param {String} html The new HTML
-         * @param {Boolean} [loadScripts] True to look for and process scripts (defaults to false)
-         * @param {Function} [callback] For async script loading you can be notified when the update completes
+         * @param {Boolean} [loadScripts] Pass `true` to look for and process scripts.
+         * @param {Function} [callback] For async script loading you can be notified when the update completes.
+         * @param {Object} [scope=`this`] The scope (`this` reference) in which to execute the callback.
+         * 
+         * Also used as the scope for any *inline* script source if the `loadScripts` parameter is `true`.
+         * Scripts with a `src` attribute cannot be executed in this scope.
+         *
+         * Defaults to this Element.
          * @return {Ext.dom.Element} this
          */
-        setHtml: function(html, loadScripts, callback) {
+        setHtml: function(html, loadScripts, callback, scope) {
             var me = this,
                 id,
                 dom,
@@ -1765,10 +1640,14 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                        }
                        hd.appendChild(s);
                     } else if (match[2] && match[2].length > 0) {
-                        (WIN.execScript || WIN.eval)(match[2]); // jshint ignore:line
+                        if (scope) {
+                            Ext.functionFactory(match[2]).call(scope);
+                        } else {
+                            Ext.globalEval(match[2]);
+                        }
                     }
                 }
-                Ext.callback(callback, me);
+                Ext.callback(callback, scope || me);
             }, 20);
             dom.innerHTML = html.replace(replaceScriptTagRe, '');
             return me;
@@ -1809,7 +1688,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         },
 
         /**
-         * Set positioning with an object returned by #getPositioning.
+         * Set positioning with an object returned by `getPositioning`.
          * @param {Object} posCfg
          * @return {Ext.dom.Element} this
          */
@@ -2002,7 +1881,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          *     Ext.fly('elId').setWidth(150, {
          *         duration : 500, // animation will have a duration of .5 seconds
          *         // will change the content to "finished"
-         *         callback: function(){ this.{@link #setHtml}("finished"); }
+         *         callback: function(){ this.setHtml("finished"); }
          *     });
          *     
          * @param {Number/String} width The new width. This may be one of:
@@ -2367,8 +2246,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          * @param {Object} options (optional) Object literal with any of the {@link Ext.fx.Anim} config options
          * @return {Ext.dom.Element} The Element
          */
-        slideOut: function(anchor, o) {
-            return this.slideIn(anchor, o, true);
+        slideOut: function(anchor, options) {
+            return this.slideIn(anchor, options, true);
         },
 
         /**
@@ -2459,12 +2338,12 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          * @param {Object} options (optional) Object literal with any of the {@link Ext.fx.Anim} config options
          * @return {Ext.dom.Element} The Element
          */
-        switchOff: function(obj) {
+        switchOff: function(options) {
             var me = this,
                 dom = me.dom,
                 beforeAnim;
 
-            obj = Ext.applyIf(obj || {}, {
+            options = Ext.applyIf(options || {}, {
                 easing: 'ease-in',
                 duration: 500,
                 remove: false,
@@ -2484,8 +2363,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
 
                 keyframe = new Ext.fx.Animator({
                     target: dom,
-                    duration: obj.duration,
-                    easing: obj.easing,
+                    duration: options.duration,
+                    easing: options.easing,
                     keyframes: {
                         33: {
                             opacity: 0.3
@@ -2502,7 +2381,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 });
                 keyframe.on('afteranimate', function() {
                     var el = Ext.fly(dom, '_anim');
-                    if (obj.useDisplay) {
+                    if (options.useDisplay) {
                         el.setDisplayed(false);
                     } else {
                         el.hide();
@@ -2517,20 +2396,20 @@ Ext.define('Ext.overrides.dom.Element', (function() {
             
             me.animate({
                 // See "A Note About Wrapped Animations" at the top of this class:
-                duration: (Math.max(obj.duration, 500) * 2),
+                duration: (Math.max(options.duration, 500) * 2),
                 listeners: {
                     beforeanimate: {
                         fn: beforeAnim
                     }
                 },
-                callback: obj.callback,
-                scope: obj.scope
+                callback: options.callback,
+                scope: options.scope
             });
             return me;
         },
 
         /**
-         * @private.
+         * @private
          * Currently used for updating grid cells without modifying DOM structure
          *
          * Synchronizes content of this Element with the content of the passed element.
@@ -2727,32 +2606,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         
         privates: {
             /**
-             * Returns true if this element needs an explicit tabIndex to make it focusable.
-             * Input fields, text areas, buttons, anchor elements **with an href** etc
-             * do not need a tabIndex, but structural elements do.
-             * See http://www.w3.org/TR/html5/editing.html#specially-focusable
-             * @private
-             */
-            needsTabIndex: function() {
-                var dom = this.dom,
-                    nodeName, isFocusable;
-                
-                if (dom) {
-                    nodeName = dom.nodeName;
-                    
-                    // Note that the code below is identical to isFocusable();
-                    // it is intentionally duplicated for performance reasons.
-                    isFocusable = !!Ext.Element.naturallyFocusableTags[nodeName]            ||
-                                  ((nodeName === 'A' || nodeName === 'LINK') && !!dom.href) ||
-                                  dom.getAttribute('tabindex') != null                      ||
-                                  dom.contentEditable === 'true';
-                    
-                    // The result we need is the opposite to what we got
-                    return !isFocusable;
-                }
-            },
-
-            /**
              * @private
              */
             findTabbableElements: function(options) {
@@ -2811,13 +2664,13 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                     // will return 0 for elements that have no tabindex
                     // attribute defined, regardless of whether they are
                     // tabbable or not.
-                    tabIndex = +node.getAttribute('tabindex'); // quicker than parseInt
+                    tabIndex = +node.getAttribute('tabIndex'); // quicker than parseInt
                     
                     // tabIndex value may be null for nodes with no tabIndex defined;
                     // most of those may be naturally tabbable. We don't want to
                     // check this here, that's isTabbable()'s job and it's not trivial.
                     // We explicitly check that tabIndex is not negative. The expression
-                    // below is purposeful if hairy; it is a very hot code path so care
+                    // below is purposeful if hairy; this is a very hot code path so care
                     // is taken to minimize the amount of DOM calls that could be avoided.
                     
                     // A node may have its tabindex saved by previous calls to
@@ -2837,8 +2690,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
              * @private
              */
             saveTabbableState: function(options) {
-                var tabIndexAttr = Ext.Element.tabIndexAttributeName,
-                    counterAttr = Ext.Element.tabbableSavedCounterAttribute,
+                var counterAttr = Ext.Element.tabbableSavedCounterAttribute,
                     savedAttr = Ext.Element.tabbableSavedValueAttribute,
                     counter, nodes, node, i, len;
                 
@@ -2866,8 +2718,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                     else {
                         // tabIndex could be set on both naturally tabbable and generic elements.
                         // Either way we need to save it to restore later.
-                        if (node.hasAttribute(tabIndexAttr)) {
-                            node.setAttribute(savedAttr, node.getAttribute(tabIndexAttr));
+                        if (node.hasAttribute('tabIndex')) {
+                            node.setAttribute(savedAttr, node.getAttribute('tabIndex'));
                         }
                 
                         // When no tabIndex is specified, that means a naturally tabbable element.
@@ -2877,7 +2729,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 
                         // We disable the tabbable state by setting tabIndex to -1.
                         // The element can still be focused programmatically though.
-                        node.setAttribute(tabIndexAttr, '-1');
+                        node.setAttribute('tabIndex', '-1');
                         node.setAttribute(counterAttr, '1');
                     }
                 }
@@ -2890,7 +2742,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
              */
             restoreTabbableState: function(skipSelf, skipChildren) {
                 var dom = this.dom,
-                    tabIndexAttr = Ext.Element.tabIndexAttributeName,
                     counterAttr = Ext.Element.tabbableSavedCounterAttribute,
                     savedAttr = Ext.Element.tabbableSavedValueAttribute,
                     nodes = [],
@@ -2927,10 +2778,10 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 
                     // That is a naturally tabbable element
                     if (idx === 'none') {
-                        node.removeAttribute(tabIndexAttr);
+                        node.removeAttribute('tabIndex');
                     }
                     else {
-                        node.setAttribute(tabIndexAttr, idx);
+                        node.setAttribute('tabIndex', idx);
                     }
                 
                     node.removeAttribute(savedAttr);
@@ -3439,6 +3290,93 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 get: getBorderWidth
             };
         }
+        
+        // IE8 has an odd bug with handling font icons in pseudo elements;
+        // it will render the icon once and not update it when something
+        // like text color is changed via style addition or removal.
+        // We have to force icon repaint by adding a style with forced empty
+        // pseudo element content, (x-sync-repaint) and removing it back to work
+        // around this issue.
+        // See this: https://github.com/FortAwesome/Font-Awesome/issues/954
+        // and this: https://github.com/twbs/bootstrap/issues/13863
+        var syncRepaintCls = Ext.baseCSSPrefix + 'sync-repaint';
+        
+        proto.syncRepaint = function() {
+            this.addCls(syncRepaintCls);
+            
+            // Measuring element width will make the browser to repaint it
+            this.getWidth();
+            
+            // Removing empty content makes the icon to appear again and be redrawn
+            this.removeCls(syncRepaintCls);
+        };
+    }
+    
+    if (Ext.isIE10m) {
+        Ext.override(Element, {
+            focus: function(defer, dom) {
+                var me = this,
+                    ex;
+                
+                dom = dom || me.dom;
+                
+                if (Number(defer)) {
+                    Ext.defer(me.focus, defer, me, [null, dom]);
+                }
+                else {
+                    Ext.GlobalEvents.fireEvent('beforefocus', dom);
+                    
+                    // IE10m has an acute problem with focusing input elements;
+                    // when the element was just shown and did not have enough
+                    // time to initialize, focusing it might fail. The problem
+                    // is somewhat random in nature; most of the time focusing
+                    // an input element will succeed, failing only occasionally.
+                    // When it fails, the focus will be thrown to the document
+                    // body element, with subsequent focusout/focusin event pair
+                    // on the body, which throws off our focusenter/focusleave
+                    // processing.
+                    // Fortunately for us, when this focus failure happens, the
+                    // resulting focusout event will happen *synchronously*
+                    // unlike the normal focusing events which IE will fire
+                    // asynchronously. Also fortunately for us, in most cases
+                    // trying to focus the given element the second time
+                    // immediately after it failed to focus the first time
+                    // seems to do the trick; however when second focus attempt
+                    // succeeds, it will result in focusout on the body and
+                    // focusin on the given element, which again wreaks havoc
+                    // on our focusenter/focusleave handling.
+                    // The only workable solution we have is to pretend that
+                    // focus never went to the document body and ignore the
+                    // focusout and focusin caused by failed first focus attempt.
+                    // To this end, we fudge the event stream in Focus publisher
+                    // override.
+                    if (dom && (dom.tagName === 'INPUT' || dom.tagname === 'TEXTAREA')) {
+                        Ext.synchronouslyFocusing = document.activeElement;
+                    }
+                    
+                    // Also note that trying to focus an unfocusable element
+                    // might throw an exception in IE8. What a cute idea, MS. :(
+                    try {
+                        dom.focus();
+                    }
+                    catch (xcpt) {
+                        ex = xcpt;
+                    }
+                    
+                    // Ok so now we have this situation when we tried to focus
+                    // the first time but did not succeed. Let's try again but
+                    // not if there was an exception the first time - when the
+                    // "focus failure" happens it does so silently. :(
+                    if (Ext.synchronouslyFocusing && document.activeElement !== dom && !ex) {
+                        dom.focus();
+                    }
+                    
+                    Ext.synchronouslyFocusing = null;
+                }
+                
+                return me;
+            }
+        });
     }
 
     Ext.apply(Ext, {
@@ -3461,25 +3399,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          * and {@link Ext.LoadMask LoadMasks}
          */
         useShims: false,
-
-        /**
-         * @private
-         * Returns an HTML div element into which {@link Ext.container.Container#method-remove removed} components
-         * are placed so that their DOM elements are not garbage collected as detached Dom trees.
-         * @return {Ext.dom.Element}
-         * @member Ext
-         */
-        getDetachedBody: function () {
-            var detachedEl = Ext.detachedBodyEl;
-
-            if (!detachedEl) {
-                detachedEl = DOC.createElement('div');
-                Ext.detachedBodyEl = detachedEl = new Ext.dom.Fly(detachedEl);
-                detachedEl.isDetachedBody = true;
-            }
-
-            return detachedEl;
-        },
 
         getElementById: function (id) {
             var el = DOC.getElementById(id),
@@ -3712,7 +3631,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                     var component = el.component,
                         frameInfo, frameBodyStyle;
 
-                    if (component && component._syncFrameHeight && this === component.el) {
+                    if (component && component._syncFrameHeight && el === component.el) {
                         frameBodyStyle = component.frameBody.dom.style;
                         if (pxRe.test(value)) {
                             frameInfo = component.getFrameInfo();
@@ -4002,9 +3921,17 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         if (Ext.isIE10) {
             bodyCls.push(Ext.baseCSSPrefix + 'ie10');
         }
-        
+
+        if (Ext.isIE10p) {
+            bodyCls.push(Ext.baseCSSPrefix + 'ie10p');
+        }
+
         if (Ext.isIE11) {
             bodyCls.push(Ext.baseCSSPrefix + 'ie11');
+        }
+
+        if (Ext.isEdge) {
+            bodyCls.push(Ext.baseCSSPrefix + 'edge');
         }
 
         if (Ext.isGecko) {
@@ -4039,6 +3966,9 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         }
         if (supports.Touch) {
             bodyCls.push(Ext.baseCSSPrefix + 'touch');
+        }
+        if (Ext.os.deviceType) {
+            bodyCls.push(Ext.baseCSSPrefix + Ext.os.deviceType.toLowerCase());
         }
         //Ext.fly(document.documentElement).addCls(htmlCls);
 

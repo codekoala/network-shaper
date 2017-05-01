@@ -1,1 +1,1 @@
-$toast-header-background-color: $base-highlight-color !dynamic;
+$toast-header-background-color: dynamic($base-highlight-color);

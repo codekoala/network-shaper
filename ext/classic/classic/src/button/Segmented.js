@@ -31,7 +31,10 @@
 Ext.define('Ext.button.Segmented', {
     extend: 'Ext.container.Container',
     xtype: 'segmentedbutton',
-    requires: [ 'Ext.button.Button' ],
+    requires: [ 
+        'Ext.button.Button',
+        'Ext.layout.container.SegmentedButton'
+    ],
 
     config: {
         /**
@@ -80,6 +83,7 @@ Ext.define('Ext.button.Segmented', {
     beforeRenderConfig: {
         /**
          * @cfg {String/Number/String[]/Number[]}
+         * @accessor
          * The value of this button.  When {@link #allowMultiple} is `false`, value is a
          * String or Number.  When {@link #allowMultiple is `true`, value is an array
          * of values.  A value corresponds to a child button's {@link Ext.button.Button#value
@@ -269,10 +273,22 @@ Ext.define('Ext.button.Segmented', {
 
         me._isApplyingValue = false;
 
-        if (me.hasListeners.change && !Ext.Array.equals(values, oldValues)) {
-            me.fireEvent('change', me, values, oldValues);
-        }
         return value;
+    },
+
+    updateValue: function (value, oldValue) {
+        var me = this,
+            same;
+
+        if (me.hasListeners.change) {
+            if (value && oldValue && me.getAllowMultiple()) {
+                same = Ext.Array.equals(value, oldValue);
+            }
+
+            if (!same) {
+                me.fireEvent('change', me, value, oldValue);
+            }
+        }
     },
 
     beforeRender: function() {

@@ -49,6 +49,7 @@ Ext.define('Ext.ux.colorpick.Button', {
             lazy: true,
             $value: {
                 xtype: 'window',
+                closeAction: 'hide',
                 referenceHolder: true,
                 minWidth: 540,
                 minHeight: 200,

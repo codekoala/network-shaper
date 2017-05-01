@@ -6,16 +6,16 @@
  * @var {color} $sheet-bg-color
  * Background-color for action sheets and message boxes.
  */
-$sheet-bg-color: #fff !dynamic;
+$sheet-bg-color: dynamic(#fff);
 
 /**
  * @var {measurement} $sheet-button-spacing
  * Vertical spacing between sheet buttons.
  */
-$sheet-button-spacing: .5em !dynamic;
+$sheet-button-spacing: dynamic(.5em);
 
 /**
  * @var {measurement} $sheet-padding
  * Overall padding in a sheet.
  */
-$sheet-padding: 0em !dynamic;
+$sheet-padding: dynamic(0em);

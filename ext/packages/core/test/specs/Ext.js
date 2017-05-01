@@ -506,20 +506,221 @@ describe("Ext", function() {
     });
 
     describe("Ext.override", function(){
-        var Dude,
-            extApplySpy;
+        describe("on a raw JS class", function() {
+            it("should override existing methods and add new methods to the prototype", function(){
+                var Cls = function() {},
+                    fn1 = function() {},
+                    fn2 = function() {},
+                    fn3 = function() {},
+                    fn4 = function() {};
 
-        beforeEach(function(){
-            Dude = function(){}; // avoid to directly override Object class
-            extApplySpy = spyOn(Ext, "apply");
+                Cls.prototype.foo = fn1;
+                Cls.prototype.baz = fn2;
+
+                Ext.override(Cls, {
+                    foo: fn3,
+                    bar: fn4
+                });
+
+                expect(Cls.prototype.foo).toBe(fn3);
+                expect(Cls.prototype.bar).toBe(fn4);
+                expect(Cls.prototype.baz).toBe(fn2);
+            });
         });
 
-        it("should apply override", function(){
-            var override = {foo: true};
+        describe("on an Ext class", function() {
+            it("should overwrite existing methods", function() {
+                var fn1 = function() {},
+                    fn2 = function() {};
 
-            Ext.override(Dude, override);
+                var Cls = Ext.define(null, {
+                    foo: fn1
+                });
 
-            expect(extApplySpy).toHaveBeenCalledWith(Dude.prototype, override);
+                expect(Cls.prototype.foo).toBe(fn1);
+
+                Ext.override(Cls, {
+                    foo: fn2
+                });
+
+                expect(Cls.prototype.foo).toBe(fn2);
+            });
+
+            it("should add new methods", function() {
+                var fn1 = function() {},
+                    fn2 = function() {};
+
+                var Cls = Ext.define(null, {
+                    foo: fn1
+                });
+
+                expect(Cls.prototype.bar).toBeUndefined();
+
+                Ext.override(Cls, {
+                    bar: fn2
+                });
+
+                expect(Cls.prototype.foo).toBe(fn1);
+                expect(Cls.prototype.bar).toBe(fn2);
+            });
+
+            it("should be able to override privates", function() {
+                var fn1 = function() {},
+                    fn2 = function() {};
+
+                var Cls = Ext.define(null, {
+                    privates: {
+                        foo: fn1
+                    }
+                });
+
+                expect(Cls.prototype.foo).toBe(fn1);
+
+                Ext.override(Cls, {
+                    privates: {
+                        foo: fn2
+                    }
+                });
+
+                expect(Cls.prototype.foo).toBe(fn2);
+            });
+
+            it("should be able to override statics", function() {
+                var fn1 = function() {},
+                    fn2 = function() {};
+
+                var Cls = Ext.define(null, {
+                    statics: {
+                        foo: fn1
+                    }
+                });
+
+                expect(Cls.foo).toBe(fn1);
+
+                Ext.override(Cls, {
+                    statics: {
+                        foo: fn2
+                    }
+                });
+
+                expect(Cls.foo).toBe(fn2);
+            });
+
+            it("should be able to override static privates", function() {
+                var fn1 = function() {},
+                    fn2 = function() {};
+
+                var Cls = Ext.define(null, {
+                    privates: {
+                        statics: {
+                            foo: fn1
+                        }
+                    }
+                });
+
+                expect(Cls.foo).toBe(fn1);
+
+                Ext.override(Cls, {
+                    privates: {
+                        statics: {
+                            foo: fn2
+                        }
+                    }
+                });
+
+                expect(Cls.foo).toBe(fn2);
+            });
+
+            it("should be able to callParent()", function() {
+                var Cls = Ext.define(null, {
+                    doIt: function() {
+                        return 100;
+                    }
+                });
+
+                Ext.override(Cls, {
+                    doIt: function() {
+                        return this.callParent() + 1;
+                    }
+                });
+
+                var o = new Cls();
+                expect(o.doIt()).toBe(101);
+            });
+        });
+
+        describe("on an Ext class instance", function() {
+            it("should write methods to the instance, but not the prototype", function() {
+                var fn1 = function() {},
+                    fn2 = function() {};
+
+                var Cls = Ext.define(null, {
+                    foo: fn1
+                });
+
+                var o = new Cls();
+
+                Ext.override(o, {
+                    foo: fn2
+                });
+
+                expect(o.foo).toBe(fn2);
+                expect(o.self.prototype.foo).toBe(fn1);
+            });
+
+            it("should add new methods to the instance, not the prototype", function() {
+                var fn1 = function() {};
+
+                var Cls = Ext.define(null, {});
+
+                var o = new Cls();
+
+                Ext.override(o, {
+                    foo: fn1
+                });
+
+                expect(o.foo).toBe(fn1);
+                expect(o.self.prototype.foo).toBeUndefined();
+            });
+
+            it("should be able to override privates", function() {
+                var fn1 = function() {},
+                    fn2 = function() {};
+
+                var Cls = Ext.define(null, {
+                    privates: {
+                        foo: fn1
+                    }
+                });
+
+                var o = new Cls();
+
+                Ext.override(o, {
+                    privates: {
+                        foo: fn2
+                    }
+                });
+
+                expect(o.foo).toBe(fn2);
+                expect(o.self.prototype.foo).toBe(fn1);
+            });
+
+            it("should be able to callParent()", function() {
+                var Cls = Ext.define(null, {
+                    doIt: function() {
+                        return 100;
+                    }
+                });
+
+                var o = new Cls();
+
+                Ext.override(o, {
+                    doIt: function() {
+                        return this.callParent() + 1;
+                    }
+                });
+                expect(o.doIt()).toBe(101);
+            });
         });
     });
 
@@ -1960,7 +2161,7 @@ describe("Ext", function() {
             it("should call the elevateFunction when Ext.interval() is called", function() {
                 var args, interval;
 
-                Ext.Function.createSequence(fn, function () {
+                fn = Ext.Function.createSequence(fn, function () {
                     clearInterval(interval);
                 });
 
@@ -2076,6 +2277,64 @@ describe("Ext", function() {
                 expect(args[1]).toBe(fakeScope);
                 expect(args[2]).toEqual(['foo', 'bar']);
             });
+        });
+    });
+    
+    describe("Ext.ariaWarn", function() {
+        var logSpy, logMsgs;
+        
+        beforeEach(function() {
+            logMsgs = [];
+            logSpy = spyOn(Ext.log, 'warn').andCallFake(function() {
+                logMsgs = [].concat(logMsgs, Array.prototype.slice.apply(arguments));
+            });
+            
+            // Ext.ariaWarn will be set to Ext.emptyFn before running the tests, to avoid
+            // massive console fallout; we need to save the original fn for testing.
+            Ext.ariaWarn = Ext._ariaWarn;
+            Ext.ariaWarn.first = false;
+        });
+        
+        afterEach(function() {
+            logSpy = logMsgs = null;
+            Ext.ariaWarn = Ext.emptyFn;
+        });
+        
+        it("should provide additional instructions the first time", function() {
+            Ext.ariaWarn('foo');
+            
+            expect(logMsgs.join(' ')).toMatch(/can be suppressed/);
+        });
+        
+        it("should only provide additional instructions the first time", function() {
+            Ext.ariaWarn('foo');
+            Ext.ariaWarn('bar');
+            
+            var match = logMsgs.join(' ').match(/can be suppressed/g);
+            
+            expect(match.length).toBe(1);
+        });
+        
+        it("should not warn when Ext.enableAria = false", function () {
+            var orig = Ext.enableAria;
+            
+            Ext.enableAria = false;
+            Ext.ariaWarn('blerg');
+            
+            expect(logSpy).not.toHaveBeenCalled();
+            
+            Ext.enableAria = orig;
+        });
+        
+        it("should not warn when Ext.slicer = true", function() {
+            var orig = Ext.slicer;
+            
+            Ext.slicer = true;
+            Ext.ariaWarn('throbbe');
+            
+            expect(logSpy).not.toHaveBeenCalled();
+            
+            Ext.slicer = orig;
         });
     });
 });

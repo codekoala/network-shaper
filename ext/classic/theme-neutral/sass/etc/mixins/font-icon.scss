@@ -1,4 +1,4 @@
-@require 'font-icon';
+require('font-icon');
 
 /**
  * Applies a font icon to an element.
@@ -84,7 +84,8 @@
  * is necessary in cases where the icon-containing element is not exclusively dedicated
  * to containing the icon and may contain other text as well, for example, grid headers
  * and grid grouping headers.
- *
+ * 
+ * @member Global_CSS
  * @private
  */
 @mixin font-icon($glyph, $pseudo: true, $line-height: 1, $color: null, $style-pseudo: false) {
@@ -142,7 +143,7 @@
             // IE8 does not support filters on pseudo elements, so we have to rotate the
             // containing element instead of the pseudo element
             .#{$prefix}ie8 & {
-                filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$ie-rotation});
+                -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$ie-rotation})";
             }
         }
     }

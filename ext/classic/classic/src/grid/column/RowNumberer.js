@@ -20,6 +20,12 @@ Ext.define('Ext.grid.column.RowNumberer', {
     alias: 'widget.rownumberer',
 
     /**
+     * @property {Boolean} isRowNumberer
+     * `true` in this class to identify an object as an instantiated RowNumberer, or subclass thereof.
+     */
+    isRowNumberer: true,
+
+    /**
      * @cfg {String} text
      * Any valid text or HTML fragment to display in the header cell for the row number column.
      */
@@ -57,6 +63,8 @@ Ext.define('Ext.grid.column.RowNumberer', {
      */
     producesHTML: false,
 
+    ignoreExport: true,
+
     constructor: function (config) {
         var me = this;
 
@@ -72,9 +80,6 @@ Ext.define('Ext.grid.column.RowNumberer', {
         me.scope = me;
     },
 
-    /**
-     * @private
-     */
     resizable: false,
     hideable: false,
     menuDisabled: true,
@@ -84,9 +89,6 @@ Ext.define('Ext.grid.column.RowNumberer', {
     innerCls: Ext.baseCSSPrefix + 'grid-cell-inner-row-numberer',
     rowspan: undefined,
 
-    /**
-     * @private
-     */
     defaultRenderer: function(value, metaData, record, rowIdx, colIdx, dataSource, view) {
         var rowspan = this.rowspan,
             page = dataSource.currentPage,

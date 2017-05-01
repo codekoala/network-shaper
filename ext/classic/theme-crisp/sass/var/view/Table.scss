@@ -1,1 +1,1 @@
-$grid-row-cell-border-color: $neutral-dark-color !dynamic;
+$grid-row-cell-border-color: dynamic($neutral-dark-color);

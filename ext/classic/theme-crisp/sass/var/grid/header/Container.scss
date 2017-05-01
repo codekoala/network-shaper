@@ -1,2 +1,2 @@
-$grid-header-background-color: #fff !dynamic;
-$grid-header-border-color: $neutral-dark-color !dynamic;
+$grid-header-background-color: dynamic(#fff);
+$grid-header-border-color: dynamic($neutral-dark-color);

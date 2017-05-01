@@ -3,6 +3,10 @@
  * during an upgrade.
  */
 
+// This flag is checked by many Components to avoid compatibility warnings when
+// the code is running under the slicer
+Ext.slicer = true;
+
 Ext.require([
     'Ext.layout.Context'
 ]);

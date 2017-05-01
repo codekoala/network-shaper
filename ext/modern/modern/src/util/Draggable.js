@@ -16,7 +16,7 @@ Ext.define('Ext.util.Draggable', {
 
     /**
      * @event dragstart
-     * @preventable initDragStart
+     * @preventable
      * Fires whenever the component starts to be dragged
      * @param {Ext.util.Draggable} this
      * @param {Ext.event.Event} e the event object
@@ -115,6 +115,9 @@ Ext.define('Ext.util.Draggable', {
             resize   : 'onElementResize',
             touchstart : 'onPress',
             touchend   : 'onRelease',
+            // high priority ensures that these listeners run before user listeners
+            // so that draggable state is correct in user handlers
+            priority: 2000,
             scope: this
         };
 
@@ -208,15 +211,17 @@ Ext.define('Ext.util.Draggable', {
 
     getContainerConstraint: function() {
         var container = this.getContainer(),
-            element = this.getElement();
+            element = this.getElement(),
+            borders;
 
         if (!container || !element.dom) {
             return this.defaultConstraint;
         }
 
+        borders = container.getBorders();
         return {
             min: { x: 0, y: 0 },
-            max: { x: this.containerWidth - this.width, y: this.containerHeight - this.height }
+            max: { x: this.containerWidth - this.width - borders.beforeX - borders.afterX, y: this.containerHeight - this.height - borders.beforeY - borders.afterY }
         };
     },
 
@@ -232,7 +237,13 @@ Ext.define('Ext.util.Draggable', {
                 container.on({
                     resize: 'onContainerResize',
                     destroy: 'onContainerDestroy',
-                    scope: this
+                    scope: this,
+                    // The resize listener must have a high priority, so that the draggable
+                    // instance is refreshed prior to other parties who may be listening
+                    // for resize on the same element.  For example, slider listens to
+                    // resize on its element and expects that the draggable thumbs have
+                    // already had their draggable instances refreshed.
+                    priority: 2000
                 });
             }
         }
@@ -248,10 +259,25 @@ Ext.define('Ext.util.Draggable', {
     },
 
     onContainerResize: function(container, info) {
-        this.containerWidth = info.width;
-        this.containerHeight = info.height;
+        this.containerWidth = info.contentWidth;
+        this.containerHeight = info.contentHeight;
 
         this.refresh();
+    },
+
+    refreshContainerSize: function() {
+        // refreshes container size from dom.  Useful when the draggable element did not
+        // have a parentNode at the time the draggable was initialized.  Invoke this
+        // as soon as the element is appended to its parent to ensure correct constraining
+        var me = this,
+            container = me.getContainer();
+
+        me.containerWidth = container.getWidth();
+        me.containerHeight = container.getHeight();
+
+        this.refresh();
+
+        return me;
     },
 
     onContainerDestroy: function() {
@@ -282,12 +308,14 @@ Ext.define('Ext.util.Draggable', {
     },
 
     onDragStart: function(e) {
-        if (this.getDisabled()) {
+        var me = this,
+            offset = me.offset;
+
+        if (me.getDisabled()) {
             return false;
         }
-        var offset = this.offset;
 
-        this.fireAction('dragstart', [this, e, offset.x, offset.y], this.initDragStart);
+        me.fireEventedAction('dragstart', [me, e, offset.x, offset.y], me.initDragStart, me);
     },
 
     initDragStart: function(me, e, offsetX, offsetY) {

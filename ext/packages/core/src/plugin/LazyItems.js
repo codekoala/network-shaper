@@ -50,6 +50,6 @@ Ext.define('Ext.plugin.LazyItems', {
         this.cmp.add(this.items);
  
         // Remove the interceptor
-        delete this.cmp.beforeComponentRender;
+        this.cmp.beforeComponentRender = null;
     }
 });

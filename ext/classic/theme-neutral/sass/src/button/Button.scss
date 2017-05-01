@@ -450,8 +450,15 @@
     }
 
     .#{$prefix}btn-button-#{$ui} {
-        // this is a table cell, so height here is essentially min-height
-        height: max($icon-size, $line-height);
+        min-height: max($icon-size, $line-height);
+
+        @if $include-ie {
+            // In ie9m this element is a table cell, so height works like min-height
+            .#{$prefix}ie9m & {
+                min-height: auto;
+                height: max($icon-size, $line-height);
+            }
+        }
     }
 
     .#{$prefix}btn-inner-#{$ui} {
@@ -461,7 +468,12 @@
             padding: 0 $text-padding;
         }
 
-        // inner el requires max-width in order for ellipsis to work.
+        // Where table-based layouts are used (IE8/9) inner el requires max-width in order
+        // for ellipsis to work.  Safari also requires max width because of a bug in its
+        // -webkit-box layout that allows an element to expand beyond its flexed width if
+        // its content is larger than the flexed width.
+        // Rather than target the max rule to all the browsers that need it, we'll just add
+        // it everywhere, and then disable it where it causes problems (IE10p)
         max-width: 100%;
 
         .#{$prefix}btn-icon-right > &,
@@ -469,6 +481,11 @@
             // since calc is only supported in IE9+ ellipsis will not work in IE8 when
             // there is a left or right icon present
             max-width: calc(100% - #{$icon-size});
+        }
+
+        // Max-width interferes with the layout in IE11.  Fortunately we don't need the hack there
+        .#{$prefix}ie10p & {
+            max-width: none;
         }
     }
 
@@ -741,7 +758,30 @@
             }
         }
     }
-
+    
+    .#{$prefix}btn-#{$ui} .#{$prefix}btn-arrow-el {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: $split-width + right($padding);
+        pointer-events: none;
+        
+        @if $include-rtl {
+            &.#{$prefix}rtl {
+                right: inherit;
+                left: 0;
+            }
+        }
+    }
+    
+    .#{$prefix}btn-#{$ui}.#{$prefix}arrow-focus .#{$prefix}btn-arrow-el {
+        /* TODO @Phil ;) */
+        @if not is-null($inner-border-width-focus) and not is-null($inner-border-color-focus) {
+            border: $inner-border-width-focus solid $inner-border-color-focus;
+        }
+    }
+    
     .#{$prefix}btn-over.#{$prefix}btn-#{$ui} {
         @if $border-color-over != $border-color {
             border-color: $border-color-over;

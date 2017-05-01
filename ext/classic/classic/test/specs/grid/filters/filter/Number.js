@@ -1,7 +1,19 @@
-describe('Ext.grid.filters.filter.Number', function () {
-    var grid, store, plugin, columnFilter, headerCt, menu, rootMenuItem;
+/* global Ext, expect, jasmine, spyOn */
+
+describe("Ext.grid.filters.filter.Number", function () {
+    var grid, store, plugin, columnFilter, headerCt, menu, rootMenuItem,
+        synchronousLoad = true,
+        proxyStoreLoad = Ext.data.ProxyStore.prototype.load,
+        loadStore = function() {
+            proxyStoreLoad.apply(this, arguments);
+            if (synchronousLoad) {
+                this.flushLoad.apply(this, arguments);
+            }
+            return this;
+        };
 
     function createGrid(listCfg, storeCfg, gridCfg) {
+        synchronousLoad = false;
         store = new Ext.data.Store(Ext.apply({
             fields:['name', 'email', 'phone'],
             data: [
@@ -50,6 +62,8 @@ describe('Ext.grid.filters.filter.Number', function () {
 
         columnFilter = grid.columnManager.getHeaderByDataIndex('age').filter;
         plugin = grid.filters;
+        synchronousLoad = true;
+        store.flushLoad();
     }
 
     function showMenu() {
@@ -67,13 +81,21 @@ describe('Ext.grid.filters.filter.Number', function () {
         menu = rootMenuItem.menu;
     }
 
-    afterEach(function () {
-        store.destroy();
-        grid = store = plugin = columnFilter = menu = headerCt = rootMenuItem = Ext.destroy(grid);
+    beforeEach(function() {
+        // Override so that we can control asynchronous loading
+        Ext.data.ProxyStore.prototype.load = loadStore;
     });
 
-    describe('init', function () {
-        it('should add a menu separator to the menu', function () {
+    afterEach(function() {
+        // Undo the overrides.
+        Ext.data.ProxyStore.prototype.load = proxyStoreLoad;
+        
+        Ext.destroy(store, grid);
+        grid = store = plugin = columnFilter = menu = headerCt = rootMenuItem = null;
+    });
+
+    describe("init", function () {
+        it("should add a menu separator to the menu", function () {
             createGrid();
             showMenu();
 
@@ -81,8 +103,8 @@ describe('Ext.grid.filters.filter.Number', function () {
         });
     });
 
-    describe('setValue', function () {
-        it('should filter the store regardless of whether the menu has been created', function () {
+    describe("setValue", function () {
+        it("should filter the store regardless of whether the menu has been created", function () {
             createGrid();
 
             expect(store.data.length).toBe(4);
@@ -125,30 +147,53 @@ describe('Ext.grid.filters.filter.Number', function () {
         });
     });
 
-    describe('events', function () {
-        describe('keyup', function () {
-            it('should hide the menu', function () {
-                var field;
+    describe("events", function () {
+        var field;
 
+        afterEach(function () {
+            field = null;
+        });
+
+        describe("keyup", function () {
+            beforeEach(function () {
                 createGrid();
                 showMenu();
+            });
 
-                field = columnFilter.fields.eq;
-                field.setValue(5);
-                jasmine.fireKeyEvent(field.inputEl, 'keyup', 13);
+            describe("on ENTER", function () {
+                it("should hide the menu", function () {
+                    field = columnFilter.fields.eq;
+                    field.setValue(5);
+                    jasmine.fireKeyEvent(field.inputEl, 'keyup', Ext.event.Event.ENTER);
 
-                waitsFor(function() {
-                    return menu.hidden;
+                    expect(menu.hidden).toBe(true);
+                });
+            });
+
+            describe("on TAB", function () {
+                it("should not process TABs", function () {
+                    spyOn(columnFilter, 'setValue');
+
+                    field = columnFilter.fields.eq;
+                    field.setValue(5);
+                    jasmine.fireKeyEvent(field.inputEl, 'keyup', Ext.event.Event.TAB);
+
+                    expect(columnFilter.setValue).not.toHaveBeenCalled();
+
                 });
 
-                runs(function () {
-                    expect(menu.hidden).toBe(true);
+                it("should not hide the menu", function () {
+                    field = columnFilter.fields.eq;
+                    field.setValue(5);
+                    jasmine.fireKeyEvent(field.inputEl, 'keyup', Ext.event.Event.TAB);
+
+                    expect(menu.hidden).toBe(false);
                 });
             });
         });
     });
 
-    describe('updateBuffer', function () {
+    describe("updateBuffer", function () {
         // NOTE that teses tests were failing randomly, almost exclusively on older builds of
         // FF and older IE, with times coming in anywhere from 50 - 100 ms below the expected
         // thresholds.  Because of this, we're going to set our expectations even lower for
@@ -165,7 +210,7 @@ describe('Ext.grid.filters.filter.Number', function () {
             field = ms = startTime = endTime = null;
         });
 
-        it('should default to 500ms', function () {
+        it("should default to 500ms", function () {
             ms = 500;
 
             expect(ms).toBe(Ext.grid.filters.filter.Base.prototype.config.updateBuffer);
@@ -188,7 +233,7 @@ describe('Ext.grid.filters.filter.Number', function () {
             });
         });
 
-        it('should honor a configured updateBuffer', function () {
+        it("should honor a configured updateBuffer", function () {
             // Let's choose something well below the default and then just check to make
             // sure that's it's less than the default. This is safe since we don't know
             // exactly when the callback will be fired, but it still demonstrates that
@@ -218,14 +263,14 @@ describe('Ext.grid.filters.filter.Number', function () {
         });
     });
 
-    describe('showing the menu', function () {
+    describe("showing the menu", function () {
         function setActive(state) {
-            it('should not add a filter to the store when shown', function () {
+            it("should not add a filter to the store when shown " + (state ? 'active' : 'inactive'), function () {
                 createGrid({
                     active: state,
-                    value: [{
-                        on: new Date()
-                    }]
+                    value: {
+                        eq: new Date()
+                    }
                 });
 
                 spyOn(columnFilter, 'addStoreFilter');
@@ -239,8 +284,8 @@ describe('Ext.grid.filters.filter.Number', function () {
         setActive(false);
     });
 
-    describe('clearing filters', function () {
-        it('should not recheck the root menu item ("Filters") when showing menu after clearing filters', function () {
+    describe("clearing filters", function () {
+        it("should not recheck the root menu item (\"Filters\") when showing menu after clearing filters", function () {
             createGrid();
             showMenu();
 
@@ -257,8 +302,8 @@ describe('Ext.grid.filters.filter.Number', function () {
         });
     });
 
-    describe('entering invalid text', function () {
-        it('should not add a store filter and activate the filter', function () {
+    describe("entering invalid text", function () {
+        it("should not add a store filter and activate the filter", function () {
             var field, filterCollection;
 
             createGrid();
@@ -281,12 +326,12 @@ describe('Ext.grid.filters.filter.Number', function () {
         });
     });
 
-    describe('the UI and the active state', function () {
+    describe("the UI and the active state", function () {
         function setActive(active) {
-            describe('when ' + active, function () {
+            describe("when " + active, function () {
                 var maybe = !active ? 'not' : '';
 
-                it('should ' + maybe + ' check the Filters menu item', function () {
+                it("should " + maybe + ' check the Filters menu item', function () {
                     createGrid({
                         active: active
                     });
@@ -296,7 +341,7 @@ describe('Ext.grid.filters.filter.Number', function () {
                     expect(rootMenuItem.checked).toBe(active);
                 });
 
-                it('should set any field values that map to a configured value', function () {
+                it("should set any field values that map to a configured value", function () {
                     var fields;
 
                     createGrid({
@@ -312,11 +357,11 @@ describe('Ext.grid.filters.filter.Number', function () {
 
                     expect(fields.gt.inputEl.getValue()).toBe('10');
                     expect(fields.lt.inputEl.getValue()).toBe('20');
-                    expect(fields.eq.inputEl.getValue()).toBe(Ext.supports.Placeholder ? '' : 'Enter Number...');
+                    expect(fields.eq.inputEl.getValue()).toBe('');
                 });
 
-                describe('when a store filter is created', function () {
-                    it('should not update the filter collection twice', function () {
+                describe("when a store filter is created", function () {
+                    it("should not update the filter collection twice", function () {
                         var called = 0;
 
                         createGrid({
@@ -343,4 +388,107 @@ describe('Ext.grid.filters.filter.Number', function () {
         setActive(true);
         setActive(false);
     });
+
+    describe("activate and deactivate", function () {
+        describe("activating", function () {
+            describe("when activating after instantiation", function () {
+                function runTest(val) {
+                    it("should work for both truthy and falsey values, value: " + val, function () {
+                        var len;
+
+                        createGrid({
+                            active: false,
+                            value: {
+                                eq: val
+                            }
+                        });
+
+                        len = store.data.length;
+                        showMenu();
+                        expect(store.data.length).toBe(len);
+
+                        columnFilter.setActive(true);
+
+                        expect(store.data.length).toBe(0);
+                    });
+                }
+
+                runTest(0);
+                runTest(5);
+            });
+
+            describe("when toggling", function () {
+                function runTest(val) {
+                    it("should work for both truthy and falsey values, value: " + val, function () {
+                        createGrid();
+
+                        showMenu();
+
+                        columnFilter.setValue({
+                            eq: val
+                        });
+
+                        columnFilter.setActive(false);
+                        columnFilter.setActive(true);
+
+                        expect(store.data.length).toBe(0);
+                    });
+                }
+
+                runTest(0);
+                runTest(5);
+            });
+        });
+
+        describe("deactivating", function () {
+            describe("when deactivating after instantiation", function () {
+                function runTest(val) {
+                    it("should work for both truthy and falsey values, value: " + val, function () {
+                        createGrid({
+                            value: {
+                                eq: val
+                            }
+                        });
+
+                        showMenu();
+                        expect(store.data.length).toBe(0);
+
+                        columnFilter.setActive(false);
+
+                        expect(store.data.length > 0).toBe(true);
+                    });
+                }
+
+                runTest(0);
+                runTest(5);
+            });
+
+            describe("when toggling", function () {
+                function runTest(val) {
+                    it("should work for both truthy and falsey values, value: " + val, function () {
+                        var len;
+
+                        createGrid();
+
+                        len = store.data.length;
+                        showMenu();
+
+                        columnFilter.setValue({
+                            eq: val
+                        });
+
+                        expect(store.data.length).toBe(0);
+
+                        columnFilter.setActive(false);
+
+                        expect(store.data.length).toBe(len);
+                    });
+                }
+
+                runTest(0);
+                runTest(5);
+            });
+        });
+    });
 });
+

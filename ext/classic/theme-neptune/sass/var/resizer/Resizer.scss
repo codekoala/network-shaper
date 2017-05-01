@@ -1,5 +1,1 @@
-/** @class Ext.resizer.Resizer */
-//
-
-$resizer-handle-size: $panel-frame-border-width !dynamic;
-$resizer-handle-border-radius: $resizer-handle-size !dynamic;
+$resizer-handle-glyph-color: dynamic($neutral-dark-color);

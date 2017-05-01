@@ -26,11 +26,17 @@ Ext.define('Ext.tab.Bar', {
         defaultType: 'tab',
 
         /**
+         * @cfg {String}
+         * A default {@link Ext.Component#ui ui} to use for {@link Ext.tab.Tab Tab} items.
+         */
+        defaultTabUI: null,
+
+        /**
          * @private
          */
         layout: {
             type: 'hbox',
-            align: 'middle'
+            align: 'stretch'
         }
     },
 
@@ -143,5 +149,15 @@ Ext.define('Ext.tab.Bar', {
             tab = Ext.getCmp(tab);
         }
         return tab;
+    },
+
+    onItemAdd: function(item, index) {
+        var defaultTabUI = this.getDefaultTabUI();
+
+        if (defaultTabUI && item.isTab && (item.getUi() == null)) {
+            item.setUi(defaultTabUI);
+        }
+
+        this.callParent([item, index]);
     }
 });

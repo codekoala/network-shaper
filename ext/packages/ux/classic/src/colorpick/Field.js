@@ -59,6 +59,7 @@ Ext.define('Ext.ux.colorpick.Field', {
             lazy: true,
             $value: {
                 xtype: 'window',
+                closeAction: 'hide',
                 referenceHolder: true,
                 minWidth: 540,
                 minHeight: 200,
@@ -107,6 +108,11 @@ Ext.define('Ext.ux.colorpick.Field', {
         picker.on({
             ok: 'onColorPickerOK',
             cancel: 'onColorPickerCancel',
+            scope: me
+        });
+
+        popup.on({
+            close: 'onColorPickerCancel',
             scope: me
         });
 

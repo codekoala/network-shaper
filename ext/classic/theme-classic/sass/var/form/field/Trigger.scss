@@ -1,8 +1,8 @@
 /** @class Ext.form.field.Trigger */
 //
 
-$form-trigger-width: 17px !dynamic;
-$form-trigger-border-width: 0 0 1px !dynamic;
-$form-trigger-border-color-focus: $form-field-focus-border-color !dynamic;
-$form-trigger-border-color-over: $form-trigger-border-color-focus !dynamic;
-$form-trigger-background-color: transparent !dynamic;
+$form-trigger-width: dynamic(17px);
+$form-trigger-border-width: dynamic(0 0 1px);
+$form-trigger-border-color-focus: dynamic($form-field-focus-border-color);
+$form-trigger-border-color-over: dynamic($form-trigger-border-color-focus);
+$form-trigger-background-color: dynamic(transparent);

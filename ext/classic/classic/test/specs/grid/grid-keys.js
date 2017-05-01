@@ -1,7 +1,21 @@
 describe("grid-keys", function(){
     function createSuite(buffered) {
         describe(buffered ? "with buffered rendering" : "without buffered rendering", function() {
-            var grid, view, store;
+            var grid, view, store, GridEventModel = Ext.define(null, {
+                extend: 'Ext.data.Model',
+                fields: [
+                    'field1',
+                    'field2',
+                    'field3',
+                    'field4',
+                    'field5',
+                    'field6',
+                    'field7',
+                    'field8',
+                    'field9',
+                    'field10'
+                ]
+            });
             
             var TAB = 9,
                 PAGE_UP = 33,
@@ -41,24 +55,7 @@ describe("grid-keys", function(){
                 }, true);
             }
             
-            function makeGrid(selModel, columns, rows) {
-                Ext.define('spec.GridEventModel', {
-                    extend: 'Ext.data.Model',
-                    fields: [
-                        'field1',
-                        'field2',
-                        'field3',
-                        'field4',
-                        'field5',
-                        'field6',
-                        'field7',
-                        'field8',
-                        'field9',
-                        'field10'
-                    ]
-                });
-                
-                
+            function makeGrid(selModel, columns, rows) {               
                 var data = [],
                     defaultCols = [],
                     i;
@@ -87,7 +84,7 @@ describe("grid-keys", function(){
                 }
                 
                 store = new Ext.data.Store({
-                    model: spec.GridEventModel,
+                    model: GridEventModel,
                     data: data
                 });
                 
@@ -109,7 +106,6 @@ describe("grid-keys", function(){
             afterEach(function(){
                 Ext.destroy(grid, store);
                 grid = store = view = null;
-                Ext.undefine('spec.GridEventModel');
                 Ext.data.Model.schema.clear();
             });
             

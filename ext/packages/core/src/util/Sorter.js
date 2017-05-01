@@ -1,12 +1,11 @@
 /**
- * 
  * Represents a single sorter that can be used as part of the sorters configuration in Ext.mixin.Sortable.
  *
  * A common place for Sorters to be used are {@link Ext.data.Store Stores}. For example:
  *
  *      @example
  *      var store = Ext.create('Ext.data.Store', {
- *           fields: ['firstName', 'lastName'],
+ *           fields: ['firstName', 'level'],
  *           sorters: 'level',
  *        
  *           data: [
@@ -39,7 +38,7 @@
  *
  *        @example
  *        var store = Ext.create('Ext.data.Store', {
- *           fields: ['firstName', 'lastName'],
+ *           fields: ['firstName', 'spiritAnimal'],
  *            sorters: [
  *                {
  *                    // Sort by first letter of second word of spirit animal, in descending order
@@ -255,15 +254,24 @@ Ext.define('Ext.util.Sorter', {
     },
 
     /**
-     * Returns this filter's state.
+     * Returns this sorter's state.
      * @return {Object}
      */
     getState: function() {
-        return {
-            root: this.getRoot(),
-            property: this.getProperty(),
-            direction: this.getDirection()
-        };
+        var me = this,
+            result = {
+                root: me.getRoot(),
+                property: me.getProperty(),
+                direction: me.getDirection()
+            };
+
+        // Do not use getId() which will create an identifier if we have none.
+        // We need to know if we really are identifiable.
+        if (me._id) {
+            result.id = me._id;
+        }
+        
+        return result;
     },
 
     /**

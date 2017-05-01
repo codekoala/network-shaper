@@ -30,7 +30,10 @@
  */
 Ext.define('Ext.ProgressBar', {
     extend: 'Ext.Component',
-    alias: 'widget.progressbar',
+    xtype: 'progressbar',
+    mixins: [
+        'Ext.ProgressBase'
+    ],
 
     requires: [
         'Ext.Template',
@@ -41,37 +44,20 @@ Ext.define('Ext.ProgressBar', {
 
     uses: ['Ext.fx.Anim'],
 
-    config: {
-        /**
-         * @cfg {Number} [value=0]
-         * A floating point value between 0 and 1 (e.g., .5)
-         */
-        value: 0,
+    /**
+     * @cfg {String/HTMLElement/Ext.dom.Element} textEl
+     * The element to render the progress text to (defaults to the progress bar's internal text element)
+     */
 
-        /**
-         * @cfg {String/Ext.XTemplate} [textTpl]
-         * A template used to create this ProgressBar's background text given two values:
-         *
-         *    `value  ' - The raw progress value between 0 and 1
-         *    'percent' - The value as a percentage between 0 and 100
-         */
-        textTpl: null
-    },
+    /**
+     * @cfg {String} id
+     * The progress bar element's id (defaults to an auto-generated id)
+     */
 
-   /**
-    * @cfg {String/HTMLElement/Ext.dom.Element} textEl
-    * The element to render the progress text to (defaults to the progress bar's internal text element)
-    */
-
-   /**
-    * @cfg {String} id
-    * The progress bar element's id (defaults to an auto-generated id)
-    */
-
-   /**
-    * @cfg {String} [baseCls='x-progress']
-    * The base CSS class to apply to the progress bar's wrapper element.
-    */
+    /**
+     * @cfg {String} [baseCls='x-progress']
+     * The base CSS class to apply to the progress bar's wrapper element.
+     */
     baseCls: Ext.baseCSSPrefix + 'progress',
 
     /**
@@ -100,12 +86,12 @@ Ext.define('Ext.ProgressBar', {
 
     renderTpl: [
         '<tpl if="internalText">',
-            '<div class="{baseCls}-text {baseCls}-text-back">{text}</div>',
+            '<div class="{baseCls}-text {baseCls}-text-back" role="presentation">{text}</div>',
         '</tpl>',
         '<div id="{id}-bar" data-ref="bar" class="{baseCls}-bar {baseCls}-bar-{ui}" role="presentation" style="width:{percentage}%">',
             '<tpl if="internalText">',
-                '<div class="{baseCls}-text">',
-                    '<div>{text}</div>',
+                '<div class="{baseCls}-text" role="presentation">',
+                    '<div role="presentation">{text}</div>',
                 '</div>',
             '</tpl>',
         '</div>'
@@ -114,6 +100,14 @@ Ext.define('Ext.ProgressBar', {
     componentLayout: 'progressbar',
     
     ariaRole: 'progressbar',
+    focusable: true,
+    tabIndex: 0,
+    
+    autoEl: {
+        'aria-valuemin': '0',
+        'aria-valuenow': '0',
+        'aria-valuemax': '100'
+    },
 
     /**
      * @event update
@@ -125,16 +119,19 @@ Ext.define('Ext.ProgressBar', {
 
     initRenderData: function() {
         var me = this,
-            value = me.value || 0;
-
-        return Ext.apply(me.callParent(), {
-            internalText : !me.hasOwnProperty('textEl'),
-            text         : me.text || '&#160;',
-            percentage   : value * 100
+            value = me.value || 0,
+            data;
+        
+        data = me.callParent();
+        
+        return Ext.apply(data, {
+            internalText: !me.hasOwnProperty('textEl'),
+            text: me.text || Math.round(value * 100) + '%',
+            percentage: value * 100
         });
     },
 
-    onRender : function() {
+    onRender: function() {
         var me = this;
 
         me.callParent(arguments);
@@ -151,13 +148,19 @@ Ext.define('Ext.ProgressBar', {
             me.textEl = me.el.select('.' + me.baseCls + '-text');
         }
     },
-
-    applyValue: function(value) {
-        return value || 0;
+    
+    afterRender: function() {
+        var me = this;
+        
+        me.callParent(arguments);
+        
+        if (me.text) {
+            me.ariaEl.dom.setAttribute('aria-valuetext', me.text);
+        }
     },
 
     updateValue: function(value) {
-        this.updateProgress(value, Math.round(value * 100) + '%');
+        this.updateProgress(value);
     },
 
     /**
@@ -187,15 +190,28 @@ Ext.define('Ext.ProgressBar', {
 
         // Empty string (falsy) must blank out the text as per docs.
         if (text != null) {
+            me.autoText = false;
             me.updateText(text);
         }
         // Generate text using template and progress values.
         else if (textTpl) {
+            me.autoText = false;
             me.updateText(textTpl.apply({
                 value: value,
                 percent: value * 100
             }));
         }
+        else if (!me.text && me.autoText !== false) {
+            me.autoText = true;
+            me.updateText(Math.round(value * 100) + '%');
+        }
+        // Text was set the previous time but not this time. We can't
+        // deduce what it should be just from the value so need to
+        // reset aria-valuetext because it is no longer valid.
+        else if (me.text && me.ariaEl.dom) {
+            me.ariaEl.dom.removeAttribute('aria-valuetext');
+        }
+        
         if (me.rendered && !me.destroyed) {
             if (animate === true || (animate !== false && me.animate)) {
                 me.bar.stopAnimation();
@@ -210,8 +226,12 @@ Ext.define('Ext.ProgressBar', {
             } else {
                 me.bar.setStyle('width', (value * 100) + '%');
             }
+            
+            me.ariaEl.dom.setAttribute('aria-valuenow', Math.round(value * 100));
         }
+        
         me.fireEvent('update', me, value, text);
+        
         return me;
     },
 
@@ -223,19 +243,23 @@ Ext.define('Ext.ProgressBar', {
      */
     updateText: function(text) {
         var me = this;
-        
-        me.text = text;
-        if (me.rendered) {
-            me.textEl.setHtml(me.text);
-        }
-        return me;
-    },
 
-    applyTextTpl: function(textTpl) {
-        if (!textTpl.isTemplate) {
-            textTpl = new Ext.XTemplate(textTpl);
+        if (!me.autoText) {
+            me.text = text;
         }
-        return textTpl;
+        
+        if (me.rendered) {
+            me.textEl.setHtml(text);
+            
+            if (!me.autoText) {
+                me.ariaEl.dom.setAttribute('aria-valuetext', text);
+            }
+            else {
+                me.ariaEl.dom.removeAttribute('aria-valuetext');
+            }
+        }
+        
+        return me;
     },
 
     applyText : function(text) {
@@ -309,6 +333,9 @@ Ext.define('Ext.ProgressBar', {
         if (!me.waitTimer) {
             scope = me;
             o = o || {};
+            if (o.text != null) {
+                me.autoText = false;
+            }
             me.updateText(o.text);
             me.waitTimer = Ext.TaskManager.start({
                 run: function(i){
@@ -349,9 +376,15 @@ Ext.define('Ext.ProgressBar', {
         
         me.updateProgress(0);
         me.clearTimer();
+        
         if (hide === true) {
             me.hide();
         }
+        
+        if (me.rendered) {
+            me.ariaEl.dom.removeAttribute('aria-valuetext');
+        }
+        
         return me;
     },
 
@@ -368,20 +401,24 @@ Ext.define('Ext.ProgressBar', {
         }
     },
 
-    onDestroy: function(){
+    doDestroy: function() {
         var me = this,
             bar = me.bar;
         
         me.clearTimer();
+        
         if (me.rendered) {
             if (me.textEl.isComposite) {
                 me.textEl.clear();
             }
+            
             Ext.destroyMembers(me, 'textEl', 'progressBar');
+            
             if (bar && me.animate) {
                 bar.stopAnimation();
             }
         }
+        
         me.callParent();
     }
 });

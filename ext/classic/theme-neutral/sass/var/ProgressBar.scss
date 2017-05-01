@@ -6,37 +6,61 @@
  * @var {number}
  * The height of the ProgressBar
  */
-$progress-height: 20px !dynamic;
+$progress-height: dynamic(20px);
 
 /**
  * @var {color}
  * The border-color of the ProgressBar
  */
-$progress-border-color: $base-color !dynamic;
+$progress-border-color: dynamic($base-color);
+
+/**
+ * @var {string}
+ * The border-style of the ProgressBar
+ */
+$progress-border-style: dynamic(solid);
 
 /**
  * @var {number}
  * The border-width of the ProgressBar
  */
-$progress-border-width: 1px !dynamic;
+$progress-border-width: dynamic(1px);
 
 /**
  * @var {number}
  * The border-radius of the ProgressBar
  */
-$progress-border-radius: 0 !dynamic;
+$progress-border-radius: dynamic(0);
+
+/**
+ * @var {color}
+ * The border color of a focused ProgressBar
+ */
+$progress-focus-border-color: dynamic($progress-border-color);
+
+/**
+ * @var {string}
+ * The border style of a focused ProgressBar
+ */
+$progress-focus-border-style: dynamic($progress-border-style);
+
+/**
+ * @var {number}
+ * The border width of a focused ProgressBar
+ */
+$progress-focus-border-width: dynamic($progress-border-width);
 
 /**
  * @var {color}
  * The background-color of the ProgressBar
  */
-$progress-background-color: $base-color !dynamic;
+$progress-background-color: dynamic($base-color);
 
 /**
  * @var {color}
  * The background-color of the ProgressBar's moving element
  */
-$progress-bar-background-color: $base-color !dynamic;
+$progress-bar-background-color: dynamic($base-color);
 
 /**
  * @var {string/list}
@@ -44,46 +68,46 @@ $progress-bar-background-color: $base-color !dynamic;
  * a predefined gradient or a list of color stops. Used as the `$type` parameter for
  * {@link Global_CSS#background-gradient}.
  */
-$progress-bar-background-gradient: 'none' !dynamic;
+$progress-bar-background-gradient: dynamic('none');
 
 /**
  * @var {color}
  * The color of the ProgressBar's text when in front of the ProgressBar's moving element
  */
-$progress-text-color-front: #fff !dynamic;
+$progress-text-front-color: dynamic(#fff);
 
 /**
  * @var {color}
  * The color of the ProgressBar's text when the ProgressBar's 'moving element is not under it
  */
-$progress-text-color-back: #000 !dynamic;
+$progress-text-back-color: dynamic(#000);
 
 /**
  * @var {string}
  * The text-align of the ProgressBar's text
  */
-$progress-text-text-align: center !dynamic;
+$progress-text-text-align: dynamic(center);
 
 /**
  * @var {number}
  * The font-size of the ProgressBar's text
  */
-$progress-text-font-size: $font-size !dynamic;
+$progress-text-font-size: dynamic($font-size);
 
 /**
  * @var {string}
  * The font-weight of the ProgressBar's text
  */
-$progress-text-font-weight: $font-weight-bold !dynamic;
+$progress-text-font-weight: dynamic($font-weight-bold);
 
 /**
  * @var {string}
  * The font-family of the ProgressBar's text
  */
-$progress-text-font-family: $font-family !dynamic;
+$progress-text-font-family: dynamic($font-family);
 
 /**
  * @var {boolean}
  * True to include the "default" ProgressBar UI
  */
-$include-progress-default-ui: $include-default-uis !dynamic;
+$include-progress-default-ui: dynamic($include-default-uis);

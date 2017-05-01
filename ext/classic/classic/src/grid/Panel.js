@@ -176,9 +176,15 @@
  * encapsulated within the default Panel state of changed width and height and
  * collapsed/expanded state.
  *
- * Each {@link #columns column} of the grid may be configured with a
+ * On a `stateful` grid, not only should the Grid have a {@link #stateId}, each 
+ * {@link #columns column} of the grid should also be configured with a
  * {@link Ext.grid.column.Column#stateId stateId} which identifies that column locally
  * within the grid.
+ * 
+ * Omitting the `stateId` config from the columns results in columns with generated 
+ * internal ID's.  The generated ID's are subject to change on each page load 
+ * making it impossible for the state manager to restore the previous state of the 
+ * columns.
  *
  * ## Plugins and Features
  *
@@ -207,7 +213,9 @@ Ext.define('Ext.grid.Panel', {
     requires: ['Ext.view.Table'],
     alias: ['widget.gridpanel', 'widget.grid'],
     alternateClassName: ['Ext.list.ListView', 'Ext.ListView', 'Ext.grid.GridPanel'],
+    
     viewType: 'tableview',
+    ariaRole: 'grid',
 
     lockable: false,
 

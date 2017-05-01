@@ -1,9 +1,9 @@
-$loadmask-opacity: 0.5 !dynamic;
-$loadmask-background-color: $neutral-color !dynamic;
-$loadmask-page-opacity: 0.75 !dynamic;
-$loadmask-page-background-color: #000 !dynamic;
-$loadmask-msg-background-color: $neutral-color !dynamic;
-$loadmask-msg-inner-color: $color !dynamic;
-$loadmask-msg-padding: 10px !dynamic;
-$loadmask-msg-border-radius: 0 !dynamic;
-$loadmask-msg-text-padding: 25px 0 0 !dynamic;
+$loadmask-opacity: dynamic(0.5);
+$loadmask-background-color: dynamic($neutral-color);
+$loadmask-page-opacity: dynamic(0.75);
+$loadmask-page-background-color: dynamic(#000);
+$loadmask-msg-background-color: dynamic($neutral-color);
+$loadmask-msg-inner-color: dynamic($color);
+$loadmask-msg-padding: dynamic(10px);
+$loadmask-msg-border-radius: dynamic(0);
+$loadmask-msg-text-padding: dynamic(25px 0 0);

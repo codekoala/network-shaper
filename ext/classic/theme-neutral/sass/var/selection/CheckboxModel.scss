@@ -6,13 +6,13 @@
  * @var {number}
  * The horizontal space before the checkbox
  */
-$checkbox-selection-model-cell-spacing-before: 5px !dynamic;
+$checkbox-selection-model-cell-spacing-before: dynamic(5px);
 
 /**
  * @var {number}
  * The horizontal space after the checkbox
  */
-$checkbox-selection-model-cell-spacing-after: 5px !dynamic;
+$checkbox-selection-model-cell-spacing-after: dynamic(5px);
 
 // private
 $checkbox-selection-model-column-header-padding:
@@ -32,16 +32,16 @@ $checkbox-selection-model-cell-padding:
  * @var {color}
  * The color to use for the checkbox when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$checkbox-selection-model-glyph-color: $form-checkbox-glyph-color !dynamic;
+$checkbox-selection-model-glyph-color: dynamic($form-checkbox-glyph-color);
 
 /**
  * @var {string/list}
  * The glyph for the checkbox when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$checkbox-selection-model-glyph: $form-checkbox-glyph !dynamic;
+$checkbox-selection-model-glyph: dynamic($form-checkbox-glyph);
 
 /**
  * @var {string/list}
  * The glyph for the checkbox in "checked" state when {@link Global_CSS#$enable-font-icons} is `true`.
  */
-$checkbox-selection-model-checked-glyph: $form-checkbox-checked-glyph !dynamic;
+$checkbox-selection-model-checked-glyph: dynamic($form-checkbox-checked-glyph);

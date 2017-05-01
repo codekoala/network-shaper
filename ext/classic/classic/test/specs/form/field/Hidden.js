@@ -26,11 +26,10 @@ describe("Ext.form.field.Hidden", function() {
     });
 
     it("should be registered with the 'hiddenfield' xtype", function() {
-        var component = Ext.create("Ext.form.field.Hidden", {name: 'test'});
+        component = Ext.create("Ext.form.field.Hidden", {name: 'test'});
         expect(component instanceof Ext.form.field.Hidden).toBe(true);
         expect(Ext.getClass(component).xtype).toBe("hiddenfield");
     });
-
     
     it("should render as input hidden", function(){
         makeComponent({

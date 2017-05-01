@@ -29,7 +29,9 @@ Ext.define('Ext.draw.plugin.SpriteEvents', {
     extend: 'Ext.plugin.Abstract',
     alias: 'plugin.spriteevents',
 
-    requires: ['Ext.draw.PathUtil'],
+    requires: [
+        'Ext.draw.overrides.hittest.All'
+    ],
 
     /**
      * @event spritemousemove
@@ -121,6 +123,7 @@ Ext.define('Ext.draw.plugin.SpriteEvents', {
     hasSpriteMouseMoveListeners: function () {
         var listeners = this.drawContainer.hasListeners,
             name;
+
         for (name in this.spriteMouseMoveEvents) {
             if (name in listeners) {
                 return true;

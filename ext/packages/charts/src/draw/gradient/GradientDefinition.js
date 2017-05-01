@@ -12,6 +12,7 @@ Ext.define('Ext.draw.gradient.GradientDefinition', {
     add: function (gradients) {
         var store = this.gradients,
             i, n, gradient;
+
         for (i = 0, n = gradients.length; i < n; i++) {
             gradient = gradients[i];
             if (Ext.isString(gradient.id)) {
@@ -24,6 +25,7 @@ Ext.define('Ext.draw.gradient.GradientDefinition', {
         var store = this.gradients,
             match = str.match(this.urlStringRe),
             gradient;
+
         if (match && match[1] && (gradient = store[match[1]])) {
             return gradient || str;
         }

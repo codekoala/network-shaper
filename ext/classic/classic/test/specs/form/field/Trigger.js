@@ -542,7 +542,8 @@ describe("Ext.form.field.Trigger", function() {
             beforeEach(function() {
                 makeComponent({
                     renderTo: Ext.getBody(),
-                    trigger2Cls: 'foo'
+                    trigger2Cls: 'foo',
+                    onTrigger2Click: Ext.emptyFn
                 });
             });
             

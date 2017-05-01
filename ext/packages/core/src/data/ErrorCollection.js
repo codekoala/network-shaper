@@ -14,8 +14,6 @@
  *      errors.length; //2
  *      errors.getByField('name');  // [{field: 'name',  message: 'must be present'}]
  *      errors.getByField('title'); // [{field: 'title', message: 'is too short'}]
- *
- * @deprecated 5.0 Use `Ext.data.Validation` instead.
  */
 Ext.define('Ext.data.ErrorCollection', {
     extend: 'Ext.util.MixedCollection', // not Ext.util.Collection due to API differences
@@ -39,7 +37,7 @@ Ext.define('Ext.data.ErrorCollection', {
 
             if (field.validate && !field.validate.$nullFn) {
                 before = me.length;
-                msg = field.validate(val, null, me);
+                msg = field.validate(val, null, me, record);
                 if (before === me.length && msg !== true) {
                     me.add(name, msg);
                 }

@@ -39,7 +39,7 @@
  *
  *     Ext.create('Ext.field.TextArea', {
  *         label: 'About You',
- *         {@link #placeHolder}: 'Tell us about yourself...'
+ *         placeHolder: 'Tell us about yourself...'
  *     });
  */
 Ext.define('Ext.field.TextArea', {
@@ -49,12 +49,6 @@ Ext.define('Ext.field.TextArea', {
     alternateClassName: 'Ext.form.TextArea',
 
     config: {
-        /**
-         * @cfg
-         * @inheritdoc
-         */
-        ui: 'textarea',
-
         /**
          * @cfg
          * @inheritdoc
@@ -73,8 +67,12 @@ Ext.define('Ext.field.TextArea', {
          * @cfg {Number} maxRows The maximum number of lines made visible by the input.
          * @accessor
          */
-        maxRows: null
+        maxRows: null,
+
+        clearIcon: false
     },
+
+    classCls: Ext.baseCSSPrefix + 'textareafield',
 
     /**
      * @private
@@ -83,16 +81,14 @@ Ext.define('Ext.field.TextArea', {
         this.getComponent().setMaxRows(newRows);
     },
 
-    updateHeight: function(newHeight) {
-        this.callParent(arguments);
-        var component = this.getComponent();
-        component.input.setHeight(newHeight);
+    updateHeight: function(height, oldHeight) {
+        this.callParent([height, oldHeight]);
+        this.getComponent().inputElement.setHeight(height);
     },
 
-    updateWidth: function(newWidth) {
-        this.callParent(arguments);
-        var component = this.getComponent();
-        component.input.setWidth(newWidth);
+    updateWidth: function(width, oldWidth) {
+        this.callParent([width, oldWidth]);
+        this.getComponent().inputElement.setWidth(width);
     },
 
     /**
@@ -101,9 +97,6 @@ Ext.define('Ext.field.TextArea', {
      */
     doKeyUp: function(me) {
         // getValue to ensure that we are in sync with the dom
-        var value = me.getValue();
-
-        // show the {@link #clearIcon} if it is being used
-        me[value ? 'showClearIcon' : 'hideClearIcon']();
+        this.toggleClearTrigger(this.getValue());
     }
 });

@@ -1,6 +1,6 @@
-$grid-cell-selected-color: black !dynamic;
-$grid-cell-selected-background-color: $orange !dynamic;
+$grid-cell-selected-color: dynamic(black);
+$grid-cell-selected-background-color: dynamic($orange);
 
-$grid-row-cell-over-background-color: #7e55ef !dynamic;
+$grid-row-cell-over-background-color: dynamic(#7e55ef);
 
-$grid-row-cell-focus-border-width: 0 !dynamic;
+$grid-row-cell-focus-border-width: dynamic(0);

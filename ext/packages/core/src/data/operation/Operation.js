@@ -186,6 +186,8 @@ Ext.define('Ext.data.operation.Operation', {
      * @private
      */
     error: undefined,
+    
+    idPrefix: 'ext-operation-',
 
     /**
      * Creates new Operation object.
@@ -205,10 +207,14 @@ Ext.define('Ext.data.operation.Operation', {
         if (config) {
             config.scope = scope;
         }
+        
         if (scope) {
             this.setScope(scope);
             this.initialConfig.scope = scope;
         }
+        
+        // We need an internal id to track operations in Proxy
+        this._internalId = Ext.id(this, this.idPrefix);
     },
     
     getAction: function() {
@@ -221,13 +227,19 @@ Ext.define('Ext.data.operation.Operation', {
      * @return {Ext.data.Request} The request object
      */
     execute: function() {
-        var me = this;
+        var me = this,
+            request;
+
         delete me.error;
         delete me.success;
         me.complete = me.exception = false;
         
         me.setStarted();
-        return me.request = me.doExecute();
+        me.request = request = me.doExecute();
+        if (request) {
+            request.setOperation(me);
+        }
+        return request;
     },
     
     doExecute: Ext.emptyFn,
@@ -348,10 +360,17 @@ Ext.define('Ext.data.operation.Operation', {
      * Marks the Operation as completed.
      */
     setCompleted: function() {
-        this.complete = true;
-        this.running  = false;
+        var me = this,
+            proxy = me.getProxy();
         
-        this.triggerCallbacks();
+        me.complete = true;
+        me.running  = false;
+        
+        me.triggerCallbacks();
+        
+        if (proxy) {
+            proxy.completeOperation(me);
+        }
     },
 
     /**

@@ -43,6 +43,7 @@ Ext.define('Ext.dashboard.Dashboard', {
         /**
          * @cfg {Number} maxColumns
          * The maximum number of visible columns.
+         * @accessor
          */
         maxColumns: 4
     },
@@ -277,10 +278,11 @@ Ext.define('Ext.dashboard.Dashboard', {
          this.updateLayout();
     },
 
-    beforeDestroy : function() {
+    doDestroy: function() {
         if (this.dd) {
             Ext.destroy(this.dd);
         }
+        
         this.callParent();
     },
 

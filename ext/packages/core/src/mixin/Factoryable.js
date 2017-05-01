@@ -99,8 +99,8 @@ Ext.Factory.prototype = {
      * @param {String} [config.xclass] The full class name of the class to create.
      * @param {String} [config.type] The type string to add to the alias prefix for this
      * factory.
-     * @param {String} [defaultType] The type to create if no type is contained in the
-     * `config`.
+     * @param {String/Object} [defaultType] The type to create if no type is contained in the
+     * `config`, or an object containing a default set of configs.
      * @return {Object} The newly created instance.
      *
      * @since 5.0.0
@@ -124,6 +124,11 @@ Ext.Factory.prototype = {
 
             className = config.xclass;
             suffix = config.type;
+        }
+
+        if (defaultType && defaultType.constructor === Object) {
+            config = Ext.apply({}, config, defaultType);
+            defaultType = defaultType.type;
         }
 
         if (className) {
@@ -184,7 +189,7 @@ Ext.Factory.prototype = {
  * @param {Object/String} [config] An object specifying the config for the `Ext.Factory`
  * to be created. If a string is passed it is treated as the `defaultType`.
  * @return {Function}
- *
+ * @static
  * @since 5.0.0
  */
 Ext.Factory.define = function (type, config) {

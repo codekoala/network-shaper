@@ -144,15 +144,6 @@ Ext.define('Ext.layout.container.Card', {
      */
     deferredRender : false,
 
-    // Gecko has a scroll bug where it will remember the scroll position of removed card panels and reapply
-    // that scroll position when a new card is added. We use this cache to remove the scroll position when
-    // the card is added to the layout and then reapply the actual position after the layout has resumed.
-    // See EXTJS-16173.
-    /**
-     * @private
-     */
-    scrollableCache: (Ext.isGecko ? {} : null),
-
     getRenderTree: function () {
         var me = this,
             activeItem = me.getActiveItem();
@@ -260,13 +251,21 @@ Ext.define('Ext.layout.container.Card', {
         this.callParent(arguments);
     },
 
-    onRemove: function(component) {
-        this.callParent([component]);
+    onAdd: function (item, pos) {
+        this.callParent([item, pos]);
+        this.setItemHideMode(item);
+    },
 
-        if (component === this.activeItem) {
+    onRemove: function(component) {
+        var me = this;
+
+        me.callParent([component]);
+        me.resetItemHideMode(component);
+
+        if (component === me.activeItem) {
             // Note setting to `undefined` is intentional. Don't null it out since null now has a specific meaning in
             // tab management (it specifies not setting an active item).
-            this.activeItem = undefined;
+            me.activeItem = undefined;
         }
     },
 
@@ -347,12 +346,10 @@ Ext.define('Ext.layout.container.Card', {
      */
     setActiveItem: function(newCard) {
         var me = this,
-            scrollableCache = me.scrollableCache,
             owner = me.owner,
             oldCard = me.activeItem,
             rendered = owner.rendered,
-            newIndex, focusNewCard,
-            oldCardScrollable, cached, currentPosition;
+            newIndex, focusNewCard;
 
         newCard = me.parseActiveItem(newCard);
         newIndex = owner.items.indexOf(newCard);
@@ -388,19 +385,8 @@ Ext.define('Ext.layout.container.Card', {
                     if (me.hideInactive) {
                         focusNewCard = oldCard.el.contains(Ext.Element.getActiveElement());
 
-                        // Workaround for FF bug (see EXTJS-16173). We must reset the scroll positions here
-                        // before the old card and its targetEl is hidden and removed from the document.
-                        // Afterwards, it's too late and the bug will appear (the scroll position of the
-                        // removed card will be reapplied).
-                        if (scrollableCache && (oldCardScrollable = oldCard.scrollable)) {
-                            scrollableCache[oldCard.id] = {
-                                position: oldCardScrollable.getPosition()
-                            }
-
-                            oldCardScrollable.scrollTo(0, 0);
-                        }
-
                         oldCard.hide();
+
                         if (oldCard.hidden) {
                             oldCard.hiddenByLayout = true;
                             oldCard.fireEvent('deactivate', oldCard, newCard);
@@ -437,13 +423,6 @@ Ext.define('Ext.layout.container.Card', {
                 }
 
                 Ext.resumeLayouts(true);
-
-                // Workaround for FF bug (see EXTJS-16173). Only now after the layout has resumed can
-                // we reapply the actual scroll position.
-                if (scrollableCache && (cached = scrollableCache[newCard.id])) {
-                    currentPosition = cached.position;
-                    newCard.scrollable.scrollTo(currentPosition.x, currentPosition.y);
-                }
             } else {
                 me.activeItem = newCard;
             }
@@ -453,5 +432,26 @@ Ext.define('Ext.layout.container.Card', {
             return me.activeItem;
         }
         return false;
+    },
+
+    /**
+     * @private
+     * Reset back to initial config when item is removed from the panel.
+     */
+    resetItemHideMode: function (item) {
+        item.hideMode = item.originalHideMode;
+        delete item.originalHideMode;
+    },
+
+    /**
+     * @private
+     * A card layout items must have its visibility mode set to OFFSETS so its scroll
+     * positions isn't reset when hidden.
+     *
+     * Do this automatically when an item is added to the panel.
+     */
+    setItemHideMode: function (item) {
+        item.originalHideMode = item.hideMode;
+        item.hideMode = 'offsets';
     }
 });

@@ -20,6 +20,18 @@
     }
 }
 
+.#{$prefix}form-cb-input {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    @include opacity(0);
+}
+
 @if $include-rtl {
     .#{$prefix}rtl.#{$prefix}form-cb {
         right: 0;
@@ -44,18 +56,8 @@
 the height of a multi-line element */
 .#{$prefix}form-cb-label {
     display: inline-block;
-}
 
-// This is to work around lack of min-width support in older IE browsers. If it's determined
-// that there is no box label, the following class is applied to the wrapper around the inputEl.
-// See EXTJSIV-10302 and EXTJSIV-10977.
-// TODO: can we remove this in v5?
-.#{$prefix}form-cb-wrap-inner-no-box-label {
-    > .#{$prefix}form-cb {
-        position: static;
-    }
-
-    > .#{$prefix}form-cb-label {
+    &.#{$prefix}form-cb-no-box-label {
         display: none;
     }
 }

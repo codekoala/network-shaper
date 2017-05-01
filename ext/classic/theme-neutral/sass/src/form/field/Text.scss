@@ -292,7 +292,16 @@
         }
     }
 
-    .#{$prefix}form-empty-field-#{$ui} {
+    .#{$prefix}placeholder-label-#{$ui} {
+        padding: $ui-padding;
+    }
+
+    .#{$prefix}form-empty-field-#{$ui} + .#{$prefix}placeholder-label-#{$ui} {
+        color: $ui-empty-color;
+    }
+
+    // selectors with vendor specific pseudo classes cannot be combined with other selectors
+    .#{$prefix}form-text-#{$ui}:-ms-input-placeholder {
         color: $ui-empty-color;
     }
 

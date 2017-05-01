@@ -1,6 +1,6 @@
 /**
  * @class Ext.form.action.DirectAction
- * A mixin that contains methods specific to Ext.Direct actions shared
+ * A mixin that contains methods specific to Ext Direct actions shared
  * by DirectLoad and DirectSubmit.
  * @private
  */
@@ -14,31 +14,21 @@ Ext.define('Ext.form.action.DirectAction', {
     resolveMethod: function(type) {
         var me = this,
             form = me.form,
-            api = form.api,
-            fn;
+            api, fn;
+        
+        api = Ext.direct.Manager.resolveApi(form.api, me);
         
         //<debug>
         if (!api) {
-            Ext.raise("Cannot resolve Ext.Direct API method for " + type +
+            Ext.raise("Cannot resolve Ext Direct API method for " + type +
                             " action; form " + form.id + " has no api object defined");
         }
         //</debug>
         
         fn = api[type];
         
-        if (typeof fn !== 'function') {
-            //<debug>
-            var fnName = fn;
-            //</debug>
-            
-            api[type] = fn = Ext.direct.Manager.parseMethod(fn);
-            
-            //<debug>
-            if (!Ext.isFunction(fn)) {
-                Ext.raise("Cannot resolve Ext.Direct API method " + fnName +
-                                " for " + type + " action");
-            }
-            //</debug>
+        if (!fn) {
+            Ext.raise("Cannot resolve Ext Direct API method " + fnName + " for " + type + " action");
         }
         
         return fn;

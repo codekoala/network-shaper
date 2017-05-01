@@ -16,6 +16,8 @@ Ext.Function = (function() {
         idSource = 0,
         animFrameMap = {},
         win = window,
+        global = Ext.global,
+        hasImmediate = !!(global.setImmediate && global.clearImmediate),
         requestAnimFrame = win.requestAnimationFrame || win.webkitRequestAnimationFrame ||
             win.mozRequestAnimationFrame || win.oRequestAnimationFrame ||
             function(callback) {
@@ -39,7 +41,7 @@ Ext.Function = (function() {
                 
                 // Check if this timer has been canceled; its map entry is going to be removed
                 if (animFrameMap[id]) {
-                    handler[0].apply(handler[1] || Ext.global, handler[2] || animFrameNoArgs);
+                    handler[0].apply(handler[1] || global, handler[2] || animFrameNoArgs);
                     delete animFrameMap[id];
                 }
             }
@@ -51,7 +53,8 @@ Ext.Function = (function() {
         fireElevatedHandlers = function() {
             Ext.elevateFunction(fireHandlers);
         },
-        ExtFunction = {
+
+    ExtFunction = {
         /**
          * A very commonly used method throughout the framework. It acts as a wrapper around another method
          * which originally accepts 2 arguments for `name` and `value`.
@@ -156,12 +159,12 @@ Ext.Function = (function() {
                     callArgs = slice.call(arguments, 0);
                     callArgs = callArgs.concat(args);
                 }
-                else if (typeof appendArgs == 'number') {
+                else if (typeof appendArgs === 'number') {
                     callArgs = slice.call(arguments, 0); // copy arguments first
                     Ext.Array.insert(callArgs, appendArgs, args);
                 }
 
-                return method.apply(scope || Ext.global, callArgs);
+                return method.apply(scope || global, callArgs);
             };
         },
 
@@ -282,14 +285,13 @@ Ext.Function = (function() {
                 return origFn;
             } else {
                 returnValue = Ext.isDefined(returnValue) ? returnValue : null;
+                
                 return function() {
                     var me = this,
                         args = arguments;
 
-                    newFn.target = me;
-                    newFn.method = origFn;
-                    return (newFn.apply(scope || me || Ext.global, args) !== false) ? 
-                                origFn.apply(me || Ext.global, args) : returnValue;
+                    return (newFn.apply(scope || me || global, args) !== false) ?
+                                origFn.apply(me || global, args) : returnValue;
                 };
             }
         },
@@ -680,6 +682,30 @@ Ext.Function = (function() {
                 return fn.apply(scope || this, arguments);
             });
         },
+        
+        interceptAfterOnce: function(object, methodName, fn, scope) {
+            var origMethod = object[methodName],
+                newMethod;
+            
+            newMethod = function() {
+                var ret;
+                
+                if (origMethod) {
+                    origMethod.apply(this, arguments);
+                }
+                
+                ret = fn.apply(scope || this, arguments);
+                
+                object[methodName] = origMethod;
+                object = methodName = fn = scope = origMethod = newMethod = null;
+                
+                return ret;
+            };
+            
+            object[methodName] = newMethod;
+            
+            return newMethod;
+        },
 
         makeCallback: function (callback, scope) {
             //<debug>
@@ -694,32 +720,162 @@ Ext.Function = (function() {
             return function () {
                 return scope[callback].apply(scope, arguments);
             };
+        },
+
+        /**
+         * Returns a wrapper function that caches the return value for previously
+         * processed function argument(s).
+         *
+         * For example:
+         *
+         *      function factorial (value) {
+         *          var ret = value;
+         *
+         *          while (--value > 1) {
+         *              ret *= value;
+         *          }
+         *
+         *          return ret;
+         *      }
+         *
+         * Each call to `factorial` will loop and multiply to produce the answer. Using
+         * this function we can wrap the above and cache its answers:
+         *
+         *      factorial = Ext.Function.memoize(factorial);
+         *
+         * The returned function operates in the same manner as before, but results are
+         * stored in a cache to avoid calling the wrapped function when given the same
+         * arguments.
+         *
+         *      var x = factorial(20);  // first time; call real factorial()
+         *      var y = factorial(20);  // second time; return value from first call
+         *
+         * To support multi-argument methods, you will need to provide a `hashFn`.
+         *
+         *      function permutation (n, k) {
+         *          return factorial(n) / factorial(n - k);
+         *      }
+         *
+         *      permutation = Ext.Function.memoize(permutation, null, function (n, k) {
+         *          n + '-' + k;
+         *      });
+         *
+         * In this case, the `memoize` of `factorial` is sufficient optimization, but the
+         * example is simply to illustrate how to generate a unique key for an expensive,
+         * multi-argument method.
+         *
+         * **IMPORTANT**: This cache is unbounded so be cautious of memory leaks if the
+         * `memoize`d function is kept indefinitely or is given an unbounded set of
+         * possible arguments.
+         *
+         * @param {Function} fn Function to wrap.
+         * @param {Object} scope Optional scope in which to execute the wrapped function.
+         * @param {Function} hashFn Optional function used to compute a hash key for
+         * storing the result, based on the arguments to the original function.
+         * @return {Function} The caching wrapper function.
+         * @since 6.0.0
+         */
+        memoize: function(fn, scope, hashFn) {
+            var memo = {},
+                isFunc = hashFn && Ext.isFunction(hashFn);
+
+            return function (value) {
+                var key = isFunc ? hashFn.apply(scope, arguments) : value;
+
+                if (!(key in memo)) {
+                    memo[key] = fn.apply(scope, arguments);
+                }
+
+                return memo[key];
+            };
         }
-    };
+    }; // ExtFunction
 
     /**
-     * @method
+     * @member Ext
+     * @method asap
+     * Schedules the specified callback function to be executed on the next turn of the
+     * event loop. Where available, this method uses the browser's `setImmediate` API. If
+     * not available, this method substitutes `setTimeout(0)`. Though not a perfect
+     * replacement for `setImmediate` it is sufficient for many use cases.
+     *
+     * For more details see [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window/setImmediate).
+     *
+     * @param {Function} fn Callback function.
+     * @param {Object} [scope] The scope for the callback (`this` pointer).
+     * @param {Mixed[]} [parameters] Additional parameters to pass to `fn`.
+     * @return {Number} A cancelation id for `{@link Ext#asapCancel}`.
+     */
+    Ext.asap = hasImmediate ?
+            function (fn, scope, parameters) {
+                if (scope != null || parameters != null) {
+                    fn = ExtFunction.bind(fn, scope, parameters);
+                }
+                return setImmediate(function () {
+                    if (Ext.elevateFunction) {
+                        Ext.elevateFunction(fn);
+                    } else {
+                        fn();
+                    }
+                });
+            } :
+            function (fn, scope, parameters) {
+                if (scope != null || parameters != null) {
+                    fn = ExtFunction.bind(fn, scope, parameters);
+                }
+                return setTimeout(function () {
+                    if (Ext.elevateFunction) {
+                        Ext.elevateFunction(fn);
+                    } else {
+                        fn();
+                    }
+                }, 0, true);
+            },
+
+    /**
+     * @member Ext
+     * @method asapCancel
+     * Cancels a previously scheduled call to `{@link Ext#asap}`.
+     *
+     *      var asapId = Ext.asap(me.method, me);
+     *      ...
+     *
+     *      if (nevermind) {
+     *          Ext.apasCancel(asapId);
+     *      }
+     *
+     * @param {Number} id The id returned by `{@link Ext#asap}`.
+     */
+    Ext.asapCancel = hasImmediate ?
+        function(id) {
+            clearImmediate(id);
+        } : function(id) {
+            clearTimeout(id);
+        };
+
+    /**
+     * @method defer
      * @member Ext
      * @inheritdoc Ext.Function#defer
      */
     Ext.defer = ExtFunction.defer;
 
     /**
-     * @method
+     * @method interval
      * @member Ext
      * @inheritdoc Ext.Function#interval
      */
     Ext.interval = ExtFunction.interval;
 
     /**
-     * @method
+     * @method pass
      * @member Ext
      * @inheritdoc Ext.Function#pass
      */
     Ext.pass = ExtFunction.pass;
 
     /**
-     * @method
+     * @method bind
      * @member Ext
      * @inheritdoc Ext.Function#bind
      */

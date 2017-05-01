@@ -131,19 +131,19 @@
  * @param {number} [$scroller-opacity-disabled=$toolbar-scroller-opacity-disabled]
  * The opacity of disabled Toolbar scroller buttons.
  *
- * @var {color} [$scroller-glyph-color=$toolbar-scroller-glyph-color]
+ * @param {color} [$scroller-glyph-color=$toolbar-scroller-glyph-color]
  * The color to use for toolbar scroller icons when {@link Global_CSS#$enable-font-icons} is `true`.
  *
- * @var {string/list} [$scroller-top-glyph=$toolbar-scroller-top-glyph]
+ * @param {string/list} [$scroller-top-glyph=$toolbar-scroller-top-glyph]
  * Glyph for the "top" scroller icon when {@link Global_CSS#$enable-font-icons} is `true`.
  *
- * @var {string/list} [$scroller-right-glyph=$toolbar-scroller-right-glyph]
+ * @param {string/list} [$scroller-right-glyph=$toolbar-scroller-right-glyph]
  * Glyph for the "right" scroller icon when {@link Global_CSS#$enable-font-icons} is `true`.
  *
- * @var {string/list} [$scroller-bottom-glyph=$toolbar-scroller-bottom-glyph]
+ * @param {string/list} [$scroller-bottom-glyph=$toolbar-scroller-bottom-glyph]
  * Glyph for the "bottom" scroller icon when {@link Global_CSS#$enable-font-icons} is `true`.
  *
- * @var {string/list} [$scroller-left-glyph=$toolbar-scroller-left-glyph]
+ * @param {string/list} [$scroller-left-glyph=$toolbar-scroller-left-glyph]
  * Glyph for the "left" scroller icon when {@link Global_CSS#$enable-font-icons} is `true`.
  *
  * @param {string} [$tool-background-image=$toolbar-tool-background-image]

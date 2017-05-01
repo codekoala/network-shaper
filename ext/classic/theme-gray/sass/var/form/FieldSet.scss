@@ -1,4 +1,4 @@
 /** @class Ext.form.FieldSet */
 //
 
-$fieldset-header-color: #333 !dynamic;
+$fieldset-header-color: dynamic(#333);

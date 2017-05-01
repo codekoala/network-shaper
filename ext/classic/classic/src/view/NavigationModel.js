@@ -65,20 +65,6 @@ Ext.define('Ext.view.NavigationModel', {
         this.mixins.storeholder.bindStore.apply(this, [store]);
     },
 
-    getStoreListeners: function() {
-        var me = this;
-
-        return {
-            // We must process removes after the view has been updated so we can
-            // refocus in either Navigable or Actionable mode.
-            remove: {
-                fn: me.onStoreRemove,
-                priority: -1000
-            },
-            scope: me
-        };
-    },
-
     getViewListeners: function() {
         var me = this;
 
@@ -144,17 +130,25 @@ Ext.define('Ext.view.NavigationModel', {
     },
 
     onContainerMouseDown: function(view, mousedownEvent) {
-        // If already focused, do not disturb the focus.
-        if (this.view.containsFocus) {
-            mousedownEvent.preventDefault();
+        // If the mousedown in the view element is NOT inside the client region,
+        // that is, it was on a scrollbar, then prevent default.
+        //
+        // Mousedowning on a scrollbar will focus the View.
+        // If they have scrolled to the bottom, then onFocusEnter will
+        // try to focus the lastFocused or first item. This is undesirable.
+        // So on mousedown outside of view client area, prevent the default focus behaviour.
+        // See Ext.view.Table#onFocusEnter for this being acted upon.
+        if (Ext.getScrollbarSize().width) {
+            if (!view.el.getClientRegion().contains(mousedownEvent.getPoint())) {
+                mousedownEvent.preventDefault();
+                view.lastFocused = 'scrollbar';
+            }
         }
     },
 
     onItemMouseDown: function(view, record, item, index, mousedownEvent) {
-        var parentEvent = mousedownEvent.parentEvent;
-
-        // If the ExtJS mousedown event is a translated touchstart, leave it until the click to focus
-        if (!parentEvent || parentEvent.type !== 'touchstart') {
+        // If the event is a touchstart, leave it until the click to focus.
+        if (mousedownEvent.pointerType !== 'touch') {
             this.setPosition(index);
         }
     },
@@ -168,40 +162,7 @@ Ext.define('Ext.view.NavigationModel', {
         }
     },
 
-    /**
-     * @template
-     * @protected
-     * Called by {@link Ext.view.AbstractView#method-refresh} before refresh to allow
-     * the current focus position to be cached.
-     * @return {undefined}
-     */
-    beforeViewRefresh: function() {
-        this.focusRestorePosition = this.view.dataSource.isBufferedStore ? this.recordIndex : this.record;
-    },
-
-    /**
-     * @template
-     * @protected
-     * Called by {@link Ext.view.AbstractView#method-refresh} after refresh to allow
-     * cached focus position to be restored.
-     * @return {undefined}
-     */
-    onViewRefresh: function() {
-        if (this.focusRestorePosition != null) {
-            this.setPosition(this.focusRestorePosition);
-            this.focusRestorePosition = null;
-        }
-    },
-
-    // On record remove, it might have bumped the selection upwards.
-    // Pass the "preventSelection" flag.
-    onStoreRemove: function(store, records, index, isMove) {
-        if (this.recordIndex && index + records.length - 1 < this.recordIndex) {
-            this.setPosition(this.recordIndex - 1, null, null, true);
-        }
-    },
-
-    setPosition: function(recordIndex, keyEvent, suppressEvent, preventNavigation) {
+    setPosition: function(recordIndex, keyEvent, suppressEvent, preventNavigation, preventFocus) {
         var me = this,
             view = me.view,
             selModel = view.getSelectionModel(),
@@ -267,7 +228,7 @@ Ext.define('Ext.view.NavigationModel', {
         // Maintain lastFocused, so that on non-specific focus of the View, we can focus the correct descendant.
         if (newRecord) {
             me.focusPosition(me.recordIndex);
-        } else {
+        } else if (!preventFocus) {
             me.item = null;
         }
 
@@ -422,9 +383,9 @@ Ext.define('Ext.view.NavigationModel', {
     },
 
     destroy: function() {
-        var me = this;
-        me.setStore(null);
-        me.keyNav = me.viewListeners = me.dataSource = Ext.destroy(me.viewListeners, me.keyNav);
-        me.callParent();
+        this.setStore(null);
+        Ext.destroy(this.viewListeners, this.keyNav);
+        
+        this.callParent();
     }
 });

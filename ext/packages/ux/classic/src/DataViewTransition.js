@@ -1,4 +1,5 @@
 /**
+ * @class Ext.ux.DataViewTransition
  * Transition plugin for DataViews
  */
 Ext.ux.DataViewTransition = Ext.extend(Object, {

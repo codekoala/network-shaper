@@ -1,4 +1,4 @@
-//@tag dom,core
+// @tag dom,core
 
 /**
  * An Identifiable mixin.
@@ -54,7 +54,10 @@ Ext.define('Ext.mixin.Identifiable', {
                 uniqueIds[prefix] = 0;
             }
 
-            id = this.id = prefix + (++uniqueIds[prefix]);
+            // The double assignment here and in setId is intentional to workaround a JIT 
+            // issue that prevents me.id from being assigned in random scenarios. The issue
+            // occurs on 4th gen iPads and lower, possibly other older iOS devices. See EXTJS-16494.
+            id = this.id = this.id = prefix + (++uniqueIds[prefix]);
         }
 
         this.getUniqueId = this.getOptimizedId;
@@ -63,7 +66,8 @@ Ext.define('Ext.mixin.Identifiable', {
     },
 
     setId: function(id) {
-        this.id = id;
+        // See getUniqueId()
+        this.id = this.id = id;
     },
 
     /**

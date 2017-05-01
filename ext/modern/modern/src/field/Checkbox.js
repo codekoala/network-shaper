@@ -65,9 +65,19 @@ Ext.define('Ext.field.Checkbox', {
 
     isCheckbox: true,
 
+    defaultBindProperty: 'checked',
+
+    twoWayBindable: {
+        checked: 1
+    },
+
+    publishes: {
+        checked: 1
+    },
+
     /**
      * @event change
-     * Fires just before the field blurs if the field value has changed.
+     * Fires when the field value changes.
      * @param {Ext.field.Checkbox} this This field.
      * @param {Boolean} newValue The new value.
      * @param {Boolean} oldValue The original value.
@@ -77,23 +87,15 @@ Ext.define('Ext.field.Checkbox', {
      * @event check
      * Fires when the checkbox is checked.
      * @param {Ext.field.Checkbox} this This checkbox.
-     * @param {Ext.EventObject} e This event object.
      */
 
     /**
      * @event uncheck
      * Fires when the checkbox is unchecked.
      * @param {Ext.field.Checkbox} this This checkbox.
-     * @param {Ext.EventObject} e This event object.
      */
 
     config: {
-        /**
-         * @cfg
-         * @inheritdoc
-         */
-        ui: 'checkbox',
-
         /**
          * @cfg {String} value The string value to submit if the item is in a checked state.
          * @accessor
@@ -117,10 +119,7 @@ Ext.define('Ext.field.Checkbox', {
          * @inheritdoc
          */
         component: {
-            xtype: 'input',
-            type: 'checkbox',
-            useMask: true,
-            cls: Ext.baseCSSPrefix + 'input-checkbox'
+            xtype: 'checkboxinput'
         }
 
         /**
@@ -128,6 +127,9 @@ Ext.define('Ext.field.Checkbox', {
          * @private
          */
     },
+
+    classCls: Ext.baseCSSPrefix + 'checkboxfield',
+    checkedCls: Ext.baseCSSPrefix + 'checked',
 
     /**
      * @private
@@ -146,10 +148,16 @@ Ext.define('Ext.field.Checkbox', {
 
         component.doMaskTap = Ext.emptyFn;
 
-        me.label.on({
+        me.labelElement.on({
             scope: me,
             tap: 'onMaskTap'
         });
+
+        // Important to publish the value here, since we
+        // may be relying on checked. This differs from other
+        // fields because the initial value may not come from
+        // the viewModel if it defaults to false.
+        me.publishState('checked', me.getChecked());
     },
 
     /**
@@ -192,16 +200,6 @@ Ext.define('Ext.field.Checkbox', {
     },
 
     /**
-     * Returns the field checked value.
-     * @return {Mixed} The field value.
-     */
-    getChecked: function() {
-        // we need to get the latest value from the {@link #input} and then update the value
-        this._checked = this.getComponent().getChecked();
-        return this._checked;
-    },
-
-    /**
      * Returns the submit value for the checkbox which can be used when submitting forms.
      * @return {Boolean/String} value The value of {@link #value} or `true`, if {@link #checked}.
      */
@@ -209,17 +207,19 @@ Ext.define('Ext.field.Checkbox', {
         return (this.getChecked()) ? Ext.isEmpty(this._value) ? true : this._value : null;
     },
 
-    setChecked: function(newChecked) {
-        this.updateChecked(newChecked);
-        this._checked = newChecked;
-    },
+    updateChecked: function(checked, oldChecked) {
+        var me = this,
+            eventName;
 
-    updateChecked: function(newChecked) {
-        this.getComponent().setChecked(newChecked);
+        me.getComponent().setChecked(checked);
+
+        me.toggleCls(me.checkedCls, checked);
 
         // only call onChange (which fires events) if the component has been initialized
-        if (this.initialized) {
-            this.onChange();
+        if (me.initialized) {
+            eventName = checked ? 'check' : 'uncheck';
+            me.fireEvent(eventName, me);
+            me.fireEvent('change', me, checked, oldChecked);
         }
     },
 
@@ -228,7 +228,7 @@ Ext.define('Ext.field.Checkbox', {
      */
     onMaskTap: function(component, e) {
         var me = this,
-            dom = me.getComponent().input.dom;
+            dom = me.getComponent().inputElement.dom;
 
         if (me.getDisabled()) {
             return false;
@@ -237,44 +237,11 @@ Ext.define('Ext.field.Checkbox', {
         //we must manually update the input dom with the new checked value
         dom.checked = !dom.checked;
 
-        me.onChange(e);
+        me.setChecked(dom.checked);
 
         //return false so the mask does not disappear
         return false;
     },
-
-    /**
-     * Fires the `check` or `uncheck` event when the checked value of this component changes.
-     * @private
-     */
-    onChange: function(e) {
-        var me = this,
-            oldChecked = me._checked,
-            newChecked = me.getChecked();
-
-        // only fire the event when the value changes
-        if (oldChecked != newChecked) {
-            if (newChecked) {
-                me.fireEvent('check', me, e);
-            } else {
-                me.fireEvent('uncheck', me, e);
-            }
-
-            me.fireEvent('change', me, newChecked, oldChecked);
-        }
-    },
-
-    /**
-     * @method
-     * Method called when this {@link Ext.field.Checkbox} has been checked.
-     */
-    doChecked: Ext.emptyFn,
-
-    /**
-     * @method
-     * Method called when this {@link Ext.field.Checkbox} has been unchecked.
-     */
-    doUnChecked: Ext.emptyFn,
 
     /**
      * Returns the checked state of the checkbox.
@@ -305,11 +272,7 @@ Ext.define('Ext.field.Checkbox', {
             component = me.up('formpanel') || me.up('fieldset'),
             name = me.getName(),
             replaceLeft = me.qsaLeftRe,
-            replaceRight = me.qsaRightRe,
-            //handle baseCls with multiple class values
-            baseCls = me.getBaseCls().split(' ').join('.'),
-            components = [],
-            elements, element, i, ln;
+            replaceRight = me.qsaRightRe;
 
         if (!component) {
             // <debug>
@@ -321,17 +284,7 @@ Ext.define('Ext.field.Checkbox', {
         // This is to handle ComponentQuery's lack of handling [name=foo[bar]] properly
         name = name.replace(replaceLeft, '\\[');
         name = name.replace(replaceRight, '\\]');
-
-        elements = Ext.query('[name=' + name + ']', component.element.dom);
-        ln = elements.length;
-        for (i = 0; i < ln; i++) {
-            element = elements[i];
-            element = Ext.fly(element).up('.' + baseCls);
-            if (element && element.id) {
-                components.push(Ext.getCmp(element.id));
-            }
-        }
-        return components;
+        return component.query('checkboxfield[name=' + name + ']');
     },
 
     /**

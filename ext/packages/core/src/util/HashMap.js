@@ -22,7 +22,8 @@ Ext.define('Ext.util.HashMap', {
     ],
 
     /**
-     * @private Mutation counter which is incremented upon add and remove.
+     * Mutation counter which is incremented upon add and remove.
+     * @readonly
      */
     generation: 0,
     
@@ -233,14 +234,11 @@ Ext.define('Ext.util.HashMap', {
     },
 
     /**
-     * @method clear
-     * Removes all items from the hash.
-     * @return {Ext.util.HashMap} this
+     * @ignore
      */
+    clear: function(initial) {
+        // We use the above syntax because we don't want the initial param to be part of the public API
 
-    // We use this syntax because we don't want the initial param to be part of the public API
-    /** @ignore **/
-    clear: function(/* private */ initial) {
         var me = this;
 
         // Only clear if it has ever had any content
@@ -376,7 +374,7 @@ Ext.define('Ext.util.HashMap', {
     var prototype = HashMap.prototype;
 
     /**
-     * @method
+     * @method removeByKey
      * An alias for {@link #removeAtKey}
      * @inheritdoc Ext.util.HashMap#removeAtKey
      */

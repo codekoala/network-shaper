@@ -1,10 +1,27 @@
+/* global expect, jasmine, Ext */
+
 describe("grid-rowedit", function() {
     function createSuite(buffered) {
         describe(buffered ? "with buffered rendering" : "without buffered rendering", function() {
             var ENTER = 13,
                 ESC = 27;
 
-            var grid, view, store, plugin, colRef;
+            var grid, view, scroller, store, plugin, editor, colRef, 
+                GridEventModel = Ext.define(null, {
+                extend: 'Ext.data.Model',
+                fields: [
+                    'field1',
+                    'field2',
+                    'field3',
+                    'field4',
+                    'field5',
+                    'field6',
+                    'field7',
+                    'field8',
+                    'field9',
+                    'field10'
+                ]
+            });
                 
             function triggerCellMouseEvent(type, rowIdx, cellIdx, button, x, y) {
                 var target = findCell(rowIdx, cellIdx);
@@ -32,66 +49,62 @@ describe("grid-rowedit", function() {
                 return grid.getView().getCellInclusive({
                     row: rowIdx,
                     column: cellIdx
-                }, true);
+                });
             }
             
-            function startEdit(rec) {
+            function startEdit(rec, column) {
                 if (!rec || !rec.isModel) {
                     rec = store.getAt(rec || 0);
                 }
-                plugin.startEdit(rec);
+                
+                if (typeof column === 'number') {
+                    column = colRef[column];
+                }
+                
+                plugin.startEdit(rec, column);
+                
+                editor = plugin.getEditor();
             }
             
             // Prevent validity from running on a delay
             function clearFormDelay() {
                 plugin.getEditor().getForm().taskDelay = 0;
             }
+            
+            function getDefaultColumns(locked, cfg, count) {
+                var columns = [],
+                    i, colConfig;
+
+                for (i = 1; i <= (count || 5); ++i) {
+                    colConfig = Ext.apply({
+                        text: 'F' + i,
+                        dataIndex: 'field' + i,
+                        field: {
+                            xtype: 'textfield',
+                            id: 'field' + i,
+                            allowBlank: i !== 1
+                        }
+                    }, cfg);
+
+                    // Columns 1 and 2 are locked if the locked config is true
+                    if (locked && i < 3) {
+                        colConfig.locked = true;
+                    }
+                    columns[i - 1] = new Ext.grid.column.Column(colConfig);
+                }
+                return columns;
+            }
 
             // locked param as true means that columns 1 and 2 are locked
-            function makeGrid(columns, pluginCfg, locked) {
-                Ext.define('spec.GridEventModel', {
-                    extend: 'Ext.data.Model',
-                    fields: [
-                        'field1',
-                        'field2',
-                        'field3',
-                        'field4',
-                        'field5',
-                        'field6',
-                        'field7',
-                        'field8',
-                        'field9',
-                        'field10'
-                    ]
-                });
-
+            function makeGrid(columns, pluginCfg, locked, gridCfg) {
                 var data = [],
                     defaultCols = [],
                     hasCols,
-                    i,
-                    colConfig;
+                    i;
                 
                 if (!columns) {
                     hasCols = true;
-                    colRef = [];    
-                    for (i = 1; i <= 5; ++i) {
-                        colConfig = {
-                            text: 'F' + i,
-                            dataIndex: 'field' + i,
-                            field: {
-                                xtype: 'textfield',
-                                id: 'field' + i,
-                                allowBlank: i !== 1
-                            }
-                        };
-
-                        // Columns 1 and 2 are locked if the locked config is true
-                        if (locked && i < 3) {
-                            colConfig.locked = true;
-                        }
-                        defaultCols.push(new Ext.grid.column.Column(colConfig));
-                        colRef[i - 1] = defaultCols[i - 1];
-                    }
+                    colRef = defaultCols = getDefaultColumns(locked);
                 }
                     
                 for (i = 1; i <= 10; ++i) {
@@ -110,16 +123,15 @@ describe("grid-rowedit", function() {
                 }
                 
                 store = new Ext.data.Store({
-                    model: spec.GridEventModel,
+                    model: GridEventModel,
                     data: data
                 });
                 
                 plugin = new Ext.grid.plugin.RowEditing(pluginCfg);
-                grid = new Ext.grid.Panel({
+
+                grid = new Ext.grid.Panel(Ext.apply({
                     columns: columns || defaultCols,
                     store: store,
-                    trailingBufferZone: 1000,
-                    leadingBufferZone: 1000,
                     selType: 'cellmodel',
                     plugins: [plugin],
                     width: 1000,
@@ -129,17 +141,18 @@ describe("grid-rowedit", function() {
                         mouseOverOutBuffer: 0
                     },
                     renderTo: Ext.getBody()
-                });
+                }, gridCfg));
+
                 if (!hasCols) {
                     colRef = grid.getColumnManager().getColumns();
                 }
                 view = grid.getView();
+                scroller = view.getScrollable ? view.getScrollable() : grid.normalGrid.view.getScrollable();
             }
             
-            afterEach(function(){
+            afterEach(function() {
                 Ext.destroy(grid, store);
-                plugin = grid = store = view = null;
-                Ext.undefine('spec.GridEventModel');
+                plugin = editor = grid = store = view = null;
                 Ext.data.Model.schema.clear();
             });
 
@@ -178,7 +191,7 @@ describe("grid-rowedit", function() {
 
                     // The editor of the 3rd column (first normal column) should be active
                     expect(Ext.Element.getActiveElement() === ed.inputEl.dom).toBe(true);
-
+                    
                     // The editor should be in the right container
                     expect(ed.up('container') === plugin.editor.items.items[1]).toBe(true);
 
@@ -192,6 +205,35 @@ describe("grid-rowedit", function() {
             });
 
             describe("basic editing", function() {
+                // https://sencha.jira.com/browse/EXTJS-18773
+                it('should scroll a record that is outside the rendered block into view and edit it', function() {
+                    makeGrid();
+                    var data = [],
+                        i;
+
+                    for (i = 11; i <= 1000; ++i) {
+                        data.push({
+                            field1: i + '.' + 1,
+                            field2: i + '.' + 2,
+                            field3: i + '.' + 3,
+                            field4: i + '.' + 4,
+                            field5: i + '.' + 5,
+                            field6: i + '.' + 6,
+                            field7: i + '.' + 7,
+                            field8: i + '.' + 8,
+                            field9: i + '.' + 9,
+                            field10: i + '.' + 10
+                        });
+                    }
+                    store.add(data);
+                    startEdit(900);
+                    
+                    waitsFor(function() {
+                        return plugin.editing === true &&
+                               plugin.getEditor().isVisible() === true;
+                    });
+                });
+
                 it("should trigger the edit on cell interaction", function(){
                     makeGrid();
                     triggerCellMouseEvent('dblclick', 0, 0);
@@ -219,7 +261,6 @@ describe("grid-rowedit", function() {
 
                 it("should trigger the first time when clicking a cell without a defined editor", function() {
                     Ext.destroy(grid, store);
-                    Ext.undefine('spec.GridEventModel');
                     Ext.data.Model.schema.clear();
                     makeGrid([{
                         dataIndex: 'field1',
@@ -274,10 +315,477 @@ describe("grid-rowedit", function() {
                     jasmine.expectFocused(toFocus);
                 });
 
+                it("should scroll horizontally to display the field being edited", function() {
+                    makeGrid(null,null,null,{
+                        width: 300
+                    });
+                    var rec = store.first(),
+                        x, offset=0;
+
+                    // IE 8 has a 2px offset when the editor is visible
+                    if(Ext.isIE8) {
+                        offset = 2;
+                    }
+
+                    // this will scroll the grid all the way to the right
+                    view.scrollBy(300,0);
+                    waitsFor(function() {
+                        return view.getScrollX() >= 200;
+                    });
+
+                    runs(function(){
+                        x = view.getScrollX();
+                        plugin.startEdit(rec,colRef[4]);
+
+                        // expects the grid not to scroll when editing the last field
+                        expect(view.getScrollX()).toBe(x-offset);
+                        plugin.cancelEdit();
+                        // expects the grid not to scroll when cancelling the edit
+                        expect(view.getScrollX()).toBe(x);
+                        plugin.startEdit(rec,colRef[0]);
+                        // expects the grid to scroll left when editing the first field
+                        expect(view.getScrollX()).toBe(offset);
+                    });
+                });
+
                 it("should not be dirty when the field has values", function() {
                     makeGrid();
                     startEdit(store.first());
                     expect(plugin.getEditor().isDirty()).toBe(false);
+                });
+                
+                it("should commit changes with autoUpdate", function() {
+                    makeGrid(null, {
+                        autoUpdate: true
+                    });
+
+                    startEdit(0, 0);
+                    
+                    editor.activeField.setValue('foo');
+                    expect(editor.isDirty()).toBe(true);
+                    
+                    startEdit(1, 1);
+                    
+                    expect(getRec(0).get('field1')).toBe('foo');
+                    expect(editor.isDirty()).toBe(false);
+                });
+                
+                it("should reset changes with autoCancel", function() {
+                    makeGrid();
+                    
+                    startEdit(0, 0);
+                    
+                    editor.activeField.setValue('bar');
+                    expect(editor.isDirty()).toBe(true);
+                    
+                    startEdit(1, 1);
+                    
+                    expect(getRec(0).get('field1')).toBe('1.1');
+                    expect(editor.isDirty()).toBe(false);
+                });
+            });
+            
+            describe("tabbing", function() {
+                beforeEach(function() {
+                    makeGrid();
+                });
+                
+                describe("basic tabbing", function() {
+                    it("should tab from F1 to F2", function() {
+                        startEdit(0, 0);
+                        
+                        runs(function() {
+                            pressTabKey(editor.activeField, true);
+                        });
+                        
+                        waitForFocus(editor.items.getAt(1));
+                        
+                        runs(function() {
+                            expect(editor.activeField.getValue()).toBe('1.2');
+                            expect(document.activeElement).toBe(editor.activeField.inputEl.dom);
+                        });
+                    });
+                    
+                    it("should shift-tab from F2 to F1", function() {
+                        startEdit(0, 1);
+                        
+                        runs(function() {
+                            pressTabKey(editor.activeField, false);
+                        });
+                        
+                        waitForFocus(editor.items.getAt(0));
+                        
+                        runs(function() {
+                            expect(editor.activeField.getValue()).toBe('1.1');
+                            expect(document.activeElement).toBe(editor.activeField.inputEl.dom);
+                        });
+                    });
+                });
+                
+                describe("wrapping over edges", function() {
+                    it("should tab from F5 to F1", function() {
+                        startEdit(0, 4);
+                        
+                        runs(function() {
+                            pressTabKey(editor.activeField, true);
+                        });
+                        
+                        waitForFocus(editor.items.getAt(0));
+                        
+                        runs(function() {
+                            expect(editor.activeField.getValue()).toBe('2.1');
+                            expect(document.activeElement).toBe(editor.activeField.inputEl.dom);
+                        });
+                    });
+                    
+                    it("should shift-tab from F1 to F5", function() {
+                        startEdit(1, 0);
+                        
+                        runs(function() {
+                            pressTabKey(editor.activeField, false);
+                        });
+                        
+                        waitForFocus(editor.items.getAt(4));
+                        
+                        runs(function() {
+                            expect(editor.activeField.getValue()).toBe('1.5');
+                            expect(document.activeElement).toBe(editor.activeField.inputEl.dom);
+                        });
+                    });
+                });
+                
+                describe("wrapping over end rows", function() {
+                    it("should wrap over to the first row when editing last row", function() {
+                        var firstField, lastField;
+                        
+                        startEdit(store.last(), colRef[4]);
+                        
+                        firstField = plugin.getEditor().items.getAt(0);
+                        lastField = plugin.getEditor().items.getAt(4);
+                        
+                        // Async from now on
+                        waitForFocus(lastField);
+                        
+                        pressTabKey(lastField, true);
+                        
+                        waitForFocus(firstField);
+                        
+                        runs(function() {
+                            expect(plugin.context.record).toBe(store.first());
+                        });
+                    });
+                    
+                    it("should wrap over to the last row when editing first row", function() {
+                        var firstField, lastField;
+                        
+                        startEdit(store.first(), colRef[0]);
+                        
+                        firstField = plugin.getEditor().items.getAt(0);
+                        lastField = plugin.getEditor().items.getAt(4);
+                        
+                        // Async from now on
+                        waitForFocus(firstField);
+                        
+                        pressTabKey(firstField, false);
+                        
+                        waitForFocus(lastField);
+                        
+                        runs(function() {
+                            expect(plugin.context.record).toBe(store.last());
+                        });
+                    });
+                });
+                
+                describe("with dirty values", function() {
+                    describe("autoUpdate == false", function() {
+                        it("should tab to Update button from last field", function() {
+                            startEdit(0, 4);
+                            
+                            var button = editor.down('#update');
+                            
+                            editor.activeField.setValue('blerg');
+                            pressTabKey(editor.activeField, true);
+                            
+                            expectFocused(button);
+                        });
+                        
+                        it("should shift-tab to Update button from first field", function() {
+                            startEdit(0, 0);
+                            
+                            var button = editor.down('#update');
+                            
+                            editor.activeField.setValue('throbbe');
+                            pressTabKey(editor.activeField, false);
+                            
+                            expectFocused(button);
+                        });
+                    });
+                    
+                    describe("autoUpdate == true", function() {
+                        it("should tab to the next row from the last field", function() {
+                            startEdit(0, 4);
+
+                            editor.autoUpdate = true;
+                            editor.autoCancel = false;
+                            
+                            editor.activeField.setValue('zumbo');
+                            pressTabKey(editor.activeField, true);
+                            
+                            expectFocused(editor.items.getAt(0));
+                        });
+                        
+                        it("should shift-tab to the previous row from the first field", function() {
+                            startEdit(1, 0);
+
+                            editor.autoUpdate = true;
+                            editor.autoCancel = false;
+                            
+                            editor.activeField.setValue('ghurl');
+                            pressTabKey(editor.activeField, false);
+                            
+                            expectFocused(editor.items.getAt(4));
+                        });
+                    });
+                });
+            });
+
+            describe("field styling", function() {
+                it("should apply field styles", function() {
+                    makeGrid([{
+                        dataIndex: 'field1',
+                        field: {
+                            xtype: 'textfield',
+                            fieldStyle: 'text-transform: uppercase;'
+                        }
+                    }]);
+                    startEdit(store.first());
+                    var field = plugin.getEditor().items.getAt(0);
+                    expect(field.inputEl.getStyle('text-transform')).toBe('uppercase');
+                });
+
+                describe("with align: right", function() {
+                    describe("with no field style", function() {
+                        it("should align the field right", function() {
+                            makeGrid([{
+                                dataIndex: 'field1',
+                                align: 'right',
+                                field: 'textfield'
+                            }]);
+                            startEdit(store.first());
+                            var field = plugin.getEditor().items.getAt(0);
+                            expect(field.inputEl.getStyle('text-align')).toBe('right');
+                        });
+                    });
+
+                    describe("with a field style", function() {
+                        describe("as a string", function() {
+                            describe("with an existing value for text-align", function() {
+                                it("should respect a configured value and keep other styles", function() {
+                                    makeGrid([{
+                                        dataIndex: 'field1',
+                                        align: 'right',
+                                        field: {
+                                            xtype: 'textfield',
+                                            fieldStyle: 'text-transform: uppercase; text-align: left;'
+                                        }
+                                    }]);
+                                    startEdit(store.first());
+                                    var field = plugin.getEditor().items.getAt(0);
+                                    expect(field.inputEl.getStyle('text-align')).toBe('left');
+                                    expect(field.inputEl.getStyle('text-transform')).toBe('uppercase');
+                                });
+                            });
+
+                            describe("with no value for text-align", function() {
+                                it("should align the field right and keep other styles", function() {
+                                    makeGrid([{
+                                        dataIndex: 'field1',
+                                        align: 'right',
+                                        field: {
+                                            xtype: 'textfield',
+                                            fieldStyle: 'text-transform: uppercase'
+                                        }
+                                    }]);
+                                    startEdit(store.first());
+                                    var field = plugin.getEditor().items.getAt(0);
+                                    expect(field.inputEl.getStyle('text-align')).toBe('right');
+                                    expect(field.inputEl.getStyle('text-transform')).toBe('uppercase');
+                                });
+                            });
+                        });
+
+                        describe("as an object", function() {
+                            describe("with an existing value for text-align", function() {
+                                it("should respect a configured hyphenated value and keep other styles", function() {
+                                    makeGrid([{
+                                        dataIndex: 'field1',
+                                        align: 'right',
+                                        field: {
+                                            xtype: 'textfield',
+                                            fieldStyle: {
+                                                textTransform: 'uppercase',
+                                                'text-align': 'left'
+                                            }
+                                        }
+                                    }]);
+                                    startEdit(store.first());
+                                    var field = plugin.getEditor().items.getAt(0);
+                                    expect(field.inputEl.getStyle('text-align')).toBe('left');
+                                    expect(field.inputEl.getStyle('text-transform')).toBe('uppercase');
+                                });
+
+                                it("should respect a configured camel cased value and keep other styles", function() {
+                                    makeGrid([{
+                                        dataIndex: 'field1',
+                                        align: 'right',
+                                        field: {
+                                            xtype: 'textfield',
+                                            fieldStyle: {
+                                                textTransform: 'uppercase',
+                                                textAlign: 'left'
+                                            }
+                                        }
+                                    }]);
+                                    startEdit(store.first());
+                                    var field = plugin.getEditor().items.getAt(0);
+                                    expect(field.inputEl.getStyle('text-align')).toBe('left');
+                                    expect(field.inputEl.getStyle('text-transform')).toBe('uppercase');
+                                });
+                            });
+
+                            describe("with no value for text-align", function() {
+                                it("should align the field right and keep other styles", function() {
+                                    makeGrid([{
+                                        dataIndex: 'field1',
+                                        align: 'right',
+                                        field: {
+                                            xtype: 'textfield',
+                                            fieldStyle: {
+                                                textTransform: 'uppercase'
+                                            }
+                                        }
+                                    }]);
+                                    startEdit(store.first());
+                                    var field = plugin.getEditor().items.getAt(0);
+                                    expect(field.inputEl.getStyle('text-align')).toBe('right');
+                                    expect(field.inputEl.getStyle('text-transform')).toBe('uppercase');
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+
+           describe("positioning", function() {
+                // For ticket 19330-5
+                it("should position buttons correctly for the first row when content does not overflow", function() {
+                    makeGrid();
+                    var records = store.getRange();
+                    records.shift();
+                    store.remove(records);
+                    // Only 1 record, not scrolling
+                    startEdit();
+                    expect(plugin.getEditor()._buttonsOnTop).toBe(false);
+                });
+
+                it("should position buttons correctly for the first row when content does overflow", function() {
+                    makeGrid();
+                    startEdit();
+                    expect(plugin.getEditor()._buttonsOnTop).toBe(false);
+                });
+            });
+
+            describe("scrolling while editing", function() {
+                beforeEach(function() {
+                    var data = [],
+                        bufferPlugin;
+
+                   makeGrid([{
+                        dataIndex: 'field1',
+                        field: 'displayfield'
+                    }, {
+                        dataIndex: 'field2',
+                        field: 'displayfield'
+                    }, {
+                        dataIndex: 'field3',
+                        field: 'displayfield'
+                    }, {
+                        dataIndex: 'field4',
+                        field: 'textfield',
+                        sortable: true
+                    }],{
+                        clicksToMoveEditor: 1,
+                        autoCancel: false 
+                    },null,{
+                        trailingBufferZone: 10,
+                        leadingBufferZone: 10
+                    });
+
+
+                for (var i = 11; i <= 100; ++i) {
+                    data.push({
+                        field1: i + '.' + 1,
+                        field2: i + '.' + 2,
+                        field3: i + '.' + 3,
+                        field4: i + '.' + 4,
+                        field5: i + '.' + 5,
+                        field6: i + '.' + 6,
+                        field7: i + '.' + 7,
+                        field8: i + '.' + 8,
+                        field9: i + '.' + 9,
+                        field10: i + '.' + 10
+                    });
+                }
+
+                store.insert(10,data);
+
+                });
+
+                it('it should keep the editor active if scrolling out of view', function() {
+                    startEdit();
+
+                    // this will scroll the grid view down
+                    // to a point where rows get de-rendered
+                    // if the grid has a bufferedRenderer plugin
+                    waitsFor(function () {
+                        view.scrollBy(0, 100);
+                        // Wait until a record begin edit is cached
+                        // or verified if it is not a grid with bufferedRenderer
+                         return plugin.editor._cachedNode || !grid.bufferedRenderer;
+                    }, 'scroll to the bottom', 10000);
+
+                    runs(function(){
+                        // if this is a grid with bufferedRenderer
+                        // the record editor should be hidden at Y = -400;
+                        if (grid.bufferedRenderer) {
+                            expect(plugin.editor.getLocalY()).not.toBe(0);
+                        }
+                    });
+
+                    waitsFor(function() {
+                        view.scrollBy(0, -100);
+                        return view.getScrollY() === 0 && plugin.editor.getLocalY() === 0;
+                    }, 'view to scroll to top and RowEditor to reappear', 10000);
+
+                    runs(function(){
+                        // the cached record should have been erased
+                        // or it should never existed if this is not a grid with bufferedRenderer
+                        // the editor also should not be hidden anymore
+                        // and the editor editing status should still be true.
+                        expect(plugin.editor._editedNode).toBeFalsy();
+                        expect(plugin.editor.getLocalY()).toBe(0);
+                        expect(plugin.editing).toBe(true);
+                    });
+                });
+                
+                it('should scroll to edited item if it is out of view and the column is sorted', function() {
+                    var columns = grid.getColumns();
+                    columns[3].sort();
+
+                    startEdit();
+                    plugin.getEditor().items.items[3].setValue(99999999);
+                    plugin.completeEdit();
+                    expect(grid.getSelectionModel().getSelection()[0]).toEqual(plugin.context.record);
                 });
             });
 
@@ -1285,6 +1793,241 @@ describe("grid-rowedit", function() {
                 }
                 createLockingSuite(true);
                 createLockingSuite(false);
+            });
+
+            describe('using a textarea as an editor', function() {
+                it('should align to the bottom of the editor when at the end', function() {
+                    store = Ext.create('Ext.data.Store', {
+                        storeId: 'simpsonsStore',
+                        fields:[ 'name', 'email', 'phone'],
+                        data: [
+                            { name: 'Lisa', email: 'lisa@simpsons.com', phone: '555-111-1224' },
+                            { name: 'Bart', email: 'bart@simpsons.com', phone: '555-222-1234' },
+                            { name: 'Homer', email: 'homer@simpsons.com', phone: '555-222-1244' },
+                            { name: 'Lisa', email: 'lisa@simpsons.com', phone: '555-111-1224' },
+                            { name: 'Bart', email: 'bart@simpsons.com', phone: '555-222-1234' },
+                            { name: 'Homer', email: 'homer@simpsons.com', phone: '555-222-1244' },
+                            { name: 'Lisa', email: 'lisa@simpsons.com', phone: '555-111-1224' },
+                            { name: 'Bart', email: 'bart@simpsons.com', phone: '555-222-1234' },
+                            { name: 'Lisa', email: 'lisa@simpsons.com', phone: '555-111-1224' },
+                            { name: 'Bart', email: 'bart@simpsons.com', phone: '555-222-1234' },
+                            { name: 'Homer', email: 'homer@simpsons.com', phone: '555-222-1244' },
+                            { name: 'Lisa', email: 'lisa@simpsons.com', phone: '555-111-1224' },
+                            { name: 'Bart', email: 'bart@simpsons.com', phone: '555-222-1234' },
+                            { name: 'Homer', email: 'homer@simpsons.com', phone: '555-222-1244' },
+                            { name: 'Lisa', email: 'lisa@simpsons.com', phone: '555-111-1224' },
+                            { name: 'Bart', email: 'bart@simpsons.com', phone: '555-222-1234' },
+                            { name: 'Homer', email: 'homer@simpsons.com', phone: '555-222-1244' },
+                            { name: 'Marge', email: 'marge@simpsons.com', phone: '555-222-1254' }
+                        ]
+                    });
+
+                    grid = Ext.create({
+                        xtype: 'grid',
+                        title: 'Simpsons',
+                        store: Ext.data.StoreManager.lookup('simpsonsStore'),
+                        columns: [
+                            {header: 'Name', dataIndex: 'name', editor: 'textfield'},
+                            {header: 'Email', dataIndex: 'email', flex:1,
+                             editor: {
+                                 xtype: 'textarea',
+                                 allowBlank: false
+                             }
+                            },
+                            {header: 'Phone', dataIndex: 'phone', width: 140}
+                        ],
+                        selModel: 'rowmodel',
+                        plugins: {
+                            ptype: 'rowediting',                
+                            clicksToEdit: 1
+                        },
+                        height: 400,
+                        width: 600,
+                        renderTo: document.body
+                    });
+                    view = grid.view;
+                    plugin = grid.findPlugin('rowediting');
+
+                    plugin.startEdit(store.last(), 1);
+
+                    waitsFor(function() {
+                        return plugin.editor.activeField && plugin.editor.activeField.hasFocus;
+                    });
+
+                    runs(function() {
+                        var viewYScroll = view.getScrollY(),
+
+                            // Return the scrollTo posirtion required to being the activeField fully into view
+                            scrollPos = plugin.editor.activeField.el.getScrollIntoViewXY(view.el, view.getScrollX(), viewYScroll);
+
+                        // The field being edited must already be fully scrolled into view by the editor positioning.
+                        expect(scrollPos.y).toBe(viewYScroll);
+                    });
+                });
+            });
+
+            describe('resizing columns', function() {
+                it('should keep x scroll synced', function() {
+                    makeGrid(getDefaultColumns(false, {
+                        width: 200
+                    }, 10));
+                    scroller.scrollBy(300);
+
+                    waitsForEvent(scroller, 'scrollend', 'view to scroll');
+                    runs(function() {
+                        startEdit(0, 3);
+                        colRef[5].setWidth(colRef[5].getWidth() - 50);
+                    });
+
+                    waitsFor(function() {
+
+                        // X positions must be synced
+                        return plugin.editor.getScrollable().getPosition().x === scroller.getPosition().x;
+                    }, 'scroll positions to sync');
+                });
+            });
+
+            describe('showing after the normal side has already been scrolled horizontally', function() {
+                it('should align itself to the existing horizontal scroll position on show', function() {
+                    makeGrid(null, null, true, {
+                        width: 400, height: 200
+                    });
+
+                    // Scroll normal grid rightwards
+                    grid.normalGrid.getView().scrollBy(1000, 0);
+
+                    // Start editing in the locked grid.
+                    plugin.startEdit(0, 0);
+
+                    // The normal grid has been scrolled.
+                    // Thr RowEditor should sync with it on show.
+                    expect(plugin.editor.normalColumnContainer.getScrollX()).toBe(grid.normalGrid.getView().getScrollable().getPosition().x);
+                });
+            });
+
+            describe('removeUnmodified', function() {
+                it('should remove an unmodified phantom record on cancel', function() {
+                    makeGrid(null, {
+                        removeUnmodified: true
+                    }, true, {
+                        width: 400, height: 200
+                    });
+                    var storeCount = store.getCount();
+
+                    // Begin editing a new record
+                    store.insert(0, new GridEventModel());
+                    expect(store.getCount()).toBe(storeCount + 1);
+                    plugin.startEdit(0, 0);
+
+                    // Cancel without modifying the new record, the record should be removed
+                    plugin.cancelEdit();
+                    expect(store.getCount()).toBe(storeCount);
+                });
+            });
+
+            describe('with record delete action column', function() {
+                var oldOnError = window.onerror;
+
+                function triggerAction(type, row, colIdx) {
+                    var cell = findCell(row || 0, colIdx || 0);
+                    jasmine.fireMouseEvent(cell.down('.' + Ext.grid.column.Action.prototype.actionIconCls, true), type || 'click');
+                    return cell;
+                }
+                
+                afterEach(function() {
+                    window.onerror = oldOnError;
+                });
+
+                it('should not throw', function() {
+                    var columns = getDefaultColumns();
+
+                    // Insert actino column
+                    columns.unshift({
+                        xtype: 'actioncolumn',
+                        sortable: false,
+                        width: 50,
+                        items: [{
+                            icon: 'https://cdn.sencha.com/ext/commercial/6.0.2/examples/classic/simple-tasks/resources/images/delete_task.png',
+                            tooltip: 'Delete user',
+                            handler: function(view, rowIndex, colIndex, item, event, record) {
+                                store.remove(record);
+                            }
+                        }]
+                    });
+                    makeGrid(columns, {
+                        clicksToEdit: 1
+                    });
+                    
+                    // We can't catch any exceptions thrown by synthetic events,
+                    // so a standard toThrow() or even try/catch won't do the job
+                    // here. They will hit onerror though, so use that.
+                    var errorSpy = jasmine.createSpy();
+
+                    window.onerror = errorSpy.andCallFake(function() {
+                        if (oldOnError) {
+                            oldOnError();
+                        }
+                    });
+
+                    // Click on the delete action column.
+                    // The Editor's click handler will be passed a
+                    // context which is stale. It should handle it.
+                    triggerAction('click', 0, 0);
+
+                    expect(errorSpy.callCount).toBe(0);
+                });
+            });
+
+            describe("ARIA", function() {
+                describe("with visible headers", function() {
+                    beforeEach(function() {
+                        makeGrid();
+                        
+                        startEdit(0, 0);
+                    });
+                    
+                    it("should have form role on the editor body", function() {
+                        expect(editor.body).toHaveAttr('role', 'form');
+                    });
+                    
+                    it("should have aria-label on the editor body", function() {
+                        expect(editor.body).toHaveAttr('aria-label', 'Editing row 2');
+                    });
+                    
+                    it("should have aria-owns on the editor body", function() {
+                        expect(editor.body).toHaveAttr('aria-owns', editor.floatingButtons.id);
+                    });
+                    
+                    it("should have toolbar role on the floating buttons", function() {
+                        expect(editor.floatingButtons).toHaveAttr('role', 'toolbar');
+                    });
+                    
+                    it("should have aria-labelledby on the fields' inputEls", function() {
+                        expect(editor.items.getAt(0).inputEl).toHaveAttr('aria-labelledby', colRef[0].id);
+                        expect(editor.items.getAt(1).inputEl).toHaveAttr('aria-labelledby', colRef[1].id);
+                        expect(editor.items.getAt(2).inputEl).toHaveAttr('aria-labelledby', colRef[2].id);
+                        expect(editor.items.getAt(3).inputEl).toHaveAttr('aria-labelledby', colRef[3].id);
+                        expect(editor.items.getAt(4).inputEl).toHaveAttr('aria-labelledby', colRef[4].id);
+                    });
+                });
+                
+                describe("with hidden headers", function() {
+                    beforeEach(function() {
+                        makeGrid(null, null, null, {
+                            hideHeaders: true
+                        });
+                        
+                        startEdit(0, 1);
+                    });
+                    
+                    it("should have aria-labels on the fields' inputEls", function() {
+                        expect(editor.items.getAt(0).inputEl).toHaveAttr('aria-label', 'F1');
+                        expect(editor.items.getAt(1).inputEl).toHaveAttr('aria-label', 'F2');
+                        expect(editor.items.getAt(2).inputEl).toHaveAttr('aria-label', 'F3');
+                        expect(editor.items.getAt(3).inputEl).toHaveAttr('aria-label', 'F4');
+                        expect(editor.items.getAt(4).inputEl).toHaveAttr('aria-label', 'F5');
+                    });
+                });
             });
         });
     }

@@ -1,6 +1,6 @@
 /** @class Ext.ProgressBar */
 //
 
-$progress-border-color: #8e8e8e !dynamic;
-$progress-background-color: #f1f1f1 !dynamic;
-$progress-bar-background-color: #ababab !dynamic;
+$progress-border-color: dynamic(#8e8e8e);
+$progress-background-color: dynamic(#f1f1f1);
+$progress-bar-background-color: dynamic(#ababab);

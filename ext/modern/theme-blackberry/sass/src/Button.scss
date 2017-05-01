@@ -9,28 +9,39 @@
 $button-border-radius: 5px;
 
 .x-button {
+    border: 0px;
     height: 35px;
     padding: 0 3px;
-    border-color: #CECACE;
-    @include border-radius($button-border-radius);
-    @include background(linear-gradient(color-stops(#C6C3C6, #E7E7E7)));
     position: relative;
-
-    &:before {
-        content: '';
-        position: absolute;
-        top: 1px;
-        right: 1px;
-        bottom: 1px;
-        left: 1px;
-        border: 1px solid #B9B7B9;
-        @include border-radius(4px);
-        @include background(linear-gradient(color-stops(#FFFFFF, #DEDFDE)));
-    }
+    background: transparent;
+    overflow: visible;
+    @include background(linear-gradient(color-stops(lighten($highlight-color, 5%), $highlight-color)));
 
     .x-button-label {
-        color: #252525;
+        color: #323232;
     }
+
+    &.tabmenu {
+        width: 61px;
+        margin-left: 0;
+
+        .x-button-icon:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: 32px !important;
+            background-repeat: no-repeat;
+            background-image: url('#{$bb-icons-path}/ic_overflow_tab.png');
+        }
+    }
+}
+
+.x-button-pressed,
+.x-button-pressing {
+  background: #646464;
 }
 
 .x-button-icon {
@@ -38,19 +49,19 @@ $button-border-radius: 5px;
     height: 40px;
     background-size: 36px;
     background-position: bottom center;
-}
 
-.x-button-pressing {
-    border-color: #5E5E5E;
-    @include background(linear-gradient(color-stops(#404040, #858585)));
-
-    &:before {
-        border-color: #565656;
-        @include background(linear-gradient(color-stops(#2E85A1, #0C8AB2)));
-    }
-
-    .x-button-label {
-        color: #FAFAFA;
+    &:after {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: 42px;
+        background-position: 50%;
+        background-repeat: no-repeat
     }
 }
 
@@ -83,79 +94,6 @@ $button-border-radius: 5px;
     }
 }
 
-.x-toolbar-light {
-    .x-button {
-        border-color: #0A5A88;
-        @include background(linear-gradient(color-stops(#05608F, #04557F)));
-        @include box-shadow(0 0 0 1px #1C79AD);
-
-        &:before {
-            border-color: #10618A;
-            @include background(linear-gradient(color-stops(#3498CB, #0974A8)));
-            @include box-shadow(inset 0 1px 0 0 #55AAD5);
-        }
-    }
-
-    .x-button-label {
-        color: #fff;
-    }
-
-    .x-button-pressed,
-    .x-button-pressing {
-        border-color: #061C27;
-        @include background(linear-gradient(color-stops(#020C10, #0A2B3B)));
-        @include box-shadow(0 0 0 1px #3889B7);
-
-        &:before {
-            border-color: #0A2532;
-            @include background(linear-gradient(color-stops(#122D3A, #0D4662)));
-            @include box-shadow(inset 0 -1px 0 0 #1B4E64);
-        }
-    }
-}
-
-.x-toolbar-dark {
-    .x-button,
-    .x-button-pressing {
-        border-color: #060606;
-        @include background(linear-gradient(color-stops(#010101, #060606)));
-        @include box-shadow(0 0 0 1px #393939);
-
-        &:before {
-            border-color: #010101;
-            @include background(linear-gradient(color-stops(#404040, #262626)));
-            @include box-shadow(inset 0 1px 0 0 #404040);
-        }
-    }
-
-    .x-button-label {
-        color: #fff;
-    }
-
-    .x-button-pressed,
-    .x-button-pressing {
-        &:before {
-            @include background(linear-gradient(color-stops(#235F71, #0D6681)));
-            @include box-shadow(inset 0 -1px 0 0 #176982);
-        }
-    }
-}
-
-.x-toolbar-plain,
-.x-toolbar-neutral {
-    .x-button-pressed,
-    .x-button-pressing {
-        .x-button-label {
-            color: #fff;
-        }
-
-        &:before {
-            @include background(linear-gradient(color-stops(#235F71, #0D6681)));
-            @include box-shadow(inset 0 -1px 0 0 #176982);
-        }
-    }
-}
-
 // Back button
 
 .x-toolbar .x-button-back,
@@ -168,15 +106,16 @@ $button-border-radius: 5px;
     background: transparent;
     background-image: none;
     @include st-box-orient(vertical);
-    overflow: hidden;
+    min-width: 4em;
 
     .x-button-icon {
         margin: 0 auto;
         display: block;
         height: 42px;
-        background-image: theme-background-image('icons/ic_previous');
+        background-image: url('#{$bb-icons-path}/ic_previous.png');
         background-size: 30px;
-        background-position: center 8px;
+        background-position: 35% center;
+        min-width: 30px;
 
         &:before {
             content: '';
@@ -199,24 +138,8 @@ $button-border-radius: 5px;
         }
     }
 
-    &.x-button-pressing .x-badge {
-			display: block;
-			position: absolute;
-			left: 0px;
-			width: 4px;
-			top: 4px;
-			bottom: 4px;
-			border-radius: 0px;
-			padding: 0px;
-			border: 0px;
-			min-width: 4px;
-    }
-
 		.x-button-label {
-			margin: 0 0 3px;
-			font-size: 10px;
-			line-height: 12px;
-			min-width: 29px;
+            display: none;
 		}
 
     .x-landscape & {
@@ -229,15 +152,18 @@ $button-border-radius: 5px;
 
 .x-toolbar .x-button-back {
     padding: 0 30px 0 14px;
-    
+
     &:before {
         @include rotate(10deg);
-        right: 6px;
-        top: -15px;
-        bottom: -15px;
+        position: absolute;
+        right: 0px;
+        top: 5px;
+        bottom: 5px;
         border-color: #0f76c2;
         border-width: 0 2px 0 0;
+        border-style: solid;
         @include border-radius(0);
+        content: '';
     }
 }
 
@@ -255,7 +181,8 @@ $button-border-radius: 5px;
     }
 
     .x-button-icon {
-        background-image: theme-background-image('icons/ic_next');
+        background-image: url('#{$bb-icons-path}/ic_next.png');
+        background-position: center center;
     }
 }
 
@@ -266,13 +193,7 @@ $button-border-radius: 5px;
 }
 
 .x-badge {
-    background-color: #0378B2;
-    border: 1px solid #0796D0;
-    @include border-radius(3px);
-    color: #fff;
-    padding: 1px 3px;
-    right: -2px;
-    top: -2px;
+    background-color: #0092CC;
 }
 
 // Icons
@@ -282,7 +203,7 @@ $button-border-radius: 5px;
     height: 1.5em;
 
     &:before {
-        color: #fff;
+        color: #323232;
         font-size: 24px;
         line-height: .9em;
     }

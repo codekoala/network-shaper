@@ -1,11 +1,11 @@
 /** @class Ext.view.BoundList */
 //
 
-$boundlist-item-height: 24px !dynamic;
-$boundlist-item-padding: 0 6px !dynamic;
-$boundlist-background-color: #fff !dynamic;
-$boundlist-item-border-color: $boundlist-background-color !dynamic;
-$boundlist-item-over-background-color: mix(#fff, $base-light-color, 50%) !dynamic;
-$boundlist-item-selected-background-color: mix(#fff, $base-light-color, 25%) !dynamic;
-$boundlist-item-over-border-color: $boundlist-item-over-background-color  !dynamic;
-$boundlist-item-selected-border-color: $boundlist-item-selected-background-color !dynamic;
+$boundlist-item-height: dynamic(24px);
+$boundlist-item-padding: dynamic(0 6px);
+$boundlist-background-color: dynamic(#fff);
+$boundlist-item-border-color: dynamic($boundlist-background-color);
+$boundlist-item-over-background-color: dynamic(mix(#fff, $base-light-color, 50%));
+$boundlist-item-selected-background-color: dynamic(mix(#fff, $base-light-color, 25%));
+$boundlist-item-over-border-color: dynamic($boundlist-item-over-background-color);
+$boundlist-item-selected-border-color: dynamic($boundlist-item-selected-background-color);

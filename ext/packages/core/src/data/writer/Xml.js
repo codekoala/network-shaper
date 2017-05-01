@@ -49,7 +49,6 @@ Ext.define('Ext.data.writer.Xml', {
     // To break simple XPath selectors like "SystemInfo>SystemName" into ["SystemInfo", "SystemName"]
     selectorRe: /[^>\s]+/g,
 
-    //inherit docs
     writeRecords: function(request, data) {
         var me = this,
             xml = [],

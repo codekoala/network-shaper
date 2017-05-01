@@ -3,25 +3,25 @@
  */
 
 /**
- * @var {color} $sheet-bg-color
- * Background-color for action sheets and message boxes.
+ * @var {color} $sheet-background-color
+ * Background-color for action sheets.
  */
-$sheet-bg-color: transparentize(darken($base-color, 40%), .1) !dynamic;
+$sheet-background-color: dynamic($background-color);
 
 /**
- * @var {color} $sheet-bg-gradient
- * Background gradient style for action sheets and message boxes.
+ * @var {color} $sheet-border-color
+ * Border color for action sheets.
  */
-$sheet-bg-gradient: $base-gradient !dynamic;
+$sheet-border-color: dynamic($neutral-color);
 
 /**
  * @var {measurement} $sheet-button-spacing
  * Vertical spacing between sheet buttons.
  */
-$sheet-button-spacing: .5em !dynamic;
+$sheet-button-spacing: dynamic(.5em);
 
 /**
  * @var {measurement} $sheet-padding
  * Overall padding in a sheet.
  */
-$sheet-padding: .7em !dynamic;
+$sheet-padding: dynamic(.6em);

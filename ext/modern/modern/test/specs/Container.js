@@ -1,8 +1,7 @@
 describe("Ext.Container", function() {
-
     var ct;
 
-    afterEach(function(){
+    afterEach(function() {
         ct = Ext.destroy(ct);
     });
 
@@ -15,6 +14,236 @@ describe("Ext.Container", function() {
         ct = new Ext.container.Container(cfg);
         return ct;
     }
+    
+    describe("add", function() {
+        beforeEach(function() {
+            makeContainer();
+        });
+        
+        it("should return the item when adding single item", function() {
+            var c = ct.add({
+                xtype: 'component'
+            });
+            
+            expect(ct.items.getAt(0)).toBe(c);
+        });
+        
+        it("should return the array of added items when passed an array", function() {
+            var cs = ct.add([{ xtype: 'component' }]);
+            
+            expect(Ext.isArray(cs)).toBe(true);
+            expect(cs.length).toBe(1);
+            expect(ct.items.getAt(0)).toBe(cs[0]);
+        });
+        
+        it("should return the array of added items when adding more than one", function() {
+            var cs = ct.add([
+                { xtype: 'component' },
+                { xtype: 'component' }
+            ]);
+            
+            expect(Ext.isArray(cs)).toBe(true);
+            expect(cs.length).toBe(2);
+            expect(ct.items.getAt(0)).toBe(cs[0]);
+            expect(ct.items.getAt(1)).toBe(cs[1]);
+        });
+    });
+    
+    describe("remove", function() {
+        var c0, c1;
+        
+        beforeEach(function() {
+            makeContainer({
+                items: [{
+                    // itemIds are reversed to trip the tests
+                    // if something goes wrong
+                    xtype: 'component',
+                    itemId: '1'
+                }, {
+                    xtype: 'component',
+                    itemId: '0'
+                }]
+            });
+            
+            c0 = ct.items.getAt(0);
+            c1 = ct.items.getAt(1);
+        });
+        
+        afterEach(function() {
+            Ext.destroy(c0, c1);
+            c0 = c1 = null;
+        });
+        
+        describe("by instance", function() {
+            it("should remove an item", function() {
+                ct.remove(c0);
+                
+                expect(ct.items.getCount()).toBe(1);
+            });
+            
+            it("should return the removed item", function() {
+                var ret = ct.remove(c0);
+                
+                expect(ret).toBe(c0);
+            });
+            
+            it("should destroy the item when asked to", function() {
+                var ret = ct.remove(c0, true);
+                
+                expect(ret.destroyed).toBe(true);
+            });
+            
+            it("should not remove the remaining item", function() {
+                var ret = ct.remove(c0);
+                
+                expect(ct.items.getAt(0)).toBe(c1);
+            });
+        });
+        
+        describe("by index", function() {
+            it("should remove an item", function() {
+                ct.remove(0);
+                
+                expect(ct.items.getCount()).toBe(1);
+            });
+            
+            it("should return the removed item", function() {
+                var ret = ct.remove(0);
+                
+                expect(ret).toBe(c0);
+            });
+            
+            it("should destroy the item when asked to", function() {
+                var ret = ct.remove(0, true);
+                
+                expect(ret.destroyed).toBe(true);
+            });
+            
+            it("should not remove the remaining item", function() {
+                ct.remove(0);
+                
+                expect(ct.items.getAt(0)).toBe(c1);
+            });
+        });
+        
+        describe("by itemId", function() {
+            it("should remove an item", function() {
+                ct.remove('0');
+                
+                expect(ct.items.getCount()).toBe(1);
+            });
+            
+            it("should return the removed item", function() {
+                var ret = ct.remove('0');
+                
+                expect(ret).toBe(c1);
+            });
+            
+            it("should destroy the item when asked to", function() {
+                var ret = ct.remove('0');
+                
+                expect(ret.destroyed).toBe(true);
+            });
+            
+            it("should not remove the remaining item", function() {
+                ct.remove('0');
+                
+                expect(ct.items.getAt(0)).toBe(c0);
+            });
+        });
+    });
+    
+    describe("removeAll", function() {
+        var c0, c1;
+        
+        beforeEach(function() {
+            makeContainer({
+                items: [{
+                    xtype: 'component'
+                }, {
+                    xtype: 'component'
+                }]
+            });
+            
+            c0 = ct.items.getAt(0);
+            c1 = ct.items.getAt(1);
+        });
+        
+        afterEach(function() {
+            Ext.destroy(c0, c1);
+            c0 = c1 = null;
+        });
+        
+        it("should remove all items", function() {
+            ct.removeAll();
+            
+            expect(ct.items.getCount()).toBe(0);
+        });
+        
+        it("should return the removed items", function() {
+            var ret = ct.removeAll();
+            
+            expect(Ext.isArray(ret)).toBe(true);
+            expect(ret.length).toBe(2);
+            expect(ret[0]).toBe(c0);
+            expect(ret[1]).toBe(c1);
+        });
+        
+        it("should destroy the items when asked", function() {
+            var ret = ct.removeAll(true);
+            
+            expect(ret[0].destroyed).toBe(true);
+            expect(ret[1].destroyed).toBe(true);
+        });
+        
+        // TODO removeAll(true, true)
+        xit("should remove everything", function() {
+        });
+    });
+    
+    describe("removeAt", function() {
+        var c0, c1;
+        
+        beforeEach(function() {
+            makeContainer({
+                items: [{
+                    xtype: 'component'
+                }, {
+                    xtype: 'component'
+                }]
+            });
+            
+            c0 = ct.items.getAt(0);
+            c1 = ct.items.getAt(1);
+        });
+        
+        afterEach(function() {
+            Ext.destroy(c0, c1);
+            c0 = c1 = null;
+        });
+        
+        it("should remove the item at index", function() {
+            ct.removeAt(0);
+            
+            expect(ct.items.getCount()).toBe(1);
+        });
+        
+        it("should return the removed item", function() {
+            var ret = ct.removeAt(0);
+            
+            expect(ret).toBe(c0);
+        });
+        
+        it("should not remove other items", function() {
+            ct.removeAt(0);
+            
+            expect(ct.items.getAt(0)).toBe(c1);
+        });
+    });
+    
+    // TODO Not sure what an inner item is and how to add it? - AT
+    xdescribe("removeInnerAt", function() {
+    });
 
     describe("references", function() {
         describe("static", function() {
@@ -743,7 +972,8 @@ describe("Ext.Container", function() {
                                 reference: 'a'
                             }
                         }
-                    });    
+                    });
+                    
                     var c = ct.lookupReference('a');
                     var removed = ct.remove(0, false);
                     expect(ct.lookupReference('a')).toBeNull();
@@ -917,7 +1147,7 @@ describe("Ext.Container", function() {
                         expect(ct.lookupReference('a')).toBeNull();
                     });
                     
-                    it("should not have a reference when only removing a container that has references", function() {
+                    xit("should not have a reference when only removing a container that has references", function() {
                         makeContainer({
                             referenceHolder: true,
                             dockedItems: {
@@ -929,7 +1159,8 @@ describe("Ext.Container", function() {
                                     reference: 'a'
                                 }
                             }
-                        });    
+                        });
+                        
                         var dock = ct.down('#docked');
                             
                         var removed = ct.remove(dock, false);
@@ -937,6 +1168,34 @@ describe("Ext.Container", function() {
                         removed.destroy();
                     });    
                 });
+            });
+        });
+
+        describe("setup", function() {
+            it("should not create references on the rootInheritedState if not requested", function() {
+                var vp = new Ext.viewport.Default({
+                    referenceHolder: true
+                });
+
+                var temp = new Ext.container.Container({
+                    items: {
+                        xtype: 'component',
+                        reference: 'a'
+                    }
+                });
+
+                var c = temp.items.first();
+
+
+                ct = new Ext.container.Container({
+                    referenceHolder: true,
+                    items: temp
+                });
+
+                expect(vp.lookupReference('a')).toBeNull();
+                expect(ct.lookupReference('a')).toBe(c);
+
+                vp.destroy();
             });
         });
     });

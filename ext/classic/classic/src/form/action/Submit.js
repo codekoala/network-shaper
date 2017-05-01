@@ -71,7 +71,6 @@ Ext.define('Ext.form.action.Submit', {
      * to submission. Pass false in the Form's submit options to prevent this.
      */
 
-    // inherit docs
     run : function(){
         var me = this,
             form = me.form;

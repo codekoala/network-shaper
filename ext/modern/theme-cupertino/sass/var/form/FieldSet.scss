@@ -6,4 +6,4 @@
  * @var {measurement} $form-fieldset-radius
  * Default border-radius for form fieldsets.
  */
-$form-fieldset-radius: 0px !dynamic;
+$form-fieldset-radius: dynamic(0px);

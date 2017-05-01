@@ -5,6 +5,9 @@
  * Creates a 3D Bar or 3D Column Chart (depending on the value of the
  * {@link Ext.chart.CartesianChart#flipXY flipXY} config).
  *
+ * Note: 'bar3d' series is meant to be used with the
+ * {@link Ext.chart.axis.Category 'category3d'} axis as its x-axis.
+ *
  *     @example
  *     Ext.create({
  *        xtype: 'cartesian', 
@@ -83,6 +86,7 @@ Ext.define('Ext.chart.series.Bar3D', {
     alias: 'series.bar3d',
     type: 'bar3d',
     seriesType: 'bar3dSeries',
+    is3D: true,
 
     config: {
         itemInstancing: {
@@ -100,6 +104,15 @@ Ext.define('Ext.chart.series.Bar3D', {
         highlightCfg: {
             opacity: 0.8
         }
+    },
+
+    updateXAxis: function (xAxis, oldXAxis) {
+        //<debug>
+        if (xAxis.type !== 'category3d') {
+            Ext.raise("'bar3d' series should be used with a 'category3d' axis. Please refer to the 'bar3d' series docs.");
+        }
+        //</debug>
+        this.callParent([xAxis, oldXAxis]);
     },
 
     getSprites: function () {

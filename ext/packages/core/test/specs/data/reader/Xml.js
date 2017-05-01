@@ -47,22 +47,52 @@ describe("Ext.data.reader.Xml", function() {
     
     afterEach(function() {
         Ext.DomQuery = DQ;
+        
+        if (reader) {
+            reader.destroy();
+        }
+        
+        reader = null;
     });
     
-    it('should set a reference to the raw data in the .raw property on the record', function () {
-        var Model = Ext.define(null, {
-            extend: 'Ext.data.Model',
-            fields: ['name']
-        });
+    describe("raw data", function() {
+        var Model, xml, rec;
+        
+        beforeEach(function() {
+            Model = Ext.define('spec.Xml', {
+                extend: 'Ext.data.Model',
+                fields: ['name']
+            });
             
-        var xml = getXml('<dog><name>Utley</name></dog><dog><name>Molly</name></dog>');
+            xml = getXml('<dog><name>Utley</name></dog><dog><name>Molly</name></dog>');
 
-        reader = new Ext.data.reader.Xml({
-            model: Model,
-            record: 'dog'
+            reader = new Ext.data.reader.Xml({
+                model: 'spec.Xml',
+                record: 'dog'
+            });
         });
-
-        expect(reader.readRecords(xml).getRecords()[0].raw).toBe(xml.firstChild.firstChild);
+        
+        afterEach(function() {
+            Ext.data.Model.schema.clear(true);
+            Ext.undefine('spec.Xml');
+            
+            rec = xml = Model = null;
+        });
+        
+        it("should not set raw data reference by default", function() {
+            rec = reader.readRecords(xml).getRecords()[0];
+            
+            expect(rec.raw).not.toBeDefined();
+        });
+        
+        it("should set raw data reference for a TreeStore record", function () {
+            // Simulate TreeStore node
+            spec.Xml.prototype.isNode = true;
+            
+            rec = reader.readRecords(xml).getRecords()[0];
+            
+            expect(rec.raw).toBe(xml.firstChild.firstChild);
+        });
     });
 
     describe("copyFrom", function() {

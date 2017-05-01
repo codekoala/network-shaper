@@ -20,6 +20,11 @@ Ext.application = function(config) {
     var createApp = function (App) {
             // This won't be called until App class has been created.
             Ext.onReady(function() {
+                var Viewport = Ext.viewport;
+                Viewport = Viewport && Viewport['Viewport'];
+                if (Viewport && Viewport.setup) {
+                    Viewport.setup(App.prototype.config.viewport);
+                }
                 Ext.app.Application.instance = new App();
             });
         };

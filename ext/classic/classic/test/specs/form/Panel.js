@@ -1,5 +1,4 @@
 describe("Ext.form.Panel", function() {
-
     var panel;
 
     function createPanel(config) {
@@ -8,15 +7,8 @@ describe("Ext.form.Panel", function() {
     }
 
     afterEach(function() {
-        if (panel) {
-            panel.destroy();
-            panel = undefined;
-        }
+        panel = Ext.destroy(panel);
     });
-
-
-
-    //========== SPECS: ==========//
 
     describe("creation", function() {
         it("should extend Ext.Panel", function() {
@@ -27,6 +19,7 @@ describe("Ext.form.Panel", function() {
             var component = Ext.create("Ext.form.Panel", {name: 'test'});
             expect(component instanceof Ext.form.Panel).toBe(true);
             expect(Ext.getClass(component).xtype).toBe("form");
+            component.destroy();
         });
     });
 
@@ -102,11 +95,13 @@ describe("Ext.form.Panel", function() {
 
 
     describe("destroying", function() {
-        it("should call it's form object's destroy method", function() {
+        it("should call its form object's destroy method", function() {
             createPanel();
-            spyOn(panel.getForm(), 'destroy');
+            var spy = spyOn(panel.getForm(), 'destroy');
+            
             panel.destroy();
-            expect(panel.getForm().destroy).toHaveBeenCalled();
+            
+            expect(spy).toHaveBeenCalled();
         });
     });
 
@@ -245,7 +240,7 @@ describe("Ext.form.Panel", function() {
         
         describe("attributes", function() {
             it("should have form role on the body", function() {
-                jasmine.expectAriaAttr(panel.body, 'role', 'form');
+                expect(panel.body).toHaveAttr('role', 'form');
             });
         });
     });

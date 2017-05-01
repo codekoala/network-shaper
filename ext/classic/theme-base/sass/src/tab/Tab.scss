@@ -1,7 +1,13 @@
 @include extjs-button-base(
     $base-cls: 'tab',
     $btn-display: block,
-    $include-arrows: false
+    $include-arrows: false,
+    // Tabs do not use flexbox because resulting sub-pixel rounding errors can cause off-
+    // by-one measurements in the tab bar's box layout. This can result in odd visual effects
+    // such as an extra pixel of space in between the tab and tab bar in certain combinations
+    // of tab rotation/position.  To be on the safe side we'll just stick to table-based
+    // layouts for tabs
+    $flexbox: false
 );
 
 .#{$prefix}tab {

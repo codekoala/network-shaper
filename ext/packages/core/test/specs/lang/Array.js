@@ -57,7 +57,7 @@ describe("Ext.Array", function() {
                 it("should not cause an exception", function() {
                     expect(function() {
                         Ext.Array.remove(myArray, 1);
-                    }).not.toRaiseExtError();
+                    }).not.toThrow();
 
                     expect(myArray).toEqual([]);
                 });
@@ -821,7 +821,7 @@ describe("Ext.Array", function() {
         it("should throw an exception if no fn is passed", function(){
             expect(function(){
                 Ext.Array.every([1, 2, 3]);
-            }).toRaiseExtError();
+            }).toThrow();
         });
 
         it("should stop as soon as a false value is found", function(){
@@ -881,7 +881,7 @@ describe("Ext.Array", function() {
         it("should throw an exception if no fn is passed", function(){
             expect(function(){
                 Ext.Array.some([1, 2, 3]);
-            }).toRaiseExtError();
+            }).toThrow();
         });
 
         it("should stop as soon as a matching value is found", function(){
@@ -1168,7 +1168,7 @@ describe("Ext.Array", function() {
             expect(array.length).toEqual(lengthBefore+1);
         });
         };
-    };
+    }
 
         // The _replace method is our corrected method for IE8, but we make it available (in
         // debug builds) on all browsers to see that it works.
@@ -1527,6 +1527,111 @@ describe("Ext.Array", function() {
         it("should match the same array", function(){
             var arr = [1, 2, 3];
             expect(equals(arr, arr)).toBe(true);
+        });
+    });
+
+    describe('reduce', function () {
+        var out = [];
+
+        //             0  1  2  3  4  5  6  7
+        var sparse = [ 1, 3, 5, 7, 9, 2, 4, 6 ];
+        //  sparse = [    3,    7,    2, 4    ];
+
+        delete sparse[0];
+        delete sparse[2];
+        delete sparse[4];
+        delete sparse[7];
+
+        function reducer (a, b, i) {
+            out.push('[' + i + ']: (' + a + ',' + b + ')');
+            return a * 10 + b;
+        }
+
+        beforeEach(function () {
+            out.length = 0;
+        });
+
+        it('should use initialValue', function () {
+            var v = Ext.Array.reduce([2, 3, 4], reducer, 1);
+
+            expect(out.length).toBe(3);
+            expect(out[0]).toBe('[0]: (1,2)');
+            expect(out[1]).toBe('[1]: (12,3)');
+            expect(out[2]).toBe('[2]: (123,4)');
+            expect(v).toBe(1234);
+        });
+
+        it('should use first element as initialValue', function () {
+            var v = Ext.Array.reduce([2, 3, 4], reducer);
+
+            expect(out.length).toBe(2);
+            expect(out[0]).toBe('[1]: (2,3)');
+            expect(out[1]).toBe('[2]: (23,4)');
+            expect(v).toBe(234);
+        });
+
+        it('should skip undefined elements', function () {
+            var v = Ext.Array.reduce(sparse, reducer, 5);
+
+            expect(out.length).toBe(4);
+            expect(out[0]).toBe('[1]: (5,3)');
+            expect(out[1]).toBe('[3]: (53,7)');
+            expect(out[2]).toBe('[5]: (537,2)');
+            expect(out[3]).toBe('[6]: (5372,4)');
+            expect(v).toBe(53724);
+        });
+
+        it('should skip undefined elements including the first', function () {
+            var v = Ext.Array.reduce(sparse, reducer);
+
+            expect(out.length).toBe(3);
+            expect(out[0]).toBe('[3]: (3,7)');
+            expect(out[1]).toBe('[5]: (37,2)');
+            expect(out[2]).toBe('[6]: (372,4)');
+            expect(v).toBe(3724);
+        });
+    });
+
+    describe("move", function() {
+        var arr;
+
+        beforeEach(function() {
+            arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+        });
+
+        it("should be able to move the first item", function() {
+            Ext.Array.move(arr, 0, 6);
+            expect(arr).toEqual([2, 3, 4, 5, 6, 7, 1, 8, 9, 10, 11, 12]);
+        });
+
+        it("should be able to move the last item", function() {
+            Ext.Array.move(arr, 11, 6);
+            expect(arr).toEqual([1, 2, 3, 4, 5, 6, 12, 7, 8, 9, 10, 11]);
+        });
+
+        it("should leave the array intact if toIdx === fromIdx", function() {
+            Ext.Array.move(arr, 7, 7);
+            expect(arr).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        });
+
+        it("should be able to move an item to the first position", function() {
+            Ext.Array.move(arr, 6, 0);
+            expect(arr).toEqual([7, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12]);
+        });
+
+        it("should be able to move an item to the last position", function() {
+            Ext.Array.move(arr, 6, 11);
+            expect(arr).toEqual([1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 7]);
+        });
+
+        it("should be able to move a middle item before current index", function() {
+            Ext.Array.move(arr, 6, 3);
+            expect(arr).toEqual([1, 2, 3, 7, 4, 5, 6, 8, 9, 10, 11, 12]);
+        });
+
+        it("should be able to move a middle item after current index", function() {
+            Ext.Array.move(arr, 6, 9);
+            expect(arr).toEqual([1, 2, 3, 4, 5, 6, 8, 9, 10, 7, 11, 12]);
         });
     });
 });

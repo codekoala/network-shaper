@@ -1,5 +1,5 @@
-$tabbar-strip-background-color: $orange !dynamic;
-$tabbar-scroller-opacity: 1 !dynamic;
-$tabbar-scroller-opacity-over: .8 !dynamic;
-$tabbar-scroller-opacity-pressed: .6 !dynamic;
-$tabbar-scroller-opacity-disabled: .3 !dynamic;
+$tabbar-strip-background-color: dynamic($orange);
+$tabbar-scroller-opacity: dynamic(1);
+$tabbar-scroller-opacity-over: dynamic(.8);
+$tabbar-scroller-opacity-pressed: dynamic(.6);
+$tabbar-scroller-opacity-disabled: dynamic(.3);

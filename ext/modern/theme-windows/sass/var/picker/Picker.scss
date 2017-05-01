@@ -6,4 +6,4 @@
  * @var {measurement} $picker-row-height
  * The height of each picker item.
  */
-$picker-row-height: 80px !dynamic;
+$picker-row-height: dynamic(80px);

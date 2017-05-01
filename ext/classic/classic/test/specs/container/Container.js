@@ -38,17 +38,226 @@ describe("Ext.container.Container", function() {
         return ct;
     }
 
+    describe("retaining scroll position", function() {
+        var endSpy, s;
+
+        beforeEach(function() {
+            endSpy = jasmine.createSpy();
+        });
+
+        afterEach(function() {
+            endSpy = s = null;
+        });
+
+        function makeScrollCt(cfg) {
+            makeContainer(Ext.apply(cfg, {
+                renderTo: Ext.getBody(),
+                scrollable: true,
+                defaultType: 'component'
+            }));
+            s = ct.getScrollable();
+            s.on('scrollend', endSpy);
+        }
+
+        function sizeHtml(width, height) {
+            return Ext.String.format('<div style="width: {0}px; height: {1}px;"></div>', width, height);
+        }
+
+        // Box layouts are the only real applicable ones for scrolling with configured sizing
+        describe("configured size", function() {
+            describe("hbox", function() {
+                it("should retain position when a child causes a layout", function() {
+                    makeScrollCt({
+                        layout: 'hbox',
+                        width: 200,
+                        height: 200,
+                        items: [{
+                            flex: 1,
+                            height: 400
+                        }, {
+                            html: sizeHtml(300, 400)
+                        }]
+                    });
+                    s.scrollTo(100, 150);
+                    waitsFor(function() {
+                        return endSpy.callCount > 0;
+                    });
+                    runs(function() {
+                        ct.items.last().setHtml(sizeHtml(300, 400));
+                    });
+                    waitsFor(function() {
+                        var pos = s.getPosition();
+                        return pos.x > 0 && pos.y > 0;
+                    });
+                    runs(function() {
+                        expect(s.getPosition()).toEqual({
+                            x: 100,
+                            y: 150
+                        });
+                    });
+                });
+            });
+
+            describe("vbox", function() {
+                it("should retain position when a child causes a layout", function() {
+                    makeScrollCt({
+                        layout: 'vbox',
+                        width: 200,
+                        height: 200,
+                        items: [{
+                            flex: 1,
+                            width: 400
+                        }, {
+                            html: sizeHtml(400, 300)
+                        }]
+                    });
+                    s.scrollTo(150, 100);
+                    waitsFor(function() {
+                        return endSpy.callCount > 0;
+                    });
+                    runs(function() {
+                        ct.items.last().setHtml(sizeHtml(400, 300));
+                    });
+                    waitsFor(function() {
+                        var pos = s.getPosition();
+                        return pos.x > 0 && pos.y > 0;
+                    });
+                    runs(function() {
+                        expect(s.getPosition()).toEqual({
+                            x: 150,
+                            y: 100
+                        });
+                    });
+                });
+            });
+        });
+
+        describe("shrinkwrap with constraints", function() {
+            function makeShrinkScrollCt(cfg) {
+                makeScrollCt(Ext.apply(cfg, {
+                    floating: true,
+                    x: 0,
+                    y: 0,
+                    maxWidth: 200,
+                    maxHeight: 200
+                }));
+            }
+
+            describe("hbox", function() {
+                it("should retain position when a child causes a layout", function() {
+                    makeShrinkScrollCt({
+                        layout: 'hbox',
+                        items: [{
+                            width: 300,
+                            height: 400
+                        }, {
+                            width: 300,
+                            height: 400
+                        }]
+                    });
+                    s.scrollTo(150, 150);
+                    waitsFor(function() {
+                        return endSpy.callCount > 0;
+                    });
+                    runs(function() {
+                        ct.items.last().setSize(400, 500);
+                    });
+                    waitsFor(function() {
+                        var pos = s.getPosition();
+                        return pos.x > 0 && pos.y > 0;
+                    });
+                    runs(function() {
+                        expect(s.getPosition()).toEqual({
+                            x: 150,
+                            y: 150
+                        });
+                    });
+                });
+            });
+
+            describe("vbox", function() {
+                it("should retain position when a child causes a layout", function() {
+                    makeShrinkScrollCt({
+                        layout: 'vbox',
+                        items: [{
+                            width: 400,
+                            height: 300
+                        }, {
+                            width: 400,
+                            height: 300
+                        }]
+                    });
+                    s.scrollTo(150, 150);
+                    waitsFor(function() {
+                        return endSpy.callCount > 0;
+                    });
+                    runs(function() {
+                        ct.items.last().setSize(500, 400);
+                    });
+                    waitsFor(function() {
+                        var pos = s.getPosition();
+                        return pos.x > 0 && pos.y > 0;
+                    });
+                    runs(function() {
+                        expect(s.getPosition()).toEqual({
+                            x: 150,
+                            y: 150
+                        });
+                    });
+                });
+            });
+
+            describe("anchor", function() {
+                it("should retain position when a child causes a layout", function() {
+                    makeShrinkScrollCt({
+                        layout: 'anchor',
+                        items: [{
+                            height: 200,
+                            width: 100
+                        }, {
+                            height: 200,
+                            width: 100
+                        }, {
+                            height: 200,
+                            width: 100
+                        }]
+                    });
+                    s.scrollTo(null, 150);
+                    waitsFor(function() {
+                        return endSpy.callCount > 0;
+                    });
+                    runs(function() {
+                        ct.items.last().setHeight(300);
+                    });
+                    waitsFor(function() {
+                        return s.getPosition().y > 0;
+                    });
+                    runs(function() {
+                        expect(s.getPosition()).toEqual({
+                            x: 0,
+                            y: 150
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     describe("Floating descendants",function() {
+
+        afterEach(function() {
+            ct.destroy();
+        });
+
         it("should find floating descentants using down(), not child()", function() {
-            ct = Ext.create('Ext.window.Window', {
-                bodyPadding: 5,
+            makeContainer({
+                renderTo: Ext.getBody(),
                 layout: 'fit',
                 title: 'Test',
                 height: 400,
                 width: 600,
                 items: {
                     xtype: 'fieldset',
-                    title: 'Test',
                     items: {
                         xtype: 'window',
                         title: 'Descendant',
@@ -56,8 +265,7 @@ describe("Ext.container.Container", function() {
                         width: 200,
                         constrain: true
                     }
-                },
-                autoShow: true
+                }
             });
             expect(ct.child('window')).toBeNull();
             expect(ct.down('window')).not.toBeNull();
@@ -65,27 +273,27 @@ describe("Ext.container.Container", function() {
 
         describe("layouts", function() {
             it("should allow floater layouts to run when the container has one queued", function() {
-                var w = new Ext.window.Window({
+                var p = new Ext.panel.Panel({
                     width: 200,
-                    height: 200
+                    height: 200,
+                    floating: true
                 });
 
-                var ct = new Ext.container.Container({
-                    renderTo: document.body,
+                makeContainer({
+                    renderTo: Ext.getBody(),
                     width: 400,
                     height: 400,
-                    items: w
+                    items: p
                 });
-                w.show();
+                p.show();
 
                 Ext.suspendLayouts();
                 ct.setSize(500, 500);
-                w.add({
+                p.add({
                     title: 'X'
                 });
                 Ext.resumeLayouts(true);
-                expect(w.items.first().rendered).toBe(true);
-                ct.destroy();
+                expect(p.items.first().rendered).toBe(true);
             });
         })
     });
@@ -210,7 +418,8 @@ describe("Ext.container.Container", function() {
     });
 
     describe("getComponent", function(){
-        var a, b, c, d;
+        var a, b, c, d, cmp;
+        
         beforeEach(function(){
             a = new Ext.Component({
                 itemId: 'a'
@@ -230,7 +439,8 @@ describe("Ext.container.Container", function() {
         });
 
         afterEach(function(){
-            a = b = c = d = null;
+            Ext.destroy(a, b, c, d, cmp);
+            a = b = c = d = cmp = null;
         });
 
         it("should return undefined if id is not found", function(){
@@ -242,7 +452,9 @@ describe("Ext.container.Container", function() {
         });
 
         it("should return undefined if instance is not found", function(){
-            expect(ct.getComponent(new Ext.Component())).not.toBeDefined();
+            cmp = new Ext.Component();
+            
+            expect(ct.getComponent(cmp)).not.toBeDefined();
         });
 
         it("should find a passed instance", function(){
@@ -360,7 +572,7 @@ describe("Ext.container.Container", function() {
             ct.on('beforeadd', o.fn);
             ct.add(c);
             //expect(o.fn).toHaveBeenCalledWith(ct, c, 0);
-            expect(o.fn).wasCalled();
+            expect(o.fn).toHaveBeenCalled();
         });
 
         it("should cancel if beforeadd returns false", function(){
@@ -368,8 +580,9 @@ describe("Ext.container.Container", function() {
             ct.on('beforeadd', function(){
                 return false;
             });
-            ct.add({});
+            var cmp = ct.add({});
             expect(ct.items.getCount()).toEqual(0);
+            cmp.destroy();
         });
 
         it("should fire the add event", function(){
@@ -509,6 +722,8 @@ describe("Ext.container.Container", function() {
                 var c = new Ext.Component();
 
                 expect(ct.move(c, 1)).toBe(false);
+                
+                c.destroy();
             });
 
             it("should move components by index", function(){
@@ -635,6 +850,8 @@ describe("Ext.container.Container", function() {
                 expect(other.items.indexOf(c)).toBe(-1);
                 expect(ct.items.getAt(0)).toBe(c);
                 expect(ct.items.getAt(1)).toBe(ref);
+                
+                other.destroy();
             });
 
             it("should be able to move existing items in a container", function() {
@@ -844,6 +1061,8 @@ describe("Ext.container.Container", function() {
                 expect(other.items.indexOf(c)).toBe(-1);
                 expect(ct.items.getAt(1)).toBe(c);
                 expect(ct.items.getAt(0)).toBe(ref);
+                
+                other.destroy();
             });
 
             it("should be able to move existing items in a container", function() {
@@ -1092,6 +1311,11 @@ describe("Ext.container.Container", function() {
                 cmp = new Ext.Component();
                 ct.remove(cmp);
             });
+            
+            afterEach(function() {
+                Ext.destroy(cmp);
+                cmp = null;
+            });
 
             it("should not remove", function(){
                 expect(ct.items.getCount()).toEqual(3);
@@ -1166,7 +1390,7 @@ describe("Ext.container.Container", function() {
             ct.on('beforeremove', o.fn);
             ct.remove(a);
             //expect(o.fn).toHaveBeenCalledWith(ct, a);
-            expect(o.fn).wasCalled();
+            expect(o.fn).toHaveBeenCalled();
         });
 
         it("should cancel the remove if beforeremove returns false", function(){
@@ -1188,7 +1412,7 @@ describe("Ext.container.Container", function() {
             ct.on('remove', o.fn);
             ct.remove(b);
             //expect(o.fn).toHaveBeenCalledWith(ct, b);
-            expect(o.fn).wasCalled();
+            expect(o.fn).toHaveBeenCalled();
         });
 
         it("should use container autoDestroy as a default", function(){
@@ -2390,6 +2614,25 @@ describe("Ext.container.Container", function() {
 
                 });
             });
+
+            describe("child disabled before being added to container", function() {
+                it("should keep the child disabled state", function() {
+                    makeDisableCt();
+                    ct.disable();
+
+                    a = new Ext.Component({
+                        disabled: true
+                    });
+
+                    ct.add(a);
+                    expect(ct.disabled).toBe(true);
+                    expect(a.disabled).toBe(true);
+
+                    ct.enable();
+                    expect(ct.disabled).toBe(false);
+                    expect(a.disabled).toBe(true);
+                });
+            });
         });
     });
 
@@ -2476,6 +2719,11 @@ describe("Ext.container.Container", function() {
 
             age = container.getComponent(2);
         });
+        
+        afterEach(function() {
+            container.destroy();
+            container = null;
+        });
 
         it('should return the next child', function () {
             expect(container.nextChild(age)).toBe(container.getComponent(3));
@@ -2483,6 +2731,14 @@ describe("Ext.container.Container", function() {
 
         it('should return the next child using a selector', function() {
             expect(container.nextChild(age, 'field[name=bio]')).toBe(container.getComponent(4));
+        });
+
+        it("should return null if there is no child", function() {
+            expect(container.nextChild(null, 'field[name=bio]')).toBeNull();
+        });
+
+        it("should return null if there are no matches", function() {
+            expect(container.nextChild(age, 'madeupxtype')).toBeNull();
         });
     });
 
@@ -2524,6 +2780,11 @@ describe("Ext.container.Container", function() {
 
             age = container.getComponent(2);
         });
+        
+        afterEach(function() {
+            container.destroy();
+            container = null;
+        });
 
         it('should return the previous child', function () {
             expect(container.prevChild(age)).toBe(container.getComponent(1));
@@ -2531,6 +2792,14 @@ describe("Ext.container.Container", function() {
 
         it('should return the previous child using a selector', function () {
             expect(container.prevChild(age, 'field[name=name]')).toBe(container.getComponent(0));
+        });
+
+        it("should return null if there is no child", function() {
+            expect(container.prevChild(null, 'field[name=name]')).toBeNull();
+        });
+
+        it("should return null if there are no matches", function() {
+            expect(container.prevChild(age, 'madeupxtype')).toBeNull();
         });
     });
 
@@ -4470,6 +4739,34 @@ describe("Ext.container.Container", function() {
                         removed.destroy();
                     });    
                 });
+            });
+        });
+
+        describe("setup", function() {
+            it("should not create references on the rootInheritedState if not requested", function() {
+                var vp = new Ext.container.Viewport({
+                    referenceHolder: true
+                });
+
+                var temp = new Ext.container.Container({
+                    items: {
+                        xtype: 'component',
+                        reference: 'a'
+                    }
+                });
+
+                var c = temp.items.first();
+
+
+                ct = new Ext.container.Container({
+                    referenceHolder: true,
+                    items: temp
+                });
+
+                expect(vp.lookupReference('a')).toBeNull();
+                expect(ct.lookupReference('a')).toBe(c);
+
+                vp.destroy();
             });
         });
     });

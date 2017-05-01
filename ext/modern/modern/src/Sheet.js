@@ -9,15 +9,9 @@ Ext.define('Ext.Sheet', {
 
     xtype: 'sheet',
 
-    requires: ['Ext.Button', 'Ext.fx.Animation'],
+    requires: ['Ext.fx.Animation'],
 
     config: {
-        /**
-         * @cfg
-         * @inheritdoc
-         */
-        baseCls: Ext.baseCSSPrefix + 'sheet',
-
         /**
          * @cfg
          * @inheritdoc
@@ -60,37 +54,34 @@ Ext.define('Ext.Sheet', {
          * @cfg
          * @inheritdoc
          */
-        showAnimation: !Ext.browser.is.AndroidStock2 ? {
+        showAnimation: {
             type: 'slideIn',
             duration: 250,
             easing: 'ease-out'
-        } : null,
+        },
 
         /**
          * @cfg
          * @inheritdoc
          */
-        hideAnimation: !Ext.browser.is.AndroidStock2 ? {
+        hideAnimation: {
             type: 'slideOut',
             duration: 250,
             easing: 'ease-in'
-        } : null
-    },
-
-    isInputRegex: /^(input|textarea|select|a)$/i,
-
-    beforeInitialize: function() {
-        var me = this;
-        // Temporary fix for a mysterious bug on iOS where double tapping on a sheet
-        // being animated from the bottom shift the whole body up
-        if (Ext.os.is.iOS) {
-            this.element.dom.addEventListener('touchstart', function(e) {
-                if (!me.isInputRegex.test(e.target.tagName)) {
-                    e.preventDefault();
-                }
-            }, true);
         }
     },
+
+    baseCls: Ext.baseCSSPrefix + 'sheet',
+
+    border: null,
+
+    bodyBorder: false,
+
+    floated: true,
+
+    manageBorders: false,
+
+    isInputRegex: /^(input|textarea|select|a)$/i,
 
     applyHideAnimation: function(config) {
         var exit = this.getExit(),
@@ -105,18 +96,13 @@ Ext.define('Ext.Sheet', {
                 type: 'slideOut'
             };
         }
-        if (Ext.isString(config)) {
-            config = {
-                type: config
-            };
-        }
-        var anim = Ext.factory(config, Ext.fx.Animation);
+        var anim = this.callParent([config]);
 
         if (anim) {
-            if (exit == 'bottom') {
+            if (exit === 'bottom') {
                 direction = 'down';
             }
-            if (exit == 'top') {
+            if (exit === 'top') {
                 direction = 'up';
             }
             anim.setDirection(direction);
@@ -137,18 +123,13 @@ Ext.define('Ext.Sheet', {
                 type: 'slideIn'
             };
         }
-        if (Ext.isString(config)) {
-            config = {
-                type: config
-            };
-        }
-        var anim = Ext.factory(config, Ext.fx.Animation);
+        var anim = this.callParent([config]);
 
         if (anim) {
-            if (enter == 'bottom') {
+            if (enter === 'bottom') {
                 direction = 'down';
             }
-            if (enter == 'top') {
+            if (enter === 'top') {
                 direction = 'up';
             }
             anim.setBefore({

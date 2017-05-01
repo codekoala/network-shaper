@@ -1,15 +1,15 @@
 /** @class Ext.grid.header.Container */
 //
 
-$grid-header-background-color: $neutral-light-color !dynamic;
-$grid-header-background-gradient: 'none' !dynamic;
-$grid-header-border-color: $neutral-medium-dark-color !dynamic;
-$grid-header-over-background-color: mix(#fff, $base-light-color, 80%) !dynamic;
-$grid-header-over-background-gradient: 'none' !dynamic;
-$grid-header-padding: 7px 10px !dynamic;
-$grid-header-sort-icon-spacing: 8px !dynamic;
-$grid-header-trigger-spacing: 4px !dynamic;
-$grid-header-trigger-width: 18px !dynamic;
-$grid-header-trigger-background-position: center center !dynamic;
-$grid-header-open-background-color: $grid-header-over-background-color !dynamic;
-$grid-header-trigger-background-color-open: mix($base-light-color, $neutral-light-color, 30%) !dynamic;
+$grid-header-background-color: dynamic($neutral-light-color);
+$grid-header-background-gradient: dynamic('none');
+$grid-header-border-color: dynamic($neutral-medium-dark-color);
+$grid-header-over-background-color: dynamic(mix(#fff, $base-light-color, 80%));
+$grid-header-over-background-gradient: dynamic('none');
+$grid-header-padding: dynamic(7px 10px);
+$grid-header-sort-icon-spacing: dynamic(8px);
+$grid-header-trigger-spacing: dynamic(4px);
+$grid-header-trigger-width: dynamic(18px);
+$grid-header-trigger-background-position: dynamic(center center);
+$grid-header-open-background-color: dynamic($grid-header-over-background-color);
+$grid-header-trigger-background-color-open: dynamic(mix($base-light-color, $neutral-light-color, 30%));

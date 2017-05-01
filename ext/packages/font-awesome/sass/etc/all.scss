@@ -1,19 +1,7 @@
-/**
- * @var {boolean}
- * `true` to include the FontAwesome font-face for use in the theme or application.
- */
-$enable-font-awesome: false !dynamic;
-
-$fa-font-path: get-resource-path('fonts');
+$fa-font-path: get-resource-path('fonts', 'shared');
 
 @import "_mixins";
-@import "_path";
-@import "_core";
-@import "_larger";
-@import "_fixed-width";
-@import "_list";
-@import "_bordered-pulled";
-@import "_animated";
-@import "_rotated-flipped";
-@import "_stacked";
-@import "_icons";
+
+// NOTE:
+//  _variables.scss is imported much earlier by ext/sass/etc/font-awesome-variables.scss
+//  all css generating pieces are imported by src/all.scss

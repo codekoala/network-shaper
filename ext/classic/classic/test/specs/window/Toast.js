@@ -27,9 +27,50 @@ describe("Ext.window.Toast", function() {
     });
     
     afterEach(function() {
-        Ext.destroy(win, win2, toast);
+        toast = win = win2 = Ext.destroy(toast, win, win2);
         
-        win = field1 = field2 = null;
+        field1 = field2 = null;
+    });
+    
+    describe("creation", function() {
+        describe("autoClose is true", function() {
+            describe("closable is not defined", function() {
+                beforeEach(function() {
+                    makeToast({
+                        autoClose: true
+                    });
+                });
+                
+                it("should force closable to false", function() {
+                    expect(toast.closable).toBe(false);
+                });
+                
+                it("should not render close tool", function() {
+                    var tool = toast.down('[type=close]');
+                    
+                    expect(tool).toBeFalsy();
+                });
+            });
+            
+            describe("closable is true", function() {
+                beforeEach(function() {
+                    makeToast({
+                        closable: true,
+                        autoClose: true
+                    });
+                });
+                
+                it("should not force closable to false", function() {
+                    expect(toast.closable).toBe(true);
+                });
+                
+                it("should render close tool", function() {
+                    var tool = toast.down('[type=close]');
+                    
+                    expect(tool).toBeTruthy();
+                });
+            });
+        });
     });
     
     describe("closeOnMouseDown", function() {
@@ -43,7 +84,7 @@ describe("Ext.window.Toast", function() {
         });
         
         it("should dismiss toast", function() {
-            fireMouseEvent(Ext.getDoc(), 'click', 0, 0);
+            fireMouseEvent(Ext.getBody(), 'click', 0, 0);
             
             waitForSpy(destroySpy, 'destroy spy', 100);
             
@@ -102,7 +143,6 @@ describe("Ext.window.Toast", function() {
                 width: 300,
                 x: 10,
                 y: 10,
-                defaultFocus: 'field1',
                 items: [{
                     xtype: 'textfield',
                     id: 'field1'
@@ -110,12 +150,14 @@ describe("Ext.window.Toast", function() {
                     xtype: 'textfield',
                     id: 'field2'
                 }]
-            }).show();
-        
+            });
+            
             field1 = win.down('#field1');
             field2 = win.down('#field2');
-        
-            waitForFocus(field1, 'field1 inputEl initial focus');
+            
+            win.show();
+            
+            focusAndWait(field1);
         });
     
         // https://sencha.jira.com/browse/EXTJS-15357

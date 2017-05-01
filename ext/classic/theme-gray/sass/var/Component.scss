@@ -1,4 +1,4 @@
 /** @class Global_CSS */
 //
 
-$base-color: #ccc !dynamic;
+$base-color: dynamic(#ccc);

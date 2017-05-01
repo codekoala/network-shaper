@@ -1,5 +1,5 @@
 describe("Ext.Evented", function () {
-    ['extension', 'metadata'].forEach(function (mode) {
+    function createSuite(mode) {
         function getCls(cfg) {
             var base;
             cfg = cfg || {};
@@ -86,8 +86,7 @@ describe("Ext.Evented", function () {
                     expect(cmp.setFoo.callCount).toEqual(1);
                     expect(cmp.applyFoo.callCount).toEqual(1);
                     expect(cmp.updateFoo.callCount).toEqual(1);
-
-                })
+                });
             });
 
             describe("Evented Events listeners via listener config", function () {
@@ -209,12 +208,12 @@ describe("Ext.Evented", function () {
                     expect(controller.resume).toBeDefined();
                 });
 
-                it("controller pause should delay updater until resume is called", function (done) {
+                it("controller pause should delay updater until resume is called", function(done) {
                     var cfg = {
                             listeners: {
                                 beforefoochange: 'onBeforeFooChange'
                             },
-                            onBeforeFooChange: function (cmp, newValue, oldValue, controller) {
+                            onBeforeFooChange: function(cmp, newValue, oldValue, controller) {
                                 controller.pause();
                                 setTimeout(function () {
                                     controller.resume();
@@ -234,5 +233,8 @@ describe("Ext.Evented", function () {
                 });
             });
         });
-    });
+    }
+    
+    createSuite('extension');
+    createSuite('metadata');
 });

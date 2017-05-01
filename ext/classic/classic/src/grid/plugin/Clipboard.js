@@ -32,7 +32,8 @@ Ext.define('Ext.grid.plugin.Clipboard', {
             get: 'getCellData'
         },
         raw: {
-            get: 'getCellData'
+            get: 'getCellData',
+            put: 'putCellData'
         }
     },
 
@@ -43,18 +44,24 @@ Ext.define('Ext.grid.plugin.Clipboard', {
             isRaw = format === 'raw',
             isText = format === 'text',
             viewNode,
-            cell, data, dataIndex, lastRecord, record, row, view;
+            cell, data, dataIndex, lastRecord, column, record, row, view;
 
         selModel.getSelected().eachCell(function (cellContext) {
+            column = cellContext.column,
             view = cellContext.column.getView();
             record = cellContext.record;
+
+            // Do not copy the check column or row numberer column
+            if (column.ignoreExport) {
+                return;
+            }
 
             if (lastRecord !== record) {
                 lastRecord = record;
                 ret.push(row = []);
             }
             
-            dataIndex = cellContext.column.dataIndex;
+            dataIndex = column.dataIndex;
 
             if (isRaw) {
                 data = record.data[dataIndex];
@@ -65,7 +72,7 @@ Ext.define('Ext.grid.plugin.Clipboard', {
                 if (!viewNode) {
                     viewNode = Ext.fly(view.createRowElement(record, cellContext.rowIdx));
                 }
-                cell = viewNode.down(cellContext.column.getCellInnerSelector());
+                cell = viewNode.down(column.getCellInnerSelector());
                 data = cell.dom.innerHTML;
                 if (isText) {
                     data = Ext.util.Format.stripTags(data);
@@ -131,6 +138,14 @@ Ext.define('Ext.grid.plugin.Clipboard', {
             dataIndex, destinationStartColumn,
             dataObject = {};
 
+        // If the view is not focused, use the first cell of the selection as the destination.
+        if (!destination) {
+            view.getSelectionModel().getSelected().eachCell(function(c){
+                destination = c;
+                return false;
+            });
+        }
+
         if (destination) {
             // Create a new Context based upon the outermost View.
             // NavigationModel works on local views. TODO: remove this step when NavModel is fixed to use outermost view in locked grid.
@@ -186,5 +201,19 @@ Ext.define('Ext.grid.plugin.Clipboard', {
 
     putTextData: function (data, format) {
         this.putCellData(data, format);
+    },
+
+    getTarget: function(comp) {
+        return comp.body;
+    },
+
+    privates : {
+        validateAction : function(event) {
+            var view = this.getCmp().getView();
+
+            if (view.actionableMode) {
+                return false;
+            }
+        }
     }
 });

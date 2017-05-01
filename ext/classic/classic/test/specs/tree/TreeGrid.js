@@ -1,144 +1,164 @@
+/* global expect, Ext, spyOn */
+
 describe("Ext.tree.TreeGrid", function() {
 
-    var TreeGridItem = Ext.define(null, {
-        extend: 'Ext.data.Model',
-        fields: ['f1', 'f2'],
-        proxy: {
-            type: 'memory'
-        }
-    }),
-    tree,
-    view,
-    store,
-    recordCount,
-    treeData = {
-        f1: 'root1',
-        f2: 'root.a',
+    function spyOnEvent(object, eventName, fn) {
+        var obj = {
+            fn: fn || Ext.emptyFn
+        },
+        spy = spyOn(obj, "fn");
+        object.addListener(eventName, obj.fn);
+        return spy;
+    }
 
-        // Add cls. Tests must not throw errors with this present.
-        cls: 'test-EXTJS-16367',
-        children: [{
-            f1: '1',
-            f2: 'a',
+    var TreeGridItem = Ext.define(null, {
+            extend: 'Ext.data.Model',
+            fields: ['f1', 'f2'],
+            proxy: {
+                type: 'memory'
+            }
+        }),
+        tree,
+        view,
+        store,
+        recordCount,
+        treeData = {
+            f1: 'root1',
+            f2: 'root.a',
+
+            // Add cls. Tests must not throw errors with this present.
+            cls: 'test-EXTJS-16367',
             children: [{
-                f1: '1.1',
-                f2: 'a.a',
-                leaf: true
+                f1: '1',
+                f2: 'a',
+                children: [{
+                    f1: '1.1',
+                    f2: 'a.a',
+                    leaf: true
+                }, {
+                    f1: '1.2',
+                    f2: 'a.b',
+                    leaf: true
+                }, {
+                    f1: '1.3',
+                    f2: 'a.c',
+                    leaf: true
+                }, {
+                    f1: '1.4',
+                    f2: 'a.d',
+                    leaf: true
+                }]
             }, {
-                f1: '1.2',
-                f2: 'a.b',
-                leaf: true
+                f1: '2',
+                f2: 'b',
+                children: [{
+                    f1: '2.1',
+                    f2: 'b.a',
+                    leaf: true
+                }, {
+                    f1: '2.2',
+                    f2: 'b.b',
+                    leaf: true
+                }, {
+                    f1: '2.3',
+                    f2: 'b.c',
+                    leaf: true
+                }, {
+                    f1: '2.4',
+                    f2: 'b.d',
+                    leaf: true
+                }]
             }, {
-                f1: '1.3',
-                f2: 'a.c',
-                leaf: true
+                f1: '3',
+                f2: 'c',
+                children: [{
+                    f1: '3.1',
+                    f2: 'c.a',
+                    leaf: true
+                }, {
+                    f1: '3.2',
+                    f2: 'c.b',
+                    leaf: true
+                }, {
+                    f1: '3.3',
+                    f2: 'c.c',
+                    leaf: true
+                }, {
+                    f1: '3.4',
+                    f2: 'c.d',
+                    leaf: true
+                }]
             }, {
-                f1: '1.4',
-                f2: 'a.d',
-                leaf: true
+                f1: '4',
+                f2: 'd',
+                children: [{
+                    f1: '4.1',
+                    f2: 'd.a',
+                    leaf: true
+                }, {
+                    f1: '4.2',
+                    f2: 'd.b',
+                    leaf: true
+                }, {
+                    f1: '4.3',
+                    f2: 'd.c',
+                    leaf: true
+                }, {
+                    f1: '4.4',
+                    f2: 'd.d',
+                    leaf: true
+                }]
+            }, {
+                f1: '5',
+                f2: 'e',
+                children: [{
+                    f1: '5.1',
+                    f2: 'e.a',
+                    leaf: true
+                }, {
+                    f1: '5.2',
+                    f2: 'e.b',
+                    leaf: true
+                }, {
+                    f1: '5.3',
+                    f2: 'e.c',
+                    leaf: true
+                }, {
+                    f1: '5.4',
+                    f2: 'e.d',
+                    leaf: true
+                }]
+            }, {
+                f1: '6',
+                f2: 'f',
+                children: [{
+                    f1: '6.1',
+                    f2: 'f.a',
+                    leaf: true
+                }, {
+                    f1: '6.2',
+                    f2: 'f.b',
+                    leaf: true
+                }, {
+                    f1: '6.3',
+                    f2: 'f.c',
+                    leaf: true
+                }, {
+                    f1: '6.4',
+                    f2: 'f.d',
+                    leaf: true
+                }]
             }]
-        }, {
-            f1: '2',
-            f2: 'b',
-            children: [{
-                f1: '2.1',
-                f2: 'b.a',
-                leaf: true
-            }, {
-                f1: '2.2',
-                f2: 'b.b',
-                leaf: true
-            }, {
-                f1: '2.3',
-                f2: 'b.c',
-                leaf: true
-            }, {
-                f1: '2.4',
-                f2: 'b.d',
-                leaf: true
-            }]
-        }, {
-            f1: '3',
-            f2: 'c',
-            children: [{
-                f1: '3.1',
-                f2: 'c.a',
-                leaf: true
-            }, {
-                f1: '3.2',
-                f2: 'c.b',
-                leaf: true
-            }, {
-                f1: '3.3',
-                f2: 'c.c',
-                leaf: true
-            }, {
-                f1: '3.4',
-                f2: 'c.d',
-                leaf: true
-            }]
-        }, {
-            f1: '4',
-            f2: 'd',
-            children: [{
-                f1: '4.1',
-                f2: 'd.a',
-                leaf: true
-            }, {
-                f1: '4.2',
-                f2: 'd.b',
-                leaf: true
-            }, {
-                f1: '4.3',
-                f2: 'd.c',
-                leaf: true
-            }, {
-                f1: '4.4',
-                f2: 'd.d',
-                leaf: true
-            }]
-        }, {
-            f1: '5',
-            f2: 'e',
-            children: [{
-                f1: '5.1',
-                f2: 'e.a',
-                leaf: true
-            }, {
-                f1: '5.2',
-                f2: 'e.b',
-                leaf: true
-            }, {
-                f1: '5.3',
-                f2: 'e.c',
-                leaf: true
-            }, {
-                f1: '5.4',
-                f2: 'e.d',
-                leaf: true
-            }]
-        }, {
-            f1: '6',
-            f2: 'f',
-            children: [{
-                f1: '6.1',
-                f2: 'f.a',
-                leaf: true
-            }, {
-                f1: '6.2',
-                f2: 'f.b',
-                leaf: true
-            }, {
-                f1: '6.3',
-                f2: 'f.c',
-                leaf: true
-            }, {
-                f1: '6.4',
-                f2: 'f.d',
-                leaf: true
-            }]
-        }]
-    };
+        },
+        synchronousLoad = true,
+        treeStoreLoad = Ext.data.TreeStore.prototype.load,
+        loadStore = function() {
+            treeStoreLoad.apply(this, arguments);
+            if (synchronousLoad) {
+                this.flushLoad.apply(this, arguments);
+            }
+            return this;
+        };
     
     function makeTreeGrid(cfg, storeCfg) {
         tree = new Ext.tree.Panel(Ext.apply({
@@ -164,8 +184,16 @@ describe("Ext.tree.TreeGrid", function() {
         }, cfg));
         view = tree.getView();
     }
-    
+
+    beforeEach(function() {
+        // Override so that we can control asynchronous loading
+        Ext.data.TreeStore.prototype.load = loadStore;
+    });
+
     afterEach(function(){
+        // Undo the overrides.
+        Ext.data.TreeStore.prototype.load = treeStoreLoad;
+
         Ext.destroy(tree);
     });
     
@@ -303,10 +331,68 @@ describe("Ext.tree.TreeGrid", function() {
             tree.collapseAll();
             rootNode.expand();
             tree.view.setScrollY(40);
-            tree.getRootNode().childNodes[1].expand();
+
+            // Wait for scroll position to be read
+            waitsFor(function() {
+                return tree.view.getScrollable().getPosition().y === 40;
+            });
+            
+            runs(function() {
+                tree.getRootNode().childNodes[1].expand();
+            });
+
+            // We must wait until the Scroller knows about the scroll position
+            // at which point it fires a scrollend event
+            waitsForEvent(tree.getView().getScrollable(), 'scrollend', 'Tree scrollend');
 
             // Expanding a node should not scroll.
-            expect(tree.view.getScrollY()).toEqual(40);
+            runs(function() {
+                expect(tree.view.getScrollY()).toEqual(40);
+            });
+        });
+        it("should not not scroll horizontally upon node toggle", function() {
+            // MUST be no scroll so that the non buffered rendering pathway is used
+            // and the row count changes and a layout is triggered.
+            tree.setHideHeaders(false);
+            tree.setHeight(600);
+            tree.collapseAll();
+            tree.columns[0].setWidth(200);
+
+            rootNode.expand();
+            tree.view.setScrollX(40);
+
+            // Wait for scroll syncing to complete
+            waitsFor(function() {
+                return tree.headerCt.getScrollable().getPosition().x === 40;
+            });
+
+            runs(function() {
+                tree.getRootNode().childNodes[1].expand();
+            });
+
+            // We must wait until the Scroller knows about the scroll position
+            // at which point it fires a scrollend event
+            waitsForEvent(tree.getView().getScrollable(), 'scrollend', 'Tree scrollend');
+
+            // Expanding a node should not scroll.
+            runs(function() {
+                expect(tree.view.getScrollX()).toEqual(40);
+
+                // Another operation should also not scroll.
+                // https://sencha.jira.com/browse/EXTJS-21084
+                // Saved scroll position was being discarded by restoreState
+                // even though it may be needed multiple times.
+                tree.getRootNode().childNodes[1].collapse();
+            });
+
+            // We must wait until the Scroller knows about the scroll position
+            // at which point it fires a scrollend event
+            waitsForEvent(tree.getView().getScrollable(), 'scrollend', 'Tree scrollend');
+
+            // Expanding a node should not scroll.
+            runs(function() {
+                expect(tree.view.getScrollX()).toEqual(40);
+            });
         });
     });
 
@@ -413,27 +499,34 @@ describe("Ext.tree.TreeGrid", function() {
 
             tree.collapseAll();
             rootNode.expand();
-            normalView.setScrollY(30);
+            tree.getScrollable().scrollBy(0, 30);
             waits(200); // Wait for the scroll listener (deferred to next animation Frame)
             runs(function() {
-                expect(lockedView.getScrollY()).toEqual(30);
+                expect(tree.getScrollable().getPosition().y).toEqual(30);
 
                 // Now, at 120px high, the entire tree is rendered, scrolling will not triggert action by the buffered renderer
                 // Scrolling should still sync
                 tree.setHeight(120);
 
                 normalView.setScrollY(45);
-                waits(200); // Wait for the scroll listener (deferred to next animation Frame)
+
+                // See where we've managed to scroll it to (May not be enough content to get 45)
+                var yPos = normalView.getScrollY();
+
+                rootNode.childNodes[2].expand();
+
+                // Root node, its 6 children, and child[2]'s 4 children: 11 records in NodeStore
+                expect(normalView.store.getCount()).toEqual(11);
+
+                // We cannot wait for an event. We are expecting nothing to happen
+                // if all goes well. The scroll caused by the header layout will
+                // be undone, and then 50ms later, scroll listening will be restored
+                waits(100);
+
                 runs(function() {
-                    expect(lockedView.getScrollY()).toEqual(45);
-
-                    rootNode.childNodes[2].expand();
-
-                    // Root node, its 6 children, and child[2]'s 4 children: 11 records in NodeStore
-                    expect(normalView.store.getCount()).toEqual(11);
 
                     // But scroll position should not change
-                    expect(lockedView.el.dom.scrollTop).toEqual(45);
+                    expect(lockedView.el.dom.scrollTop).toEqual(yPos);
                 });
             });
         });
@@ -577,5 +670,122 @@ describe("Ext.tree.TreeGrid", function() {
             Ext.undefine('ReconfigureTestNewTask');
         });
     });
-    
+
+    describe('collapsing locked TreeGrid', function() {
+        it('should allow animated collapse and expand', function() {
+            tree = new Ext.tree.Panel({
+                renderTo : Ext.getBody(),
+                layout: 'border',
+                width  : 400,
+                height : 200,
+                store   : new Ext.data.TreeStore({
+                    fields : ['Name', 'Age'],
+                    root: {
+                        Name: 'root',
+                        expanded: true,
+                        children: [{
+                            Name : '1', Age : 1
+                        }, {
+                            Name : '2', Age : 2
+                        }]
+                    }
+                }),
+                syncRowHeight: false, 
+                lockedGridConfig    : {
+                    collapsible : true,
+                    collapseDirection: 'left'
+                },
+                columns : [
+                    { xtype: 'treecolumn', dataIndex : 'Name', width : 100, locked : true },
+                    { dataIndex : 'Age', flex : 1 }
+                ]
+            });
+            var collapseSpy = spyOnEvent(tree.lockedGrid, 'collapse'),
+                expandSpy = spyOnEvent(tree.lockedGrid, 'expand');
+
+            // None of the columns have a text or title config, so the headers should be hidden.
+            expect(tree.lockedGrid.headerCt.getHeight()).toBe(0);
+            expect(tree.normalGrid.headerCt.getHeight()).toBe(0);
+
+            // Because locked side is collapsible, it will acquire a header.
+            // Normal side should sync with this and have a header even though
+            // we have not configured it with a title.
+            expect(tree.lockedGrid.getHeader()).toBeTruthy();
+            expect(tree.normalGrid.getHeader()).toBeTruthy();
+
+            tree.lockedGrid.collapse();
+
+            // Wait for the collapse event
+            waitsFor(function() {
+                return collapseSpy.callCount === 1;
+            });
+
+            runs(function() {
+                tree.lockedGrid.expand();
+            });
+
+            // Wait for the expand event
+            waitsFor(function() {
+                return expandSpy.callCount === 1;
+            });
+        });
+    });
+
+    describe('auto hide headers, then headers arriging from a bind', function() {
+        var store = Ext.create('Ext.data.TreeStore', {
+            autoDestroy: true,
+            root: {
+                expanded: true,
+                children: [{
+                    text: 'detention',
+                    leaf: true
+                }, {
+                    text: 'homework',
+                    expanded: true,
+                    children: [{
+                        text: 'book report',
+                        leaf: true
+                    }, {
+                        text: 'algebra',
+                        leaf: true
+                    }]
+                }, {
+                    text: 'buy lottery tickets',
+                    leaf: true
+                }]
+            }
+        });
+
+        it('should show the headers as soon as any header acquires text', function() {
+            tree = Ext.create('Ext.tree.Panel', {
+                title: 'Simple Tree',
+                width: 300,
+                hideHeaders: null,
+                viewModel: {
+                    data: {
+                        headerText: 'A header'
+                    }
+                },
+                store: store,
+                rootVisible: false,
+                renderTo: Ext.getBody(),
+                columns: [{
+                    bind: {
+                        text: '{headerText}'
+                    },
+                    xtype: 'treecolumn',
+                    dataIndex: 'text',
+                    flex: 1
+                }]
+            });
+
+            // No header text anywhere in the Panel
+            expect(tree.headerCt.getHeight()).toBe(0);
+
+            // When they arrive from the bind, that should change
+            waitsFor(function() {
+                return tree.headerCt.getHeight() > 0;
+            });
+        });
+    });
 });

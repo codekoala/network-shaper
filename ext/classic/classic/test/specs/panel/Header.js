@@ -10,17 +10,18 @@ describe("Ext.panel.Header", function() {
         return header = new Ext.panel.Header(cfg);
     }
     
-    function expectAria(attr, value) {
-        jasmine.expectAriaAttr(header, attr, value);
-    }
-    
-    function expectNoAria(attr) {
-        jasmine.expectNoAriaAttr(header, attr);
-    }
-    
     afterEach(function() {
         Ext.destroy(header);
         header = null;
+    });
+
+    describe('Title value', function() {
+        it('should set it as configured', function() {
+            makeHeader({
+                title: 10
+            });
+            expect(header.title.getText()).toBe(10);
+        });
     });
     
     describe("setTitlePosition", function() {
@@ -51,22 +52,6 @@ describe("Ext.panel.Header", function() {
     });
     
     describe("ARIA", function() {
-        function expectTitleAria(attr, value) {
-            jasmine.expectAriaAttr(header.titleCmp, attr, value);
-        }
-        
-        function expectNoTitleAria(attr) {
-            jasmine.expectNoAriaAttr(header.titleCmp, attr);
-        }
-        
-        function expectTitleTextAria(attr, value) {
-            jasmine.expectAriaAttr(header.titleCmp.textEl, attr, value);
-        }
-        
-        function expectNoTitleTextAria(attr) {
-            jasmine.expectNoAriaAttr(header.titleCmp.textEl, attr);
-        }
-        
         it("should have el as ariaEl", function() {
             makeHeader();
             
@@ -84,15 +69,15 @@ describe("Ext.panel.Header", function() {
                 });
                 
                 it("should have presentation role on header el", function() {
-                    expectAria('role', 'presentation');
+                    expect(header).toHaveAttribute('role', 'presentation');
                 });
                 
                 it("should have presentation role on titleCmp el", function() {
-                    expectTitleAria('role', 'presentation');
+                    expect(header.titleCmp).toHaveAttribute('role', 'presentation');
                 });
                 
                 it("should have presentation role on titleCmp textEl", function() {
-                    expectTitleTextAria('role', 'presentation');
+                    expect(header.titleCmp.textEl).toHaveAttribute('role', 'presentation');
                 });
                 
                 it("should have FocusableContainer disabled", function() {
@@ -109,15 +94,15 @@ describe("Ext.panel.Header", function() {
                     });
                     
                     it("should change header el role to toolbar", function() {
-                        expectAria('role', 'toolbar');
+                        expect(header).toHaveAttribute('role', 'toolbar');
                     });
                     
                     it("should not change titleCmp el role", function() {
-                        expectTitleAria('role', 'presentation');
+                        expect(header.titleCmp).toHaveAttribute('role', 'presentation');
                     });
                     
                     it("should not change titleCmp textEl role", function() {
-                        expectTitleTextAria('role', 'presentation');
+                        expect(header.titleCmp.textEl).toHaveAttribute('role', 'presentation');
                     });
                     
                     it("should enable FocusableContainer", function() {
@@ -136,15 +121,15 @@ describe("Ext.panel.Header", function() {
                 });
                 
                 it("should have presentation role on header el", function() {
-                    expectAria('role', 'presentation');
+                    expect(header).toHaveAttribute('role', 'presentation');
                 });
                 
                 it("should have tab role on titleCmp el", function() {
-                    expectTitleAria('role', 'tab');
+                    expect(header.titleCmp).toHaveAttribute('role', 'tab');
                 });
                 
                 it("should have no role on titleCmp textEl", function() {
-                    expectNoTitleTextAria('role');
+                    expect(header.titleCmp.textEl).not.toHaveAttribute('role');
                 });
                 
                 it("should have FocusableContainer disabled", function() {
@@ -161,15 +146,15 @@ describe("Ext.panel.Header", function() {
                     });
                     
                     it("should not change header el role", function() {
-                        expectAria('role', 'presentation');
+                        expect(header).toHaveAttribute('role', 'presentation');
                     });
                     
                     it("should not change titleCmp el role", function() {
-                        expectTitleAria('role', 'tab');
+                        expect(header.titleCmp).toHaveAttribute('role', 'tab');
                     });
                     
                     it("should not change titleCmp textEl role", function() {
-                        expectNoTitleTextAria('role');
+                        expect(header.titleCmp.textEl).not.toHaveAttribute('role');
                     });
                     
                     it("should not enable FocusableContainer", function() {
@@ -181,32 +166,66 @@ describe("Ext.panel.Header", function() {
         
         describe("with tools", function() {
             describe("ordinary header", function() {
-                beforeEach(function() {
-                    makeHeader({
-                        tools: [{
-                            type: 'close'
-                        }]
+                describe("with focusable tool(s)", function() {
+                    beforeEach(function() {
+                        makeHeader({
+                            tools: [{
+                                type: 'collapse'
+                            }]
+                        });
+                    });
+                    
+                    it("should have toolbar ariaRole", function() {
+                        expect(header.ariaRole).toBe('toolbar');
+                    });
+                    
+                    it("should have toolbar role on header el", function() {
+                        expect(header).toHaveAttribute('role', 'toolbar');
+                    });
+                    
+                    it("should have presentation role on titleCmp", function() {
+                        expect(header.titleCmp).toHaveAttribute('role', 'presentation');
+                    });
+                    
+                    it("should have presentation role on titleCmp textEl", function() {
+                        expect(header.titleCmp.textEl).toHaveAttribute('role', 'presentation');
+                    });
+                    
+                    it("should have FocusableContainer enabled", function() {
+                        expect(header.enableFocusableContainer).toBe(true);
                     });
                 });
                 
-                it("should have toolbar ariaRole", function() {
-                    expect(header.ariaRole).toBe('toolbar');
-                });
-                
-                it("should have toolbar role on header el", function() {
-                    expectAria('role', 'toolbar');
-                });
-                
-                it("should have presentation role on titleCmp", function() {
-                    expectTitleAria('role', 'presentation');
-                });
-                
-                it("should have presentation role on titleCmp textEl", function() {
-                    expectTitleTextAria('role', 'presentation');
-                });
-                
-                it("should have FocusableContainer enabled", function() {
-                    expect(header.enableFocusableContainer).toBe(true);
+                describe("with non-focusable tools", function() {
+                    beforeEach(function() {
+                        makeHeader({
+                            tools: [{
+                                type: 'close',
+                                focusable: false,
+                                tabIndex: null
+                            }]
+                        });
+                    });
+                    
+                    it("should have presentation role", function() {
+                        expect(header.ariaRole).toBe('presentation');
+                    });
+                    
+                    it("should have presentation role on header el", function() {
+                        expect(header).toHaveAttribute('role', 'presentation');
+                    });
+                    
+                    it("should have presentation role on titleCmp", function() {
+                        expect(header.titleCmp).toHaveAttribute('role', 'presentation');
+                    });
+                    
+                    it("should have presentation role on titleCmp textEl", function() {
+                        expect(header.titleCmp.textEl).toHaveAttribute('role', 'presentation');
+                    });
+                    
+                    it("should have FocusableContainer disabled", function() {
+                        expect(header.enableFocusableContainer).toBe(false);
+                    });
                 });
             });
             
@@ -225,15 +244,15 @@ describe("Ext.panel.Header", function() {
                 });
                 
                 it("should have presentation role on header el", function() {
-                    expectAria('role', 'presentation');
+                    expect(header).toHaveAttribute('role', 'presentation');
                 });
                 
                 it("should have tab role on titleCmp el", function() {
-                    expectTitleAria('role', 'tab');
+                    expect(header.titleCmp).toHaveAttribute('role', 'tab');
                 });
                 
                 it("should have no role on titleCmp textEl", function() {
-                    expectNoTitleTextAria('role');
+                    expect(header.titleCmp.textEl).not.toHaveAttribute('role');
                 });
                 
                 it("should have FocusableContainer disabled", function() {

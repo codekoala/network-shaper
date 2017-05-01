@@ -6,37 +6,37 @@
  * @var {number}
  * The height of action column icons
  */
-$grid-actioncolumn-icon-height: 16px !dynamic;
+$grid-actioncolumn-icon-height: dynamic(16px);
 
 /**
  * @var {number}
  * The width of action column icons
  */
-$grid-actioncolumn-icon-width: 16px !dynamic;
+$grid-actioncolumn-icon-width: dynamic(16px);
 
 /**
  * @var {string}
  * The type of cursor to display when the cursor is over an action column icon
  */
-$grid-actioncolumn-icon-cursor: pointer !dynamic;
+$grid-actioncolumn-icon-cursor: dynamic(pointer);
 
 /**
  * @var {number}
  * The opacity of disabled action column icons
  */
-$grid-actioncolumn-icon-opacity-disabled: .3 !dynamic;
+$grid-actioncolumn-icon-opacity-disabled: dynamic(.3);
 
 /**
  * @var {color}
  * The default color to use for action column icon glyphs.
  */
-$grid-actioncolumn-icon-glyph-color: gray !dynamic;
+$grid-actioncolumn-icon-glyph-color: dynamic(gray);
 
 /**
  * @var {number}
  * The amount of padding to add to the left and right of the action column cell
  */
-$grid-actioncolumn-horizontal-padding: 2px !dynamic;
+$grid-actioncolumn-horizontal-padding: dynamic(2px);
 
 
 //private
@@ -45,4 +45,3 @@ $grid-actioncolumn-cell-padding:
     $grid-actioncolumn-horizontal-padding
     max(floor(($grid-row-height - $grid-actioncolumn-icon-height) / 2), 0)
     $grid-actioncolumn-horizontal-padding
-    

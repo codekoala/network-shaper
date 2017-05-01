@@ -120,6 +120,16 @@ Ext.define('Ext.GlobalEvents', {
      * @private
      * @since 5.1.0
      */
+    
+    /**
+     * @event mousedown
+     * A mousedown listener on the document that is immune to stopPropagation()
+     * used in cases where we need to know if a mousedown event occurred on the
+     * document regardless of whether some other handler tried to stop it.  An
+     * example where this is useful is a menu that needs to be hidden whenever
+     * there is a mousedown event on the document.
+     * @param {Ext.event.Event} e The event object
+     */
 
     /**
      * @property {Object} idleEventMask
@@ -152,6 +162,11 @@ Ext.define('Ext.GlobalEvents', {
         Ext.get(window).on('resize', this.fireResize, this, {
             buffer: this.resizeBuffer
         });
+        Ext.getDoc().on('mousedown', this.fireMouseDown, this);
+    },
+
+    fireMouseDown: function(e) {
+        this.fireEvent('mousedown', e);
     },
 
     fireResize: function() {
@@ -173,7 +188,7 @@ Ext.define('Ext.GlobalEvents', {
      * @member Ext
      * @method on
      * Shorthand for {@link Ext.GlobalEvents#addListener}.
-     * @inheritdoc Ext.util.Observable#addListener
+     * @inheritdoc Ext.mixin.Observable#addListener
      */
     Ext.on = function() {
         return GlobalEvents.addListener.apply(GlobalEvents, arguments);
@@ -181,11 +196,23 @@ Ext.define('Ext.GlobalEvents', {
 
     /**
      * @member Ext
-     * @method
+     * @method un
      * Shorthand for {@link Ext.GlobalEvents#removeListener}.
-     * @inheritdoc Ext.util.Observable#removeListener
+     * @inheritdoc Ext.mixin.Observable#removeListener
      */
     Ext.un = function() {
         return GlobalEvents.removeListener.apply(GlobalEvents, arguments);
+    };
+
+    /**
+     * @member Ext
+     * @method fireEvent
+     * Shorthand for {@link Ext.GlobalEvents#fireEvent}.
+     * @inheritdoc Ext.mixin.Observable#fireEvent
+     *
+     * @since 6.2.0
+     */
+    Ext.fireEvent = function() {
+        return GlobalEvents.fireEvent.apply(GlobalEvents, arguments);
     };
 });

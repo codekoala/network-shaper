@@ -191,6 +191,9 @@ Ext.define('Ext.dom.Helper', function() {
                     if (spec.hasOwnProperty(attr)) {
                         val = spec[attr];
                         if (val !== undefined && !me.confRe.test(attr)) {
+                            if (val && val.join) {
+                                val = val.join(' ');
+                            }
                             if (typeof val === "object") {
                                 buffer.push(' ', attr, '="');
                                 me.generateStyles(val, buffer, true).push('"');
@@ -295,7 +298,32 @@ Ext.define('Ext.dom.Helper', function() {
 
         /**
          * Applies a style specification to an element.
-         * @param {String/HTMLElement} el The element to apply styles to
+         * 
+         * Styles in object form should be a valid DOM element style property.  
+         * [Valid style property names](http://www.w3schools.com/jsref/dom_obj_style.asp) 
+         * (_along with the supported CSS version for each_)
+         * 
+         *     // <div id="my-el">Phineas Flynn</div>
+         *     
+         *     var el = Ext.get('my-el'),
+         *         dh = Ext.dom.Helper;
+         *     
+         *     dh.applyStyles(el, 'color: white;');
+         *     
+         *     dh.applyStyles(el, {
+         *         fontWeight: 'bold',
+         *         backgroundColor: 'gray',
+         *         padding: '10px'
+         *     });
+         *     
+         *     dh.applyStyles(el, function () {
+         *         if (name.initialConfig.html === 'Phineas Flynn') {
+         *             return 'font-style: italic;';
+         *             // OR return { fontStyle: 'italic' };
+         *         }
+         *     });
+         * 
+         * @param {String/HTMLElement/Ext.dom.Element} el The element to apply styles to
          * @param {String/Object/Function} styles A style specification string e.g. 'width:100px', or object in the form {width:'100px'}, or
          * a function which returns such a specification.
          */

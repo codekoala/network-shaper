@@ -88,6 +88,11 @@
 ) {
     .#{$prefix}form-cb-wrap-#{$ui} {
         height: $ui-field-height;
+        // The checkbox field's body element must be at least the width of the checkbox.
+        // This min-width prevents the width from collapsing to 0 when there is no boxLabel
+        // since the checkbox-containing element itself is absolutely positioned.
+        // See EXTJS-18430
+        min-width: $ui-checkbox-size;
     }
 
     .#{$prefix}form-cb-#{$ui} {
@@ -164,6 +169,7 @@
     .#{$prefix}form-cb-label-#{$ui} {
         margin-top: round(($ui-field-height - $ui-label-line-height) / 2);
         font: $ui-label-font-weight #{$ui-label-font-size}/#{$ui-label-line-height} $ui-label-font-family;
+        color: $ui-label-color;
 
         &.#{$prefix}form-cb-label-before {
             padding-right: $ui-label-spacing + $ui-checkbox-size;

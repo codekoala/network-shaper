@@ -123,7 +123,7 @@ $datepicker-monthpicker-small-yearnav-height: $datepicker-monthpicker-small-item
     }
 
     .#{$prefix}btn-inner {
-        font-size: $datepicker-month-button-font-size !dynamic;
+        font-size: $datepicker-month-button-font-size;
     }
 }
 

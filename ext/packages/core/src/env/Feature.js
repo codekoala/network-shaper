@@ -155,7 +155,7 @@ Ext.feature = {
             notRun = [],
             supports = Ext.supports,
             has = me.has,
-            name, test, vector, value;
+            name, names, test, vector, value;
 
         //<feature legacyBrowser>
         // Only the legacy browser tests use this div so clip this out if we don't need
@@ -179,6 +179,7 @@ Ext.feature = {
             test = toRun[n];
             value = vector[n];
             name = test.name;
+            names = test.names;
 
             if (value === undefined) {
                 if (!isReady && test.ready) {
@@ -191,7 +192,14 @@ Ext.feature = {
             }
 
             // Store test results on Ext.supports and Ext.feature.has
-            supports[name] = has[name] = value;
+            if (name) {
+                supports[name] = has[name] = value;
+            } else if (names) {
+                while (names.length) {
+                    name = names.pop();
+                    supports[name] = has[name] = value;
+                }
+            }
         }
 
         if (isReady) {
@@ -224,10 +232,24 @@ Ext.feature = {
      *
      * Contains information about features supported in the current environment as well
      * as bugs detected.
-     * 
+     *
      * @singleton
      */
     tests: [{
+        /**
+         * @property CloneNodeCopiesExpando `true` if the native DOM cloneNode method copies
+         * expando properties to the newly cloned node.
+         *
+         * This property is available at application boot time, before document ready.
+         * @type {Boolean}
+         */
+        name: 'CloneNodeCopiesExpando',
+        fn: function() {
+            var el = document.createElement('div');
+            el.expandoProp = {};
+            return el.cloneNode().expandoProp === el.expandoProp;
+        }
+    }, {
         /**
          * @property CSSPointerEvents `true` if document environment supports the CSS3
          * pointer-events style.
@@ -241,7 +263,7 @@ Ext.feature = {
         }
     },{
         /**
-         * @property CSS3BoxShadow `true` if document environment supports the CSS3 
+         * @property CSS3BoxShadow `true` if document environment supports the CSS3
          * box-shadow style.
          *
          * This property is available at application boot time, before document ready.
@@ -253,19 +275,19 @@ Ext.feature = {
         }
     }, {
         name: 'CSS3NegationSelector',
-        fn: function(doc) { 
+        fn: function(doc) {
             try {
                 doc.querySelectorAll("foo:not(bar)");
             }
             catch (e) {
                 return false;
             }
-            
+
             return true;
         }
     },{
         /**
-         * @property ClassList `true` if document environment supports the HTML5 
+         * @property ClassList `true` if document environment supports the HTML5
          * classList API.
          *
          * This property is available at application boot time, before document ready.
@@ -318,47 +340,7 @@ Ext.feature = {
         }
     },{
         /**
-         * @property touchScroll
-         * @type {Number}
-         *
-         * This property is used to trigger touch scrolling support via Ext.scroll.TouchScroller.
-         * There are three possible values for this property:
-         *
-         * - `0` - Touch scrolling disabled.
-         *
-         * - `1` - enables partial scroller support.  In this mode the touch scroller
-         * simply controls the scroll positions of naturally overflowing elements.
-         * This mode is typically used on multi-input devices where native scrolling
-         * using the mouse is desired, but native touch-scrolling must be disabled to
-         * avoid cancelling gesture recognition inside of scrollable elements (e.g.
-         * IE10 and up on touch-screen laptops and tablets)
-         *
-         * - `2` - enables full scroller support.  In this mode, scrolling is entirely
-         * "virtual", that is natural browser scrolling of elements is disabled
-         * (overflow: hidden) and the contents of scrollable elements are wrapped in a
-         * "scrollerEl"`.  Scrolling is simulated by translating the scrollerEl using
-         * CSS, and {@link Ext.scroll.Indicator scroll indicators} will be shown while
-         * scrolling since there are no native scrollbars in this mode.
-         *
-         * This property is available at application boot time, before document ready.
-         * @private
-         */
-        name: 'touchScroll',
-        fn: function() {
-            var supports = Ext.supports,
-                touchScroll = 0;
-
-            if (navigator.msMaxTouchPoints ||
-                    (Ext.isWebKit && supports.TouchEvents && Ext.os.is.Desktop)) {
-                touchScroll = 1;
-            } else if (supports.Touch) {
-                touchScroll = 2;
-            }
-            return touchScroll;
-        }
-    },{
-        /**
-         * @property Touch`true` if the browser supports touch input.
+         * @property Touch `true` if the browser supports touch input.
          *
          * This property is available at application boot time, before document ready.
          * @type {Boolean}
@@ -514,8 +496,7 @@ Ext.feature = {
         name: 'Css3dTransforms',
         fn: function() {
             // See https://sencha.jira.com/browse/TOUCH-1544
-            return this.has('CssTransforms') && this.isStyleSupported('perspective') && 
-                    !Ext.browser.is.AndroidStock2;
+            return this.has('CssTransforms') && this.isStyleSupported('perspective');
             // TODO - double check vs Ext JS flavor:
             //return (typeof WebKitCSSMatrix != 'undefined' && new WebKitCSSMatrix().hasOwnProperty('m41'));
         }
@@ -600,7 +581,7 @@ Ext.feature = {
         }
     },{
         /**
-         * @property XHR2 `true` if the browser supports XMLHttpRequest 
+         * @property XHR2 `true` if the browser supports XMLHttpRequest
          *
          * This property is available at application boot time, before document ready.
          * @type {Boolean}
@@ -613,7 +594,7 @@ Ext.feature = {
     }, {
         /**
          * @property XHRUploadProgress `true` if the browser supports XMLHttpRequest
-         * upload progress info 
+         * upload progress info
          *
          * This property is available at application boot time, before document ready.
          * @type {Boolean}
@@ -637,25 +618,6 @@ Ext.feature = {
         name: 'NumericInputPlaceHolder',
         fn: function() {
             return !(Ext.browser.is.AndroidStock4 && Ext.os.version.getMinor() < 2);
-        }
-    },{
-        name: 'ProperHBoxStretching',
-        ready: true,
-        fn: function() {
-            // IE10 currently has a bug in their flexbox row layout. We feature detect the issue here.
-            var bodyElement = document.createElement('div'),
-                innerElement = bodyElement.appendChild(document.createElement('div')),
-                contentElement = innerElement.appendChild(document.createElement('div')),
-                innerWidth;
-
-            bodyElement.setAttribute('style', 'width: 100px; height: 100px; position: relative;');
-            innerElement.setAttribute('style', 'position: absolute; display: -ms-flexbox; display: -webkit-flex; display: -moz-flexbox; display: flex; -ms-flex-direction: row; -webkit-flex-direction: row; -moz-flex-direction: row; flex-direction: row; min-width: 100%;');
-            contentElement.setAttribute('style', 'width: 200px; height: 50px;');
-            document.body.appendChild(bodyElement);
-            innerWidth = innerElement.offsetWidth;
-            document.body.removeChild(bodyElement);
-
-            return (innerWidth > 100);
         }
     },
 
@@ -938,10 +900,15 @@ Ext.feature = {
         fn: function(doc) {
             var body = doc.body,
                 supports = false,
-                el = this.getTestElement(),
+                el = doc.createElement('div'),
                 style = el.style;
 
             if (el.getBoundingClientRect) {
+                // If the document body already has child nodes (text nodes etc) we can end
+                // up with subpixel rounding errors in IE11 when measuring the height.
+                // Absolute positioning prevents this.
+                style.position = 'absolute';
+                style.top = "0";
                 style.WebkitTransform = style.MozTransform = style.msTransform =
                     style.OTransform = style.transform = 'rotate(90deg)';
                 style.width = '100px';
@@ -1099,7 +1066,7 @@ Ext.feature = {
      * The element contains block-level children.  This method tests the effect
      * of padding on scrollWidth when there are no block-level children inside the
      * overflowing element.
-     * 
+     *
      * This method returns true if the browser is affected by this bug.
      *
      * This property is *NOT* available at application boot time. Only after the document ready event.
@@ -1212,10 +1179,10 @@ Ext.feature = {
         }
     },
 
-    /*
+    /**
      * @property {Boolean} SpecialKeyDownRepeat
      * True if the browser fires the keydown event on specialkey autorepeat
-     * 
+     *
      * note 1: IE fires ONLY the keydown event on specialkey autorepeat
      * note 2: Safari < 3.1, Gecko (Mac/Linux) & Opera fire only the keypress event on
      * specialkey autorepeat (research done by Jan Wolter at
@@ -1230,7 +1197,7 @@ Ext.feature = {
         fn: function() {
             return Ext.isWebKit ?
                 parseInt(navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1], 10) >= 525 :
-                !((Ext.isGecko && !Ext.isWindows) || (Ext.isOpera && Ext.operaVersion < 12));
+                !(!(Ext.isGecko || Ext.isIE) || (Ext.isOpera && Ext.operaVersion < 12));
         }
     },
     /**
@@ -1301,7 +1268,7 @@ Ext.feature = {
             return width === 50;
         }
     },
-    
+
     /**
      * @property FocusinFocusoutEvents
      * @private
@@ -1324,8 +1291,26 @@ Ext.feature = {
         }
     },
 
+    /**
+     * @property {Boolean} AsyncFocusEvents
+     * `true` if the browser fires focus events (focus, blur, focusin, focusout)
+     * asynchronously, i.e. in a separate event loop invocation. This is only true
+     * for all versions Internet Explorer; Microsoft Edge and other browsers fire
+     * focus events synchronously.
+     */
+    {
+        name: 'AsyncFocusEvents',
+        fn: function() {
+            // The sad part is that we can't feature detect this because the focus
+            // event won't be fired when the browser window itself is not focused.
+
+            // Private shortcut for brevity
+            return Ext.asyncFocus = !!Ext.isIE;
+        }
+    },
+
     //</feature>
-    
+
     /**
      * @property {Boolean} HighContrastMode `true` if the browser is currently
      * running in Windows High Contrast accessibility mode.
@@ -1350,36 +1335,36 @@ Ext.feature = {
         fn: function(doc) {
             var body = doc.body,
                 div, img, style, supports, bgImg;
-            
+
             function getColor(colorTxt) {
                 var values = [],
                     colorValue = 0,
                     regex, match;
-                
+
                 if (colorTxt.indexOf('rgb(') !== -1) {
                     values = colorTxt.replace('rgb(', '').replace(')', '').split(', ');
                 }
                 else if (colorTxt.indexOf('#') !== -1) {
                     regex = colorTxt.length === 7 ? /^#(\S\S)(\S\S)(\S\S)$/ : /^#(\S)(\S)(\S)$/;
                     match = colorTxt.match(regex);
-                    
+
                     if (match) {
                         values = ['0x' + match[1], '0x' + match[2], '0x' + match[3]];
                     }
                 }
-                
+
                 for (var i = 0; i < values.length; i++) {
                     colorValue += parseInt(values[i]);
                 }
-                
+
                 return colorValue;
             }
-            
+
             div = doc.createElement('div');
             img = doc.createElement('img');
-            
+
             style = div.style;
-            
+
             Ext.apply(style, {
                 width: '2px',
                 position: 'absolute',
@@ -1391,17 +1376,17 @@ Ext.feature = {
                 backgroundColor: '#fff',
                 backgroundImage: 'url(' + Ext.BLANK_IMAGE_URL + ')'
             });
-            
+
             img.alt = '';
             img.src = Ext.BLANK_IMAGE_URL;
-            
+
             div.appendChild(img);
             body.appendChild(div);
-            
+
             // Now check if the styles were indeed honored
             style = div.currentStyle || div.style;
             bgImg = style.backgroundImage;
-            
+
             supports = {
                 // In IE it is possible to untick "Show pictures" option in Advanced
                 // settings; this will result in img element reporting its readyState
@@ -1413,13 +1398,92 @@ Ext.feature = {
                 BorderColors: style.borderTopColor !== style.borderRightColor,
                 LightOnDark: getColor(style.color) - getColor(style.backgroundColor) > 0
             };
-            
+
             Ext.supports.HighContrastMode = !supports.BackgroundImages;
-            
+
             body.removeChild(div);
             div = img = null;
-            
+
             return supports;
+        }
+    },
+    {
+        /**
+         * @property ViewportUnits `true` if the device supports ViewportUnits.
+         * @type {Boolean}
+         *
+         */
+        name: 'ViewportUnits',
+        ready: true,
+        fn: function(doc) {
+            //<feature legacyBrowser>
+            // Even attempting to detect the feature throws a fatal error on IE8
+            if (Ext.isIE8) {
+                return false;
+            }
+            //</feature>
+            var body = doc.body,
+                div = document.createElement('div'),
+                style = div.currentStyle || div.style, width, divWidth;
+
+            body.appendChild(div);
+
+            Ext.apply(style, {width: '50vw'});
+
+            width = parseInt(window.innerWidth / 2, 10);
+            divWidth = parseInt((window.getComputedStyle ?
+                getComputedStyle(div, null) :
+                div.currentStyle).width, 10);
+
+            body.removeChild(div);
+            div = null;
+            return width === divWidth;
+        }
+    },
+    {
+        name: 'CSSVariables',
+        ready: false,
+        fn: function(doc) {
+            //<feature legacyBrowser>
+            // Legacy browsers do not have this method.
+            if (!window.getComputedStyle) {
+                return false;
+            }
+            //</feature>
+            var style = window.getComputedStyle(doc.documentElement);
+
+            return style.getPropertyValue && !!style.getPropertyValue('--x-supports-variables');
+        }
+    },
+    {
+        /**
+         * @property Selectors2 `true` if the browser supports the CSS selector API level 2.
+         * https://dev.w3.org/2006/webapi/selectors-api2/
+         * @type {Boolean}
+         *
+         */
+        name: 'Selectors2',
+        ready: false,
+        fn: function(doc) {
+            try {
+                return !!doc.querySelectorAll(':scope');
+            } catch (e) {
+                return false;
+            }
+        }
+    },
+    {
+        /**
+         * @property CSSScrollSnap
+         * @private
+         * @type {Boolean}
+         */
+        name: 'CSSScrollSnap',
+        ready: false,
+        fn: function(doc) {
+            var style = doc.documentElement.style;
+
+            return 'scrollSnapType' in style || 'webkitScrollSnapType' in style || 'msScrollSnapType' in style;
         }
     },
 

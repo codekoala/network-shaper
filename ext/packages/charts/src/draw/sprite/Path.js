@@ -16,6 +16,23 @@
  *            fillStyle: '#1F6D91'
  *        }]
  *     });
+ * 
+ * ### Drawing with SVG Paths
+ * You may use special SVG Path syntax to "describe" the drawing path.  Here are the SVG path commands:
+ * 
+ * + M = moveto
+ * + L = lineto
+ * + H = horizontal lineto
+ * + V = vertical lineto
+ * + C = curveto
+ * + S = smooth curveto
+ * + Q = quadratic Bézier curve
+ * + T = smooth quadratic Bézier curveto
+ * + A = elliptical Arc
+ * + Z = closepath
+ * 
+ * **Note:** Capital letters indicate that the item should be absolutely positioned. 
+ * Use lower case letters for relative positioning.
  */
 Ext.define('Ext.draw.sprite.Path', {
     extend: 'Ext.draw.sprite.Sprite',
@@ -29,20 +46,7 @@ Ext.define('Ext.draw.sprite.Path', {
     ],
     type: 'path',
     isPath: true,
-    //<debug>
-    statics: {
-        /**
-         * Debug rendering options:
-         *
-         * debug: {
-         *     bbox: true, // renders the bounding box of the path
-         *     xray: true  // renders control points of the path
-         * }
-         *
-         */
-        debug: false
-    },
-    //</debug>
+
     inheritableStatics: {
         def: {
             processors: {
@@ -55,9 +59,6 @@ Ext.define('Ext.draw.sprite.Path', {
                     }
                     return n;
                 }
-                //<debug>
-                ,debug: 'default'
-                //</debug>
             },
             aliases: {
                 d: 'path'
@@ -75,7 +76,7 @@ Ext.define('Ext.draw.sprite.Path', {
                     }
                     path.clear();
                     this.updatePath(path, attr);
-                    this.scheduleUpdaters(attr, {bbox: ['path']});
+                    this.scheduleUpdater(attr, 'bbox', ['path']);
                 }
             }
         }
@@ -105,7 +106,7 @@ Ext.define('Ext.draw.sprite.Path', {
         ctx.fillStroke(attr);
 
         //<debug>
-        var debug = this.statics().debug || attr.debug;
+        var debug = attr.debug || this.statics().debug || Ext.draw.sprite.Sprite.debug;
         if (debug) {
             debug.bbox && this.renderBBox(surface, ctx);
             debug.xray && this.renderXRay(surface, ctx);
@@ -114,20 +115,6 @@ Ext.define('Ext.draw.sprite.Path', {
     },
 
     //<debug>
-    renderBBox: function (surface, ctx) {
-        var bbox = this.getBBox();
-        ctx.beginPath();
-        ctx.moveTo(bbox.x, bbox.y);
-        ctx.lineTo(bbox.x + bbox.width, bbox.y);
-        ctx.lineTo(bbox.x + bbox.width, bbox.y + bbox.height);
-        ctx.lineTo(bbox.x, bbox.y + bbox.height);
-        ctx.closePath();
-        ctx.strokeStyle = 'red';
-        ctx.strokeOpacity = 1;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-    },
-
     renderXRay: function (surface, ctx) {
         var attr = this.attr,
             mat = attr.matrix,

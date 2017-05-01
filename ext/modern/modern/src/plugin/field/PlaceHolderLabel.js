@@ -29,8 +29,9 @@
  *             }
  *         ]
  *      });
+ *
+ * @deprecated 6.2.0 Placeholder as Label is now available as a config using the Neptune Theme
  */
-
 Ext.define('Ext.plugin.field.PlaceHolderLabel', {
     extend : 'Ext.AbstractPlugin',
     alias  : 'plugin.placeholderlabel',
@@ -83,13 +84,7 @@ Ext.define('Ext.plugin.field.PlaceHolderLabel', {
      * @param {Ext.form.Field} field
      */
     maybeShowLabel : function(field) {
-        var show = false;
-
-        if (field.getValue()) {
-            show = true;
-        }
-
-        this.setLabelVisible(show);
+        this.setLabelVisible(!!field.getValue());
     },
 
     /**
@@ -100,17 +95,16 @@ Ext.define('Ext.plugin.field.PlaceHolderLabel', {
      * @return {Object} The listener object
      */
     getFieldListeners : function() {
-        var me = this;
-
         return {
-            scope : me,
-            keyup : me.maybeShowLabel,
-            clearicontap : me.maybeShowLabel
+            scope : this,
+            keyup : this.maybeShowLabel,
+            clearicontap : this.maybeShowLabel
         }
     },
     updateField       : function(newField, oldField) {
         var listeners = this.getFieldListeners(),
-            cls = this.getCls();
+            cls = this.getCls(),
+            label, config;
 
         if (oldField) {
             //remove listeners
@@ -121,10 +115,10 @@ Ext.define('Ext.plugin.field.PlaceHolderLabel', {
         }
 
         if (newField) {
-            var label = newField.getLabel(),
-                config = {
-                    labelAlign : 'top'
-                };
+            label = newField.getLabel();
+            config = {
+                labelAlign : 'top'
+            };
 
             //if there is no label on the field, use the placeHolder
             if (!label) {
@@ -146,7 +140,7 @@ Ext.define('Ext.plugin.field.PlaceHolderLabel', {
         var field = this.getField();
 
         if (field) {
-            field[show ? 'addCls' : 'removeCls'](this.getShowCls());
+            field.toggleCls(this.getShowCls(), show);
         }
     }
 });

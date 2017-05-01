@@ -1,4 +1,4 @@
 /** @class Ext.tip.Tip */
 //
 
-$tip-base-color: $base-color !dynamic;
+$tip-base-color: dynamic($base-color);

@@ -37,12 +37,19 @@ Ext.define('Ext.fx.Queue', {
     /**
      * @private
      */
-    stopAnimation: function(targetId) {
+    stopAnimation: function(targetId, suppressEvent) {
         var me = this,
             queue = me.getFxQueue(targetId),
-            ln = queue.length;
+            ln = queue.length,
+            item;
+        
         while (ln) {
-            queue[ln - 1].end();
+            item = queue[ln - 1];
+            
+            if (item) {
+                item.end(suppressEvent);
+            }
+            
             ln--;
         }
     },
@@ -73,7 +80,8 @@ Ext.define('Ext.fx.Queue', {
             return false;
         }
         var me = this,
-            queue = me.fxQueue[targetId],
+            fxQueue = me.fxQueue,
+            queue = fxQueue[targetId],
             target = me.targets.get(targetId);
 
         if (!target) {
@@ -81,11 +89,13 @@ Ext.define('Ext.fx.Queue', {
         }
 
         if (!queue) {
-            me.fxQueue[targetId] = [];
+            me.fxQueue[targetId] = fxQueue[targetId] = [];
+            
             // GarbageCollector will need to clean up Elements since they aren't currently observable
             if (target.type !== 'element') {
                 target.target.on('destroy', function() {
-                    me.fxQueue[targetId] = [];
+                    fxQueue[targetId] = null;
+                    delete fxQueue[targetId];
                 });
             }
         }
@@ -98,13 +108,14 @@ Ext.define('Ext.fx.Queue', {
     queueFx: function(anim) {
         var me = this,
             target = anim.target,
+            targetId = target.getId(),
             queue, ln;
 
         if (!target) {
             return;
         }
 
-        queue = me.getFxQueue(target.getId());
+        queue = me.getFxQueue(targetId);
         ln = queue.length;
 
         if (ln) {
@@ -120,14 +131,20 @@ Ext.define('Ext.fx.Queue', {
         else {
             anim.paused = false;
         }
+        
         anim.on('afteranimate', function() {
             Ext.Array.remove(queue, anim);
+            
             if (queue.length === 0) {
                 me.targets.remove(anim.target);
+                me.fxQueue[targetId] = null;
+                delete me.fxQueue[targetId];
             }
+            
             if (anim.remove) {
                 if (target.type === 'element') {
-                    var el = Ext.get(target.id);
+                    var el = Ext.get(targetId);
+                    
                     if (el) {
                         el.destroy();
                     }
@@ -136,6 +153,7 @@ Ext.define('Ext.fx.Queue', {
         }, me, {
             single: true
         });
+        
         queue.push(anim);
     }
 });

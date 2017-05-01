@@ -1,4 +1,4 @@
-$splitter-focus-outline-color: $orange !dynamic;
-$splitter-focus-outline-style: dashed !dynamic;
-$splitter-focus-outline-width: 2px !dynamic;
-$splitter-focus-outline-offset: -2px !dynamic;
+$splitter-focus-outline-color: dynamic($orange);
+$splitter-focus-outline-style: dynamic(dashed);
+$splitter-focus-outline-width: dynamic(2px);
+$splitter-focus-outline-offset: dynamic(-2px);

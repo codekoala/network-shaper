@@ -36,10 +36,6 @@ Ext.define('Ext.window.Window', {
         'Ext.util.ComponentDragger',
         'Ext.util.Region'
     ],
-    
-    mixins: [
-        'Ext.util.FocusTrap'
-    ],
 
     alias: 'widget.window',
 
@@ -56,8 +52,36 @@ Ext.define('Ext.window.Window', {
      */
 
     /**
-     * @cfg {String/Ext.dom.Element} [animateTarget=null]
-     * Id or element from which the window should animate while opening.
+     * @cfg {String/Ext.dom.Element/Ext.Component/Boolean} [animateTarget=null]
+     * Id, Component element, or Component from which the window should animate when
+     * shown or hidden.
+     *
+     * You may also pass true to have the Window animate when maximizing and restoring
+     * using the maximize / restore tools created via the {@link #maximizable} config.
+     *
+     *     var btn, win;
+     *
+     *     btn = Ext.create({
+     *         xtype: 'button',
+     *         renderTo: Ext.getBody(),
+     *         text: 'Show Window',
+     *         handler: function() {
+     *             win.show();
+     *         }
+     *     });
+     *
+     *     win = Ext.create({
+     *         xtype: 'window',
+     *         title: 'Animate from the Show Window Button',
+     *         height: 300,
+     *         width: 400,
+     *         modal: true,
+     *         closeAction: 'hide',
+     *         animateTarget: btn
+     *         // or btn.getId()
+     *         // or btn.getEl()
+     *         // or true (when maximizable is true)
+     *     });
      */
 
     /**
@@ -186,7 +210,6 @@ Ext.define('Ext.window.Window', {
     draggable: true,
 
     /**
-     * @override
      * @cfg {Boolean} constrain
      * True to constrain the window within its containing element, false to allow it to fall outside of its containing
      * element. By default the window will be rendered to `document.body`. To render and constrain the window within
@@ -196,7 +219,6 @@ Ext.define('Ext.window.Window', {
     constrain: false,
 
     /**
-     * @override
      * @cfg {Boolean} constrainHeader
      * True to constrain the window header within its containing element (allowing the window body to fall outside of
      * its containing element) or false to allow the header to fall outside its containing element.
@@ -235,10 +257,8 @@ Ext.define('Ext.window.Window', {
      */
     maximizable: false,
 
-    // inherit docs
     minHeight: 50,
 
-    // inherit docs
     minWidth: 50,
 
     /**
@@ -248,7 +268,6 @@ Ext.define('Ext.window.Window', {
      */
     expandOnShow: true,
 
-    // inherited docs, same default
     collapsible: false,
 
     /**
@@ -291,8 +310,27 @@ Ext.define('Ext.window.Window', {
      */
     hideMode: 'offsets',
 
-    // Windows are always floating.
+    /**
+     * @cfg {Boolean} [floating=true]
+     * @inheritdoc Ext.Component
+     */
     floating: true,
+
+    alignOnScroll: false,
+
+    /**
+     * @cfg stateEvents
+     * @inheritdoc Ext.state.Stateful#cfg-stateEvents
+     * @localdoc By default the following stateEvents are added:
+     *
+     *  - {@link #event-resize} - _(added by Ext.Component)_
+     *  - {@link #event-collapse} - _(added by Ext.panel.Panel)_
+     *  - {@link #event-expand} - _(added by Ext.panel.Panel)_
+     *  - {@link #event-maximize}
+     *  - {@link #event-restore}
+     *  - {@link #event-resize}
+     *  - {@link #event-dragend}
+     */
 
     itemCls: Ext.baseCSSPrefix + 'window-item',
 
@@ -315,7 +353,39 @@ Ext.define('Ext.window.Window', {
     isWindow: true,
 
     ariaRole: 'dialog',
+    focusable: true,
+    tabGuard: true,
     
+    //<locale>
+    closeToolText: 'Close dialog',
+    //</locale>
+
+    keyMap: {
+        scope: 'this',
+        ESC: 'onEsc'
+    },
+    
+    /**
+     * @cfg {String} [maskClickAction=focus]
+     * The method to call when the window's modal mask is clicked or tapped:
+     *
+     * - **`'{@link #method-focus}'`** :
+     *
+     *   The default. Focus the window, which will then pass focus into its {@link #cfg-defaultFocus} delegate.
+     *
+     * - **`'{@link #method-destroy}'`** :
+     *
+     *   Remove  the window from the DOM and {@link Ext.Component#method-destroy destroy} it and all descendant
+     *   Components. The window will **not** be available to be redisplayed via the {@link #method-show} method.
+     *
+     * - **`'{@link #method-hide}'`** :
+     *
+     *   {@link #method-hide} the window by setting visibility to hidden and applying negative offsets. The window will be
+     *   available to be redisplayed via the {@link #method-show} method.
+     *   @since 6.2.0
+     */
+    maskClickAction: 'focus',
+
     /**
      * @event activate
      * Fires after the window has been visually activated via {@link #setActive}.
@@ -325,6 +395,13 @@ Ext.define('Ext.window.Window', {
     /**
      * @event deactivate
      * Fires after the window has been visually deactivated via {@link #setActive}.
+     * @param {Ext.window.Window} this
+     */
+
+    /**
+     * @event maskclick
+     * Fires when this Window's modal mask is clicked or tapped. Returning `false` from 
+     * a handler will veto the subsequent preocessing of the {@link #cfg-maskClickAction}..
      * @param {Ext.window.Window} this
      */
 
@@ -353,13 +430,15 @@ Ext.define('Ext.window.Window', {
      * Fires after the window has been restored to its original size after being maximized.
      * @param {Ext.window.Window} this
      */
+    
+    disableCloseToolFocus: true,
 
     /**
      * @private
      */
     initComponent: function() {
         var me = this;
-        
+
         // Explicitly set frame to false, since alwaysFramed is
         // true, we only want to lookup framing in a specific instance
         me.frame = false;
@@ -391,12 +470,7 @@ Ext.define('Ext.window.Window', {
      * @return {Ext.dom.Element/Ext.Component} the focus holding element or Component.
      */
     getFocusEl: function() {
-        var me = this;
-
-        // If the legacy FocusManager is enabled, then we must not focus
-        // the defaultFocus child. We must focus the Window instead, to
-        // let FocusManager do its thing.
-        return Ext.enableFocusManager ? me.el : (me.getDefaultFocus() || me.el);
+        return this.getDefaultFocus() || this.el;
     },
 
     // State Management
@@ -420,7 +494,7 @@ Ext.define('Ext.window.Window', {
             // grab the position from the final box
             pos = [ghostBox.x, ghostBox.y];
         } else {
-            pos = me.getPosition();
+            pos = me.getPosition(true);
         }
         Ext.apply(state, {
             size: maximized ? me.restoreSize : me.getSize(),
@@ -449,9 +523,6 @@ Ext.define('Ext.window.Window', {
         }
     },
 
-    /**
-     * @private
-     */
     onRender: function(ct, position) {
         var me = this;
 
@@ -474,64 +545,41 @@ Ext.define('Ext.window.Window', {
         }
     },
 
-    /**
-     * @private
-     */
     afterRender: function() {
         var me = this,
-            header = me.header,
-            keyMap;
+            header = me.header;
 
         // Initialize
         if (me.maximized) {
             me.maximized = false;
-            me.maximize();
+            me.maximize(null, true);
             if (header) {
                 header.removeCls(header.indicateDragCls);
             }
         }
 
         me.callParent();
-
-        if (me.closable) {
-            keyMap = me.getKeyMap();
-            keyMap.on(27, me.onEsc, me);
-        } else {
-            keyMap = me.keyMap;
-        }
         
-        if (keyMap && me.hidden) {
-            keyMap.disable();
-        }
+        me.initTabGuards();
     },
 
     /**
      * @private
      */
-    onEsc: function(k, e) {
-        // hide the dependency from Cmd
-        var mgr = Ext['FocusManager']; // jshint ignore:line
-
-        // Only process ESC if the FocusManager is not doing it
-        if (!Ext.enableFocusManager || mgr.focusedCmp === this) {
-            e.stopEvent();
-            this.close();
-        }
+    onEsc: function(e) {
+        e.stopEvent();
+        this.close();
     },
 
-    /**
-     * @private
-     */
-    beforeDestroy: function() {
+    doDestroy: function() {
         var me = this;
+        
         if (me.rendered) {
             Ext.un('resize', me.onWindowResize, me);
             delete me.animateTarget;
             me.hide();
-            Ext.destroy(
-                me.keyMap
-            );
         }
+        
         me.callParent();
     },
 
@@ -559,7 +607,7 @@ Ext.define('Ext.window.Window', {
         }
         if (me.maximizable) {
             tools.push({
-                type: me.maximized ? 'restore' : 'maximize',
+                type: 'maximize',
                 handler: 'toggleMaximize',
                 scope: me
             });
@@ -570,17 +618,81 @@ Ext.define('Ext.window.Window', {
         }
     },
     
+    addTool: function(tools) {
+        var me = this;
+        
+        me.callParent([tools]);
+        
+        if (me.rendered && me.tabGuard) {
+            me.initTabGuards();
+        }
+    },
+    
+    add: function() {
+        var me = this,
+            ret;
+        
+        ret = me.callParent(arguments);
+        
+        if (me.rendered && me.tabGuard) {
+            me.initTabGuards();
+        }
+        
+        return ret;
+    },
+    
+    remove: function() {
+        var me = this,
+            ret;
+        
+        ret = me.callParent(arguments);
+        
+        if (me.rendered && me.tabGuard) {
+            me.initTabGuards();
+        }
+        
+        return ret;
+    },
+    
+    addDocked: function() {
+        var me = this,
+            ret;
+        
+        ret = me.callParent(arguments);
+        
+        if (me.rendered && me.tabGuard) {
+            me.initTabGuards();
+        }
+        
+        return ret;
+    },
+    
+    removeDocked: function() {
+        var me = this,
+            ret;
+        
+        ret = me.callParent(arguments);
+        
+        if (me.rendered && me.tabGuard) {
+            me.initTabGuards();
+        }
+        
+        return ret;
+    },
+
     onShow: function() {
         var me = this;
 
         me.callParent(arguments);
+        
         if (me.expandOnShow) {
             me.expand(false);
         }
+        
         me.syncMonitorWindowResize();
-
-        if (me.keyMap) {
-            me.keyMap.enable();
+        
+        if (me.rendered && me.tabGuard) {
+            me.initTabGuards();
         }
    },
 
@@ -593,7 +705,10 @@ Ext.define('Ext.window.Window', {
         // Being called as callback after going through the hide call below
         if (me.hidden) {
             me.fireEvent('close', me);
-            if (me.closeAction === 'destroy') {
+            
+            // This method can be called from hide() which in turn can be called
+            // from destroy()
+            if (me.closeAction === 'destroy' && !me.destroying && !me.destroyed) {
                 me.destroy();
             }
         } else {
@@ -611,13 +726,12 @@ Ext.define('Ext.window.Window', {
         // No longer subscribe to resizing now that we're hidden
         me.syncMonitorWindowResize();
 
-        // Turn off keyboard handling once window is hidden
-        if (me.keyMap) {
-            me.keyMap.disable();
-        }
-
         // Perform superclass's afterHide tasks.
         me.callParent(arguments);
+        
+        if (me.rendered && me.tabGuard) {
+            me.initTabGuards();
+        }
     },
 
     /**
@@ -699,7 +813,7 @@ Ext.define('Ext.window.Window', {
      * @param {Boolean} [animate=false] Pass `true` to animate this Window to full size.
      * @return {Ext.window.Window} this
      */
-    maximize: function(animate) {
+    maximize: function(animate, /* private */ initial) {
         var me = this,
             header = me.header,
             tools = me.tools,
@@ -707,7 +821,8 @@ Ext.define('Ext.window.Window', {
             height = me.height,
             restore, changed;
 
-        if (!me.maximized) {
+        if (!me.maximized && !me.maximizing) {
+            me.maximizing = true;
             me.expand(false);
             if (!me.hasSavedRestore) {
                 restore = me.restoreSize = {
@@ -715,7 +830,12 @@ Ext.define('Ext.window.Window', {
                     height: height ? height : null
                 };
 
-                me.restorePos = me.getPosition();
+                // If we're not positioned yet, default back to 0,0
+                if (initial) {
+                    me.restorePos = [me.x || 0, me.y || 0];
+                } else {
+                    me.restorePos = me.getPosition();
+                }
             }
 
             // Manipulate visibility of header tools if there is a header
@@ -749,13 +869,19 @@ Ext.define('Ext.window.Window', {
             me.syncMonitorWindowResize();
             me.fitContainer(animate = (animate || !!me.animateTarget) ? {
                 callback: function() {
+                    me.maximizing = false;
                     me.maximized = true;
-                    me.fireEvent('maximize', me);
+                    if (!initial) {
+                        me.fireEvent('maximize', me);
+                    }
                 }
             } : null);
             if (!animate) {
+                me.maximizing = false;
                 me.maximized = true;
-                me.fireEvent('maximize', me);
+                if (!initial) {
+                    me.fireEvent('maximize', me);
+                }
             }
         }
         return me;
@@ -882,7 +1008,7 @@ Ext.define('Ext.window.Window', {
     getDefaultFocus: function() {
         var me = this,
             result,
-            defaultComp = me.defaultButton || me.defaultFocus,
+            defaultComp = me.defaultFocus,
             selector;
 
         if (defaultComp !== undefined) {
@@ -913,7 +1039,7 @@ Ext.define('Ext.window.Window', {
 
         return result;
     },
-    
+
     privates: {
         // Override. Windows are always simple draggable, they do not use Ext.Panel.DDs
         // The dd property in a Window is always a ComponentDragger
@@ -942,11 +1068,76 @@ Ext.define('Ext.window.Window', {
                 }
             }
         },
+
+        initResizable: function(resizable) {
+            var me = this;
+            me.callParent([resizable]);
+            if (me.maximized || me.maximizing) {
+                me.resizer.disable();
+            }
+        },
+
+        initSimpleDraggable: function() {
+            var me = this,
+                dd;
+
+            me.callParent();
+            dd = me.dd;
+            if (dd && me.maximized || me.maximizing) {
+                dd.disable();
+            }
+        },
         
-        initResizable: function(){
-            this.callParent(arguments);
-            if (this.maximized) {
-                this.resizer.disable();
+        onTabGuardFocusEnter: function(e, target) {
+            var me = this,
+                el = me.el,
+                beforeGuard = me.tabGuardBeforeEl,
+                afterGuard = me.tabGuardAfterEl,
+                from = e.relatedTarget,
+                nodes, forward, nextFocus;
+
+            nodes = el.findTabbableElements({
+                skipSelf: true
+            });
+            
+            // Tabbables might include two tab guards, so remove them
+            if (nodes[0] === beforeGuard.dom) {
+                nodes.shift();
+            }
+            
+            if (nodes[nodes.length - 1] === afterGuard.dom) {
+                nodes.pop();
+            }
+            
+            // Totally possible not to have anything tabbable within the window
+            // but we have to do something so focus back the window el. At least
+            // in that case the user will be able to press Escape key to close it.
+            if (nodes.length === 0) {
+                nextFocus = el;
+            }
+            // The window itself was focused, possibly by clicking or programmatically;
+            // but this time we do have something tabbable to choose from.
+            else if (from === el.dom) {
+                forward = target === beforeGuard.dom;
+            }
+            // Focus was within the window and is trying to escape; 
+            // for topmost guard we need to bounce focus back to the last tabbable
+            // element in the window, and vice versa for the bottom guard.
+            else if (el.contains(from)) {
+                forward = !!e.forwardTab;
+            }
+            // It is entirely possible that focus was outside the window and
+            // the user tabbed into the window. In that case we forward the focus
+            // to the next available element in the natural tab order, i.e. the element
+            // after the topmost guard, or the element before the bottom guard.
+            else {
+                forward = target === beforeGuard.dom;
+            }
+            
+            nextFocus = nextFocus || (forward ? nodes[0] : nodes[nodes.length - 1]);
+            
+            if (nextFocus) {
+                nextFocus.focus();
             }
         }
     }

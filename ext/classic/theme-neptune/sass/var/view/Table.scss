@@ -1,22 +1,24 @@
 //Neptune cells
-$grid-cell-inner-padding: 5px 10px 4px !dynamic;
-$grid-row-cell-border-color: #ededed !dynamic;
-$grid-row-cell-background-color: #fff !dynamic;
-$grid-row-cell-font-size: $font-size !dynamic;
+$grid-cell-inner-padding: dynamic(5px 10px 4px);
+$grid-row-cell-border-color: dynamic(#ededed);
+$grid-row-cell-background-color: dynamic(#fff);
+$grid-row-cell-font-size: dynamic($font-size);
 
-$grid-row-cell-focus-border-style: solid !dynamic;
+$grid-row-cell-focus-border-style: dynamic(solid);
 
 // special cells
-$grid-cell-special-background-color: 'none' !dynamic;
-$grid-cell-special-background-gradient: 'none' !dynamic;
-$grid-cell-special-border-width: 1px !dynamic;
+$grid-cell-special-background-color: dynamic('none');
+$grid-cell-special-background-gradient: dynamic('none');
+$grid-cell-special-border-width: dynamic(1px);
 
 //row cell over
-$grid-row-cell-over-background-color: mix(#fff, $base-light-color, 65%) !dynamic;
-$grid-row-cell-over-border-color: $grid-row-cell-over-background-color !dynamic;
+$grid-row-cell-over-background-color: dynamic(mix(#fff, $base-light-color, 65%));
+$grid-row-cell-over-border-color: dynamic($grid-row-cell-over-background-color);
 
 //row cell selected
-$grid-row-cell-selected-background-color: mix(#fff, $base-light-color, 25%) !dynamic;
-$grid-row-cell-selected-border-color: $grid-row-cell-selected-background-color !dynamic;
+$grid-row-cell-selected-background-color: dynamic(mix(#fff, $base-light-color, 25%));
+$grid-row-cell-selected-border-color: dynamic($grid-row-cell-selected-background-color);
 
-$grid-row-cell-focus-border-color: mix(#ddd, $base-color, 20%) !dynamic;
+$grid-row-cell-focus-border-color: dynamic(mix(#ddd, $base-color, 20%));
+
+$grid-cell-dirty-glyph-color: dynamic($error-color);

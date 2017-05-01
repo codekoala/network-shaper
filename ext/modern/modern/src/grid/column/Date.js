@@ -3,8 +3,7 @@
  * {@link #format}.
  *
  *     @example
- *     Ext.create('Ext.data.Store', {
- *         storeId:'sampleStore',
+ *     var store = Ext.create('Ext.data.Store', {
  *         fields:[
  *             { name: 'symbol', type: 'string' },
  *             { name: 'date',   type: 'date' },
@@ -22,7 +21,7 @@
  *
  *     Ext.create('Ext.grid.Grid', {
  *         title: 'Date Column Demo',
- *         store: Ext.data.StoreManager.lookup('sampleStore'),
+ *         store: store,
  *         columns: [
  *             { text: 'Symbol',   dataIndex: 'symbol', flex: 1 },
  *             { text: 'Date',     dataIndex: 'date',   xtype: 'datecolumn',   format:'Y-m-d' },
@@ -37,30 +36,27 @@
 Ext.define('Ext.grid.column.Date', {
     extend: 'Ext.grid.column.Column',
 
-    requires: ['Ext.Date'],
+    requires: [
+        'Ext.Date',
+        'Ext.grid.cell.Date'
+    ],
 
     xtype: 'datecolumn',
 
     config: {
         /**
-         * @cfg {String} format
-         * A formatting string as used by {@link Ext.Date#format} to format a Date for this Column.
+         * @cfg {String} format (required)
+         * A format string as used by {@link Ext.Date#format} to format values for this
+         * column.
          */
-        format: undefined
-    },
+        format: null,
 
-    applyFormat: function(format) {
-        if (!format) {
-            format = Ext.Date.defaultFormat;
+        defaultEditor: {
+            xtype: 'datepickerfield'
+        },
+
+        cell: {
+            xtype: 'datecell'
         }
-        return format;
-    },
-
-    updateFormat: function(format) {
-        this.getDefaultEditor().dateFormat = format;
-    },
-
-    defaultRenderer: function(value) {
-        return Ext.util.Format.date(value, this.getFormat());
     }
 });

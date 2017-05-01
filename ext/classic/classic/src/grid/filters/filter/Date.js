@@ -1,7 +1,7 @@
 /**
  * The date grid filter allows you to create a filter selection that limits results
  * to values matching specific date constraints.  The filter can be set programmatically or via 
- * user input with a configurable {@link Ext.picker.DatePicker DatePicker menu} in the filter section 
+ * user input with a configurable {@link Ext.picker.Date DatePicker menu} in the filter section 
  * of the column header.
  * 
  * Example Date Filter Usage:
@@ -57,7 +57,7 @@
 Ext.define('Ext.grid.filters.filter.Date', {
     extend: 'Ext.grid.filters.filter.TriFilter',
     alias: 'grid.filter.date',
-    uses: ['Ext.picker.Date', 'Ext.menu.Menu'],
+    uses: ['Ext.picker.Date', 'Ext.menu.DatePicker'],
 
     type: 'date',
 
@@ -163,11 +163,11 @@ Ext.define('Ext.grid.filters.filter.Date', {
             if (key !== '-') {
                 cfg = {
                     menu: {
-                        items: [
-                            Ext.apply({
-                                itemId: key
-                            }, pickerCfg)
-                        ]
+                        xtype: 'datemenu',
+                        hideOnClick: false,
+                        pickerCfg: Ext.apply({
+                            itemId: key
+                        }, pickerCfg)
                     }
                 };
 
@@ -265,7 +265,9 @@ Ext.define('Ext.grid.filters.filter.Date', {
      * @param {Object} date
      */
     onMenuSelect: function (picker, date) {
-        var fields = this.fields,
+        var me = this,
+            fields = me.fields,
+            filters = me.filter,
             field = fields[picker.itemId],
             gt = fields.gt,
             lt = fields.lt,
@@ -281,18 +283,27 @@ Ext.define('Ext.grid.filters.filter.Date', {
             eq.up('menuitem').setChecked(false, true);
             if (field === gt && (+lt.value < +date)) {
                 lt.up('menuitem').setChecked(false, true);
-                // Null so filter will be removed from store.
-                v.lt = null;
+                // Null so filter will be removed from store, but only if it currently has a value.
+                // The Trifilter uses the number of removed filters as one of the determinants to determine
+                // whether the gridfilter should be active, so don't push a value in unless it's changed.
+                if (filters.lt.getValue() != null) {
+                    v.lt = null;
+                }
             } else if (field === lt && (+gt.value > +date)) {
                 gt.up('menuitem').setChecked(false, true);
-                // Null so filter will be removed from store.
-                v.gt = null;
+                // Null so filter will be removed from store, but only if it currently has a value.
+                // The Trifilter uses the number of removed filters as one of the determinants to determine
+                // whether the gridfilter should be active, so don't push a value in unless it's changed.
+                if (filters.gt.getValue() != null) {
+                    v.gt = null;
+                }
             }
         }
 
         v[field.filterKey] = date;
-        this.setValue(v);
+        me.setValue(v);
 
         picker.up('menu').hide();
       }
 });
+

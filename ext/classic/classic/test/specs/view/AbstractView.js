@@ -1,5 +1,16 @@
+/* global Ext, expect, jasmine */
+
 describe("Ext.view.AbstractView", function(){
-    var store, view;
+    var store, view,
+        synchronousLoad = true,
+        proxyStoreLoad = Ext.data.ProxyStore.prototype.load,
+        loadStore = function() {
+            proxyStoreLoad.apply(this, arguments);
+            if (synchronousLoad) {
+                this.flushLoad.apply(this, arguments);
+            }
+            return this;
+        };
     
     function makeView(cfg) {
         cfg = Ext.apply({
@@ -15,14 +26,20 @@ describe("Ext.view.AbstractView", function(){
         
         return view = new Ext.view.AbstractView(cfg);
     }
-    
+
     beforeEach(function() {
+        // Override so that we can control asynchronous loading
+        Ext.data.ProxyStore.prototype.load = loadStore;
+
         store = new Ext.data.Store({
             fields: ['field']
         });
     });
-    
+
     afterEach(function() {
+        // Undo the overrides.
+        Ext.data.ProxyStore.prototype.load = proxyStoreLoad;
+
         if (view) {
             view.destroy();
         }
@@ -31,59 +48,55 @@ describe("Ext.view.AbstractView", function(){
         store = view = null;
     });
 
-    describe("without any select config", function(){
-
-        it("should give selection model mode 'SINGLE'", function(){
-            var c = new Ext.view.AbstractView({
+    describe("without any select config", function() {
+        it("should give selection model mode 'SINGLE'", function() {
+            view = new Ext.view.AbstractView({
                 tpl: null,
                 store: store,
                 itemSelector: null
             });
-            expect(c.getSelectionModel().mode).toEqual('SINGLE');
+            
+            expect(view.getSelectionModel().mode).toEqual('SINGLE');
         });
-
     });
 
-    describe("with single select config", function(){
-
-        it("should give selection model mode 'SINGLE'", function(){
-            var c = new Ext.view.AbstractView({
+    describe("with single select config", function() {
+        it("should give selection model mode 'SINGLE'", function() {
+            view = new Ext.view.AbstractView({
                 tpl: null,
                 store: store,
                 itemSelector: null,
                 singleSelect: true
             });
-            expect(c.getSelectionModel().mode).toEqual('SINGLE');
+            
+            expect(view.getSelectionModel().mode).toEqual('SINGLE');
         });
-
     });
 
-    describe("with simple select config", function(){
-
-        it("should give selection model mode 'SIMPLE'", function(){
-            var c = new Ext.view.AbstractView({
+    describe("with simple select config", function() {
+        it("should give selection model mode 'SIMPLE'", function() {
+            view = new Ext.view.AbstractView({
                 tpl: null,
                 store: store,
                 itemSelector: null,
                 simpleSelect: true
             });
-            expect(c.getSelectionModel().mode).toEqual('SIMPLE');
+            
+            expect(view.getSelectionModel().mode).toEqual('SIMPLE');
         });
-
     });
 
-    describe("with multi select config", function(){
-
-        it("should give selection model mode 'MULTI'", function(){
-            var c = new Ext.view.AbstractView({
+    describe("with multi select config", function() {
+        it("should give selection model mode 'MULTI'", function() {
+            view = new Ext.view.AbstractView({
                 tpl: null,
                 store: store,
                 itemSelector: null,
                 multiSelect: true
             });
-            expect(c.getSelectionModel().mode).toEqual('MULTI');
+            
+            expect(view.getSelectionModel().mode).toEqual('MULTI');
         });
-
     });
 
     describe("Initial layout call", function(){
@@ -124,23 +137,43 @@ describe("Ext.view.AbstractView", function(){
     
     describe("events", function(){
         it("should fire itemadd when adding an item to an empty view", function(){
-            var fired = false;
+            var itemAddSpy = jasmine.createSpy(),
+                newRec;
             
-            var c = new Ext.view.AbstractView({
+            view = new Ext.view.AbstractView({
                 itemTpl: '{field}',
                 store: store,
                 renderTo: Ext.getBody(),
                 listeners: {
-                    itemadd: function() {
-                        fired = true;
-                    }
+                    itemadd: itemAddSpy
                 }
             });
-            store.add({
+            newRec = store.add({
                 field: 'a'
+            })[0];
+            expect(itemAddSpy.callCount).toBe(1);
+            expect(Ext.Array.slice(itemAddSpy.mostRecentCall.args, 0, 4)).toEqual([[newRec], store.getCount() - 1, [view.getNode(newRec)], view]);
+        });
+
+        it("should fire itemremove when removing an item from the view", function(){
+            var itemRemoveSpy = jasmine.createSpy(),
+                newRec = store.add({
+                    field: 'a'
+                })[0],
+                item0;
+            
+            view = new Ext.view.AbstractView({
+                itemTpl: '{field}',
+                store: store,
+                renderTo: Ext.getBody(),
+                listeners: {
+                    itemremove: itemRemoveSpy
+                }
             });
-            expect(fired).toBe(true);
-            c.destroy();
+            item0 = view.getNode(0);
+            store.removeAt(0);
+            expect(itemRemoveSpy.callCount).toBe(1);
+            expect(Ext.Array.slice(itemRemoveSpy.mostRecentCall.args, 0, 4)).toEqual([[], 0, [item0], view]);
         });
 
         it("should fire focuschange when changing focus in a view", function(){
@@ -169,21 +202,13 @@ describe("Ext.view.AbstractView", function(){
     });
     
     describe("ARIA", function() {
-        function expectAria(attr, value) {
-            jasmine.expectAriaAttr(view, attr, value);
-        }
-        
-        function expectNoAria(attr) {
-            jasmine.expectNoAriaAttr(view, attr);
-        }
-        
         describe("role", function() {
             beforeEach(function() {
                 makeView();
             });
             
             it("should have listbox role", function() {
-                expectAria('role', 'listbox');
+                expect(view).toHaveAttr('role', 'listbox');
             });
         });
         
@@ -191,32 +216,24 @@ describe("Ext.view.AbstractView", function(){
             it("should not be set when mode == SINGLE", function() {
                 makeView({ singleSelect: true });
                 
-                expectNoAria('aria-multiselectable');
+                expect(view).not.toHaveAttr('aria-multiselectable');
             });
             
             it("should be set to true when mode == SIMPLE", function() {
                 makeView({ simpleSelect: true });
                 
-                expectAria('aria-multiselectable', 'true');
+                expect(view).toHaveAttr('aria-multiselectable', 'true');
             });
             
             it("should be set to true when mode == MULTI", function() {
                 makeView({ multiSelect: true });
                 
-                expectAria('aria-multiselectable', 'true');
+                expect(view).toHaveAttr('aria-multiselectable', 'true');
             });
         });
         
         describe("item attributes", function() {
             var node, selModel;
-            
-            function expectAria(attr, value) {
-                jasmine.expectAriaAttr(node, attr, value);
-            }
-            
-            function expectNoAria(attr) {
-                jasmine.expectNoAriaAttr(node, attr);
-            }
             
             beforeEach(function() {
                 makeView({
@@ -236,26 +253,26 @@ describe("Ext.view.AbstractView", function(){
             
             describe("role", function() {
                 it("should have option role", function() {
-                    expectAria('role', 'option');
+                    expect(node).toHaveAttr('role', 'option');
                 });
             });
             
             describe("aria-selected", function() {
                 it("should not set aria-selected when rendering", function() {
-                    expectNoAria('aria-selected');
+                    expect(node).not.toHaveAttr('aria-selected');
                 });
                 
                 it("should set aria-selected to true when selected", function() {
                     selModel.select(0);
                     
-                    expectAria('aria-selected', 'true');
+                    expect(node).toHaveAttr('aria-selected', 'true');
                 });
                 
-                it("should remove aria-selected when deselected", function() {
+                it("should set aria-selected to false when deselected", function() {
                     selModel.select(0);
                     selModel.deselectAll();
                     
-                    expectNoAria('aria-selected');
+                    expect(node).toHaveAttr('aria-selected', 'false');
                 });
             });
         });

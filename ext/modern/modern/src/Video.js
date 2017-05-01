@@ -134,6 +134,10 @@ Ext.define('Ext.Video', {
         this.media.set({controls:value ? true : undefined});
     },
 
+    onActivate: function() {
+        this.media.setTop(0);
+    },
+
     onDeactivate: function() {
         this.pause();
         this.media.setTop(-2000);
@@ -150,19 +154,10 @@ Ext.define('Ext.Video', {
             ghost = this.ghost;
 
         media.show();
-        if (Ext.browser.is.AndroidStock2) {
-            Ext.defer(function() {
-                me.play();
-                Ext.defer(function() {
-                    media.hide();
-                }, 10);
-            }, 10);
-        } else {
-            // Browsers which support native video tag display only, move the media down so
-            // we can control the Viewport
-            ghost.hide();
-            me.play();
-        }
+        // Browsers which support native video tag display only, move the media down so
+        // we can control the Viewport
+        ghost.hide();
+        me.play();
     },
 
     /**

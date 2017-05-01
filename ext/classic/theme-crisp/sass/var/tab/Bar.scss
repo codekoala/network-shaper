@@ -1,5 +1,5 @@
-$tabbar-base-color: $neutral-light-color !dynamic;
-$tabbar-padding: 6px !dynamic;
-$tab-margin: 0 5px !dynamic;
-$tabbar-strip-height: 0 !dynamic;
-$tab-border-radius: 2px !dynamic;
+$tabbar-base-color: dynamic($neutral-light-color);
+$tabbar-padding: dynamic(6px);
+$tab-margin: dynamic(0 5px);
+$tabbar-strip-height: dynamic(0);
+$tab-border-radius: dynamic(2px);

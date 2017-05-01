@@ -107,8 +107,11 @@ Ext.define('Ext.ComponentManager', {
         var id = component.getId();
 
         if (component.getReference && component.getReference()) {
+            this.references[id] = null;
             delete this.references[id];
         }
+        
+        this.all[id] = null;
         delete this.all[id];
 
         this.count--;
@@ -217,18 +220,18 @@ Ext.define('Ext.ComponentManager', {
             fromElement = e.fromElement,
             toComponent = Ext.Component.fromElement(toElement),
             fromComponent = Ext.Component.fromElement(fromElement),
-            commonAncestor = me.getCommonAncestor(fromComponent, toComponent),
-            event,
+            commonAncestor,
             targetComponent;
 
+        // Focus moves *within* a component should not cause component focus leave/enter
+        if (toComponent === fromComponent) {
+            return;
+        }
+
+        commonAncestor = me.getCommonAncestor(fromComponent, toComponent);
         if (fromComponent && !(fromComponent.destroyed || fromComponent.destroying)) {
-            // Call the Blurred Component's blur event handler directly with a synthesized blur event.
-            if (fromComponent.focusable && fromElement === fromComponent.getFocusEl().dom) {
-                event = new Ext.event.Event(e.event);
-                event.type = 'blur';
-                event.target = fromElement;
-                event.relatedTarget = toElement;
-                fromComponent.onBlur(event);
+            if (fromComponent.handleBlurEvent) {
+                fromComponent.handleBlurEvent(e);
             }
 
             // Call onFocusLeave on the component axis from which focus is exiting
@@ -245,16 +248,11 @@ Ext.define('Ext.ComponentManager', {
                 }
             }
         }
-        if (toComponent && !toComponent.destroyed) {
-            // Call the Focused Component's focus event handler directly with a synthesized focus event.
-            if (toComponent.focusable && toElement === toComponent.getFocusEl().dom) {
-                event = new Ext.event.Event(e.event);
-                event.type = 'focus';
-                event.relatedTarget = fromElement;
-                event.target = toElement;
-                toComponent.onFocus(event);
+        if (toComponent && !(toComponent.destroyed || toComponent.destroying)) {
+            if (toComponent.handleFocusEvent) {
+                toComponent.handleFocusEvent(e);
             }
-
+            
             // Call onFocusEnter on the component axis to which focus is entering
             for (targetComponent = toComponent; targetComponent && targetComponent !== commonAncestor; targetComponent = targetComponent.getRefOwner()) {
                 targetComponent.onFocusEnter({
@@ -277,6 +275,59 @@ Ext.define('Ext.ComponentManager', {
             compA = compA.getRefOwner();
         }
         return compA;
+    },
+    
+    privates: {
+        clearAll: function() {
+            this.all = {};
+            this.references = {};
+            this.onAvailableCallbacks = {};
+        },
+
+        /**
+         * Find the Widget or Component to which the given Element belongs.
+         *
+         * @param {Ext.dom.Element/HTMLElement} el The element from which to start to find
+         * an owning Component.
+         * @param {Ext.dom.Element/HTMLElement} [limit] The element at which to stop upward
+         * searching for an owning Component, or the number of Components to traverse before
+         * giving up. Defaults to the document's HTML element.
+         * @param {String} [selector] An optional {@link Ext.ComponentQuery} selector to
+         * filter the target.
+         * @return {Ext.Widget/Ext.Component} The widget, component or `null`.
+         *
+         * @private
+         * @since 6.0.1
+         */
+        fromElement: function (node, limit, selector) {
+            var target = Ext.getDom(node),
+                cache = this.all,
+                depth = 0,
+                topmost, cmpId, cmp;
+
+            if (typeof limit !== 'number') {
+                topmost = Ext.getDom(limit);
+                limit = Number.MAX_VALUE;
+            }
+
+            while (target && target.nodeType === 1 && depth < limit && target !== topmost) {
+                cmpId = target.getAttribute('data-componentid') || target.id;
+
+                if (cmpId) {
+                    cmp = cache[cmpId];
+                    if (cmp && (!selector || Ext.ComponentQuery.is(cmp, selector))) {
+                        return cmp;
+                    }
+
+                    // Increment depth on every *Component* found, not Element
+                    depth++;
+                }
+
+                target = target.parentNode;
+            }
+
+            return null;
+        }
     },
 
     deprecated: {
@@ -306,11 +357,12 @@ function () {
      * This is shorthand reference to {@link Ext.ComponentManager#get}.
      * Looks up an existing {@link Ext.Component Component} by {@link Ext.Component#id id}
      *
+     * @method getCmp
      * @param {String} id The component {@link Ext.Component#id id}
-     * @return Ext.Component The Component, `undefined` if not found, or `null` if a
+     * @return {Ext.Component} The Component, `undefined` if not found, or `null` if a
      * Class was found.
      * @member Ext
-    */
+     */
     Ext.getCmp = function(id) {
         return Ext.ComponentManager.get(id);
     };

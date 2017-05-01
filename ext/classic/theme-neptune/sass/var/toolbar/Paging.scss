@@ -1,4 +1,4 @@
 /** @class Ext.toolbar.Paging */
 //
 
-$grid-paging-toolbar-include-disabled-icons: false !dynamic;
+$grid-paging-toolbar-include-disabled-icons: dynamic(false);

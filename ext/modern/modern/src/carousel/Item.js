@@ -5,7 +5,7 @@ Ext.define('Ext.carousel.Item', {
     extend: 'Ext.Decorator',
 
     config: {
-        baseCls: 'x-carousel-item',
+        baseCls: Ext.baseCSSPrefix + 'carousel-item',
         component: null,
         translatable: true
     }

@@ -1,13 +1,14 @@
 /** @class Ext.LoadMask */
 //
 
-//$loadmask-msg-border-color: $panel-header-border-color !dynamic;
-//$loadmask-msg-background-color: $panel-base-color !dynamic;
-// this is the same as $panel-border-color, but we have to duplicate it since LoadMask cannot depend on Panel
-$loadmask-msg-inner-icon: 'grid/loading' !dynamic;
-$loadmask-msg-border-color: adjust-color($base-color, $hue: 0deg, $saturation: 7.644%, $lightness: -8.627%) !dynamic;
-// this is the same as $panel-base-color, but we have to duplicate it since LoadMask cannot depend on Panel
-$loadmask-msg-background-color: adjust-color($base-color, $hue: 0deg, $saturation: 0.542%, $lightness: 7.843%) !dynamic;
+//$loadmask-msg-border-color: dynamic($panel-header-border-color);
+//$loadmask-msg-background-color: dynamic($panel-base-color);
 
-$loadmask-msg-inner-font-size: ceil($font-size * .9) !dynamic; //11px
-$loadmask-msg-inner-border-color: adjust-color($base-color, $hue: 1.111deg, $saturation: -14.017%, $lightness: -9.608%) !dynamic;
+// this is the same as $panel-border-color, but we have to duplicate it since LoadMask cannot depend on Panel
+$loadmask-msg-inner-icon: dynamic('grid/loading');
+$loadmask-msg-border-color: dynamic(adjust-color($base-color, $hue: 0deg, $saturation: 7.644%, $lightness: -8.627%));
+// this is the same as $panel-base-color, but we have to duplicate it since LoadMask cannot depend on Panel
+$loadmask-msg-background-color: dynamic(adjust-color($base-color, $hue: 0deg, $saturation: 0.542%, $lightness: 7.843%));
+
+$loadmask-msg-inner-font-size: dynamic(ceil($font-size * .9));  //11px
+$loadmask-msg-inner-border-color: dynamic(adjust-color($base-color, $hue: 1.111deg, $saturation: -14.017%, $lightness: -9.608%));

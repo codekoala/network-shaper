@@ -175,6 +175,23 @@ Ext.Microloader = Ext.Microloader || (function () {
 
             this.loadOrderMap = (this.loadOrder) ? Boot.createLoadOrderMap(this.loadOrder) : null;
 
+            var tags = this.content.tags,
+                platformTags = Ext.platformTags;
+
+            if (tags) {
+                if (tags instanceof Array) {
+                    for (var i = 0; i < tags.length; i++) {
+                        platformTags[tags[i]] = true;
+                    }
+                } else {
+                    Boot.apply(platformTags, tags);
+                }
+
+                // re-apply the query parameters, so that the params as specified
+                // in the url always has highest priority
+                Boot.apply(platformTags, Boot.loadPlatformsParam());
+            }
+
             // Convert all assets into Assets
             this.js = this.processAssets(this.content.js, 'js');
             this.css = this.processAssets(this.content.css, 'css');

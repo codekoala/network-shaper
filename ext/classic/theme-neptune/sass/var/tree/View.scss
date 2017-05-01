@@ -1,10 +1,11 @@
-$tree-elbow-width: 18px !dynamic;
-$tree-glyph-color: $neutral-dark-color !dynamic;
-$tree-elbow-spacing: 2px !dynamic;
-$tree-checkbox-spacing: 4px !dynamic;
-$tree-icon-spacing: 4px !dynamic;
-$tree-cell-inner-padding:
+$tree-elbow-width: dynamic(18px);
+$tree-glyph-color: dynamic($neutral-dark-color);
+$tree-elbow-spacing: dynamic(2px);
+$tree-checkbox-spacing: dynamic(4px);
+$tree-icon-spacing: dynamic(4px);
+$tree-cell-inner-padding: dynamic(
     top($grid-cell-inner-padding)
     right($grid-cell-inner-padding)
     bottom($grid-cell-inner-padding)
-    6px !dynamic;
+    6px
+);

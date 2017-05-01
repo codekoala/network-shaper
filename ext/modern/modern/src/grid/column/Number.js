@@ -34,23 +34,27 @@
 Ext.define('Ext.grid.column.Number', {
     extend: 'Ext.grid.column.Column',
 
-    requires: ['Ext.util.Format'],
+    requires: [
+        'Ext.util.Format',
+        'Ext.grid.cell.Number'
+    ],
 
     xtype: 'numbercolumn',
 
     config: {
         /**
          * @cfg {String} format
-         * A formatting string as used by {@link Ext.util.Format#number} to format a numeric value for this Column.
+         * A format string as used by {@link Ext.util.Format#number} to format values
+         * for this column.
          */
-        format: '0,000.00',
+        format: null,
 
         defaultEditor: {
             xtype: 'numberfield'
-        }
-    },
+        },
 
-    defaultRenderer: function(value) {
-        return Ext.util.Format.number(value, this.getFormat());
+        cell: {
+            xtype: 'numbercell'
+        }
     }
 });

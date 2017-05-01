@@ -21,7 +21,7 @@
         }
 
         &.x-button-pressing {
-            background: #66cdfe;
+            background: #323232;
         }
 
         &:first-child {
@@ -82,12 +82,9 @@
     width: 61px;
     margin-left: 0;
     margin-right: 0;
-    box-shadow: inset 3px 0px 9px -1px rgba(#000, .4) !important;
-    -webkit-box-shadow: inset 3px 0px 9px -1px rgba(#000, .4) !important;
 
     &:before {
         background-color: transparent !important;
-        @include box-shadow(none);
     }
 
     .x-button-icon:before {
@@ -100,6 +97,6 @@
         background-size: 30px;
         background-position: center;
         background-repeat: no-repeat;
-        background-image: theme-background-image('icons/ic_overflow_action');
+        background-image: url('#{$bb-icons-path}/ic_overflow_action.png');
     }
 }

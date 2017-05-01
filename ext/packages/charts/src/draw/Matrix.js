@@ -1,15 +1,109 @@
 /**
- * Utility class to calculate [affine transformation](http://en.wikipedia.org/wiki/Affine_transformation) matrix.
+ * Ext.draw.Matix is a utility class used to calculate 
+ * [affine transformation](http://en.wikipedia.org/wiki/Affine_transformation) matrix.  
+ * The matrix class is used to apply transformations to existing 
+ * {@link Ext.draw.sprite.Sprite sprites} using a number of convenience transform 
+ * methods.
+ * 
+ * Transformations configured directly on a sprite are processed in the following order: 
+ * scaling, rotation, and translation.  The matrix class offers additional flexibility.  
+ * Once a sprite is created, you can use the matrix class's transform methods as many 
+ * times as needed and in any order you choose. 
  *
- * This class is compatible with [SVGMatrix](http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGMatrix) except:
+ * To demonstrate, we'll start with a simple {@link Ext.draw.sprite.Rect rect} sprite 
+ * with the intent of rotating it 180 degrees with the bottom right corner being the 
+ * center of rotation.  To begin, let's look at the initial, untransformed sprite:
+ * 
+ *     @example
+ *     var drawContainer = new Ext.draw.Container({
+ *         renderTo: Ext.getBody(),
+ *         width: 380,
+ *         height: 380,
+ *         sprites: [{
+ *             type: 'rect',
+ *             width: 100,
+ *             height: 100,
+ *             fillStyle: 'red'
+ *         }]
+ *     });
+ * 
+ * Next, we'll use the {@link #rotate} and {@link #translate} methods from our matrix 
+ * class to position the rect sprite.
+ * 
+ *     @example
+ *     var drawContainer = new Ext.draw.Container({
+ *         renderTo: Ext.getBody(),
+ *         width: 380,
+ *         height: 380,
+ *         sprites: [{
+ *             type: 'rect',
+ *             width: 100,
+ *             height: 100,
+ *             fillStyle: 'red'
+ *         }]
+ *     });
+ *     
+ *     var main = drawContainer.getSurface();
+ *     var rect = main.getItems()[0];
+ *     
+ *     var m = new Ext.draw.Matrix().translate(100, 100).
+ *     rotate(Math.PI).
+ *     translate(-100, - 100);
+ *     
+ *     rect.setTransform(m);
+ *     main.renderFrame();
+ * 
+ * In the previous example we perform the following steps in order to achieve our 
+ * desired rotated output:
+ * 
+ *  - translate the rect to the right and down by 100
+ *  - rotate by 180 degrees
+ *  - translate the rect to the right and down by 100
+ * 
+ * **Note:** A couple of things to note at this stage; 1) the rotation center point is 
+ * the upper left corner of the sprite by default and 2) with transformations, the 
+ * sprite itself isn't transformed, but rather the entire coordinate plane of the sprite 
+ * is transformed.  The coordinate plane itself is translated by 100 and then rotated 
+ * 180 degrees.  And that is why in the third step we translate the sprite using 
+ * negative values.  Translating by -100 in the third step results in the sprite 
+ * visually moving to the right and down within the draw container.
+ * 
+ * Fortunately there is a shortcut we can apply using two optional params of the rotate 
+ * method allowing us to specify the center point of rotation:
+ * 
+ *     @example
+ *     var drawContainer = new Ext.draw.Container({
+ *         renderTo: Ext.getBody(),
+ *         width: 380,
+ *         height: 380,
+ *         sprites: [{
+ *             type: 'rect',
+ *             width: 100,
+ *             height: 100,
+ *             fillStyle: 'red'
+ *         }]
+ *     });
+ *     
+ *     var main = drawContainer.getSurface();
+ *     var rect = main.getItems()[0];
+ *     
+ *     var m = new Ext.draw.Matrix().rotate(Math.PI, 100, 100);
+ *     
+ *     rect.setTransform(m);
+ *     main.renderFrame();
+ * 
+ * 
+ * This class is compatible with 
+ * [SVGMatrix](http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGMatrix) except:
  *
- *   1. Ext.draw.Matrix is not read only.
- *   2. Using Number as its components rather than floats.
- *
+ *   1. Ext.draw.Matrix is not read only
+ *   2. Using Number as its values rather than floats
+ * 
  * Using this class helps to reduce the severe numeric 
  * [problem with HTML Canvas and SVG transformation](http://stackoverflow.com/questions/8784405/large-numbers-in-html-canvas-translate-result-in-strange-behavior)
  * 
- * There's also no way to get current transformation matrix [in Canvas](http://stackoverflow.com/questions/7395813/html5-canvas-get-transform-matrix).
+ * Additionally, there's no way to get the current transformation matrix 
+ * [in Canvas](http://stackoverflow.com/questions/7395813/html5-canvas-get-transform-matrix).
  */
 Ext.define('Ext.draw.Matrix', {
 
@@ -74,6 +168,7 @@ Ext.define('Ext.draw.Matrix', {
         },
 
         /**
+         * @method
          * @static
          * Create a flyweight to wrap the given array.
          * The flyweight will directly refer the object and the elements can be changed by other methods.
@@ -238,6 +333,7 @@ Ext.define('Ext.draw.Matrix', {
         elements[3] = yy;
         elements[4] = dx;
         elements[5] = dy;
+
         return this;
     },
 
@@ -402,7 +498,7 @@ Ext.define('Ext.draw.Matrix', {
      * @return {Ext.draw.Matrix} this
      */
     skewX: function (angle) {
-        return this.append(1, Math.tan(angle), 0, -1, 0, 0);
+        return this.append(1, 0, Math.tan(angle), 1, 0, 0);
     },
 
     /**
@@ -411,7 +507,25 @@ Ext.define('Ext.draw.Matrix', {
      * @return {Ext.draw.Matrix} this
      */
     skewY: function (angle) {
-        return this.append(1, 0, Math.tan(angle), -1, 0, 0);
+        return this.append(1, Math.tan(angle), 0, 1, 0, 0);
+    },
+
+    /**
+     * Shear the matrix along the x-axis.
+     * @param factor The horizontal shear factor.
+     * @return {Ext.draw.Matrix} this
+     */
+    shearX: function (factor) {
+        return this.append(1, 0, factor, 1, 0, 0);
+    },
+
+    /**
+     * Shear the matrix along the y-axis.
+     * @param factor The vertical shear factor.
+     * @return {Ext.draw.Matrix} this
+     */
+    shearY: function (factor) {
+        return this.append(1, factor, 0, 1, 0, 0);
     },
 
     /**
@@ -605,28 +719,39 @@ Ext.define('Ext.draw.Matrix', {
         var elements = this.elements;
 
         return elements[0] === 1 &&
-            elements[1] === 0 &&
-            elements[2] === 0 &&
-            elements[3] === 1 &&
-            elements[4] === 0 &&
-            elements[5] === 0;
+               elements[1] === 0 &&
+               elements[2] === 0 &&
+               elements[3] === 1 &&
+               elements[4] === 0 &&
+               elements[5] === 0;
     },
 
     /**
+     * Determines if this matrix has the same values as another matrix.
+     * @param {Ext.draw.Matrix} matrix A maxtrix or array of its elements.
+     * @return {Boolean}
+     */
+    isEqual: function (matrix) {
+        var elements = matrix && matrix.isMatrix ? matrix.elements : matrix,
+            myElements = this.elements;
+
+        return myElements[0] === elements[0] &&
+               myElements[1] === elements[1] &&
+               myElements[2] === elements[2] &&
+               myElements[3] === elements[3] &&
+               myElements[4] === elements[4] &&
+               myElements[5] === elements[5];
+    },
+
+    /**
+     * @deprecated
+     * @since 6.0.1
      * Determines if this matrix has the same values as another matrix.
      * @param {Ext.draw.Matrix} matrix
      * @return {Boolean}
      */
     equals: function (matrix) {
-        var elements = this.elements,
-            elements2 = matrix.elements;
-
-        return elements[0] === elements2[0] &&
-            elements[1] === elements2[1] &&
-            elements[2] === elements2[2] &&
-            elements[3] === elements2[3] &&
-            elements[4] === elements2[4] &&
-            elements[5] === elements2[5];
+        return this.isEqual(matrix);
     },
 
     /**
@@ -750,22 +875,22 @@ Ext.define('Ext.draw.Matrix', {
     },
 
     /**
-     * Split a transformation matrix into Scale, Rotate, Translate components.
+     * Splits this transformation matrix into Scale, Rotate, Translate components,
+     * assuming it was produced by applying transformations in that order.
      * @return {Object}
      */
     split: function () {
         var el = this.elements,
             xx = el[0],
             xy = el[1],
-            yx = el[2],
             yy = el[3],
             out = {
                 translateX: el[4],
                 translateY: el[5]
             };
-        out.scaleX = Ext.Number.sign(xx) * Math.sqrt(xx * xx + yx * yx);
-        out.scaleY = Ext.Number.sign(yy) * Math.sqrt(xy * xy + yy * yy);
-        out.rotation = Math.atan2(xy, yy);
+        out.rotate = out.rotation = Math.atan2(xy, xx);
+        out.scaleX = xx / Math.cos(out.rotate);
+        out.scaleY = yy / xx * out.scaleX;
 
         return out;
     }

@@ -16,9 +16,10 @@
  *
  * The default layout for CheckboxGroup makes it easy to arrange the checkboxes into
  * columns; see the {@link #columns} and {@link #vertical} config documentation for details. You may also
- * use a completely different layout by setting the {@link #layout} to one of the other supported layout
- * types; for instance you may wish to use a custom arrangement of hbox and vbox containers. In that case
- * the checkbox components at any depth will still be managed by the CheckboxGroup's validation.
+ * use a completely different layout by setting the {@link #cfg-layout} to one of the 
+ * other supported layout types; for instance you may wish to use a custom arrangement 
+ * of hbox and vbox containers. In that case the checkbox components at any depth will 
+ * still be managed by the CheckboxGroup's validation.
  *
  *     @example
  *     Ext.create('Ext.form.Panel', {
@@ -46,10 +47,20 @@
  */
 Ext.define('Ext.form.CheckboxGroup', {
     extend:'Ext.form.FieldContainer',
+    xtype: 'checkboxgroup',
+
+    /**
+     * @property {Boolean} isCheckboxGroup
+     * The value `true` to identify an object as an instance of this or derived class.
+     * @readonly
+     * @since 6.2.0
+     */
+    isCheckboxGroup: true,
+
     mixins: {
         field: 'Ext.form.field.Field'
     },
-    alias: 'widget.checkboxgroup',
+    
     requires: [
         'Ext.layout.container.CheckboxGroup',
         'Ext.form.field.Checkbox',
@@ -57,8 +68,8 @@ Ext.define('Ext.form.CheckboxGroup', {
     ],
 
     /**
-     * @cfg {String} name
-     * @private
+     * @cfg {String} name The value of the `name` attribute of the input elements
+     * belonging to this Group. If not set, Group's `id` will be used.
      */
 
     /**
@@ -106,10 +117,9 @@ Ext.define('Ext.form.CheckboxGroup', {
     blankText : "You must select at least one item in this group",
     //</locale>
 
-    /**
-     * @private
-     */
     defaultType : 'checkboxfield',
+
+    defaultBindProperty: 'value',
 
     /**
      * @private
@@ -121,15 +131,16 @@ Ext.define('Ext.form.CheckboxGroup', {
      */
     extraFieldBodyCls: Ext.baseCSSPrefix + 'form-checkboxgroup-body',
 
-    /**
-     * @private
-     */
     layout: 'checkboxgroup',
 
     componentCls: Ext.baseCSSPrefix + 'form-checkboxgroup',
     
     ariaRole: 'group',
     ariaEl: 'containerEl',
+
+    // containerEl is a div, it cannot be referenced by a <label for="...">
+    // We set aria-labelledby on the containerEl instead
+    skipLabelForAttribute: true,
     
     // Checkbox and radio groups start as valid
     ariaRenderAttributes: {
@@ -138,6 +149,9 @@ Ext.define('Ext.form.CheckboxGroup', {
 
     initComponent: function() {
         var me = this;
+        
+        me.name = me.name || me.id;
+        
         me.callParent();
         me.initField();
     },
@@ -154,14 +168,9 @@ Ext.define('Ext.form.CheckboxGroup', {
         ariaAttr = data.ariaAttributes;
         
         if (ariaAttr) {
-            boxes = me.getBoxes();
-            ids = [];
-            
-            for (i = 0, len = boxes.length; i < len; i++) {
-                ids.push(boxes[i].id + '-inputEl');
+            if (!ariaAttr['aria-labelledby']) {
+                ariaAttr['aria-labelledby'] = me.id + '-labelTextEl';
             }
-            
-            ariaAttr['aria-owns'] = ids.join(' ');
         }
         
         return data;
@@ -193,8 +202,15 @@ Ext.define('Ext.form.CheckboxGroup', {
             len, i;
 
         if (field.isCheckbox) {
+            // Checkboxes and especially Radio buttons MUST have similar name
+            // if they belong to a group but also must allow explicit override.
+            if (field.name == null) {
+                field.name = me.name;
+            }
+            
             me.mon(field, 'change', me.checkChange, me);
-        } else if (field.isContainer) {
+        }
+        else if (field.isContainer) {
             items = field.items.items;
             for (i = 0, len = items.length; i < len; i++) {
                 me.onAdd(items[i]);

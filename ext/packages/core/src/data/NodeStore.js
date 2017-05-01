@@ -177,7 +177,11 @@ Ext.define('Ext.data.NodeStore', {
             me.fireEvent('clear', me);
 
             me.suspendEvents();
-            me.add(data);
+            if (me.isInitializing) {
+                me.inlineData = data;
+            } else {
+                me.add(data);
+            }
             me.resumeEvents();
 
             if (data.length === 0) {

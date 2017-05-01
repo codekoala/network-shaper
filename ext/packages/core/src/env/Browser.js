@@ -13,15 +13,15 @@
 // @require Ext.Version
 
     var me = this,
-        browserPrefixes = me.browserPrefixes,
+        browserPrefixes = Ext.Boot.browserPrefixes,
+        browserNames = Ext.Boot.browserNames,
         enginePrefixes = me.enginePrefixes,
-        browserMatch = userAgent.match(new RegExp('((?:' + 
-                Ext.Object.getValues(browserPrefixes).join(')|(?:') + '))([\\w\\._]+)')),
-        engineMatch = userAgent.match(new RegExp('((?:' + 
-                Ext.Object.getValues(enginePrefixes).join(')|(?:') + '))([\\w\\._]+)')),
-        browserNames = me.browserNames,
-        browserName = browserNames.other,
         engineNames = me.engineNames,
+        browserMatch = userAgent.match(new RegExp('((?:' +
+                Ext.Object.getValues(browserPrefixes).join(')|(?:') + '))([\\w\\._]+)')),
+        engineMatch = userAgent.match(new RegExp('((?:' +
+                Ext.Object.getValues(enginePrefixes).join(')|(?:') + '))([\\w\\._]+)')),
+        browserName = browserNames.other,
         engineName = engineNames.other,
         browserVersion = '',
         engineVersion = '',
@@ -34,6 +34,57 @@
      * Browser User Agent string.
      */
     me.userAgent = userAgent;
+
+    /**
+     * A "hybrid" property, can be either accessed as a method call, for example:
+     *
+     *     if (Ext.browser.is('IE')) {
+     *         // ...
+     *     }
+     *
+     * Or as an object with Boolean properties, for example:
+     *
+     *     if (Ext.browser.is.IE) {
+     *         // ...
+     *     }
+     *
+     * Versions can be conveniently checked as well. For example:
+     *
+     *     if (Ext.browser.is.IE10) {
+     *         // Equivalent to (Ext.browser.is.IE && Ext.browser.version.equals(10))
+     *     }
+     *
+     * __Note:__ Only {@link Ext.Version#getMajor major component}  and {@link Ext.Version#getShortVersion simplified}
+     * value of the version are available via direct property checking.
+     *
+     * Supported values are:
+     *
+     * - IE
+     * - Firefox
+     * - Safari
+     * - Chrome
+     * - Opera
+     * - WebKit
+     * - Gecko
+     * - Presto
+     * - Trident
+     * - WebView
+     * - Other
+     *
+     * @param {String} name The OS name to check.
+     * @return {Boolean}
+     */
+    this.is = function (name) {
+        // Since this function reference also acts as a map, we do not want it to be
+        // shared between instances, so it is defined here, not on the prototype.
+        return !!this.is[name];
+    };
+
+    // Edge has a userAgent with All browsers so we manage it separately
+    // "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+    if (/Edge\//.test(userAgent)) {
+        browserMatch = userAgent.match(/(Edge\/)([\w.]+)/);
+    }
 
     if (browserMatch) {
         browserName = browserNames[Ext.Object.getKey(browserPrefixes, browserMatch[1])];
@@ -59,7 +110,11 @@
             browserVersion = new Ext.Version(version);
         }
     }
-
+    
+    if (browserName && browserVersion) {
+        Ext.setVersion(browserName, browserVersion);
+    }
+    
     /**
      * @property chromeVersion
      * The current version of Chrome (0 if the browser is not Chrome).
@@ -210,6 +265,14 @@
      */
 
     /**
+     * @property isEdge
+     * True if the detected browser is Edge.
+     * @readonly
+     * @type Boolean
+     * @member Ext
+     */
+
+    /**
      * @property isLinux
      * True if the detected platform is Linux.
      * @readonly
@@ -332,7 +395,7 @@
                 majorVer = 11;
             }
 
-            maxIEVersion = Math.max(majorVer, 11);
+            maxIEVersion = Math.max(majorVer, Ext.Boot.maxIEVersion);
             for (i = 7; i <= maxIEVersion; ++i) {
                 prefix = 'isIE' + i; 
                 if (majorVer <= i) {
@@ -398,14 +461,6 @@
         this.setFlag('PhoneGap');
         this.setFlag('Cordova');
     }
-    else if (!!window.isNK) {
-        isWebView = true;
-        this.setFlag('Sencha');
-    }
-
-    if (/(Glass)/i.test(userAgent)) {
-        this.setFlag('GoogleGlass');
-    }
 
     // Check if running in UIWebView
     if (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)(?!.*FBAN)/i.test(userAgent)) {
@@ -434,19 +489,6 @@
 Ext.env.Browser.prototype = {
     constructor: Ext.env.Browser,
 
-    browserNames: {
-        ie: 'IE',
-        firefox: 'Firefox',
-        safari: 'Safari',
-        chrome: 'Chrome',
-        opera: 'Opera',
-        dolfin: 'Dolfin',
-        webosbrowser: 'webOSBrowser',
-        chromeMobile: 'ChromeMobile',
-        chromeiOS: 'ChromeiOS',
-        silk: 'Silk',
-        other: 'Other'
-    },
     engineNames: {
         webkit: 'WebKit',
         gecko: 'Gecko',
@@ -454,23 +496,12 @@ Ext.env.Browser.prototype = {
         trident: 'Trident',
         other: 'Other'
     },
+
     enginePrefixes: {
         webkit: 'AppleWebKit/',
         gecko: 'Gecko/',
         presto: 'Presto/',
         trident: 'Trident/'
-    },
-    browserPrefixes: {
-        ie: 'MSIE ',
-        firefox: 'Firefox/',
-        chrome: 'Chrome/',
-        safari: 'Version/',
-        opera: 'OPR/',
-        dolfin: 'Dolfin/',
-        webosbrowser: 'wOSBrowser/',
-        chromeMobile: 'CrMo/',
-        chromeiOS: 'CriOS/',
-        silk: 'Silk/'
     },
 
     styleDashPrefixes: {
@@ -498,49 +529,6 @@ Ext.env.Browser.prototype = {
     },
 
     // scope: Ext.env.Browser.prototype
-
-    /**
-     * A "hybrid" property, can be either accessed as a method call, for example:
-     *
-     *     if (Ext.browser.is('IE')) {
-     *         // ...
-     *     }
-     *
-     * Or as an object with Boolean properties, for example:
-     *
-     *     if (Ext.browser.is.IE) {
-     *         // ...
-     *     }
-     *
-     * Versions can be conveniently checked as well. For example:
-     *
-     *     if (Ext.browser.is.IE10) {
-     *         // Equivalent to (Ext.browser.is.IE && Ext.browser.version.equals(10))
-     *     }
-     *
-     * __Note:__ Only {@link Ext.Version#getMajor major component}  and {@link Ext.Version#getShortVersion simplified}
-     * value of the version are available via direct property checking.
-     *
-     * Supported values are:
-     *
-     * - IE
-     * - Firefox
-     * - Safari
-     * - Chrome
-     * - Opera
-     * - WebKit
-     * - Gecko
-     * - Presto
-     * - Trident
-     * - WebView
-     * - Other
-     *
-     * @param {String} name The OS name to check.
-     * @return {Boolean}
-     */
-    is: function (name) {
-        return !!this.is[name];
-    },
 
     /**
      * The full name of the current browser.

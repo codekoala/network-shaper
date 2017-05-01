@@ -5,15 +5,15 @@
 /**
  * @var {measurement} $carousel-indicator-size Size (width/height) of carousel indicator dots.
  */
-$carousel-indicator-size: .5em !dynamic;
+$carousel-indicator-size: dynamic(.5em);
 
 /**
  * @var {measurement} $carousel-indicator-spacing
  * Amount of space between carousel indicator dots.
  */
-$carousel-indicator-spacing: .2em !dynamic;
+$carousel-indicator-spacing: dynamic(.2em);
 
 /**
  * @var {measurement} $carousel-track-size Size of the track the carousel indicator dots are in.
  */
-$carousel-track-size: 1.5em !dynamic;
+$carousel-track-size: dynamic(1.5em);

@@ -1,5 +1,5 @@
 /**
- *
+ * @class Ext.Widget
  */
 Ext.define('Ext.overrides.Widget', {
     override: 'Ext.Widget',
@@ -23,10 +23,6 @@ Ext.define('Ext.overrides.Widget', {
         renderTo: null
     },
 
-    cachedConfig: {
-        baseCls: Ext.baseCSSPrefix + 'widget'
-    },
-
     constructor: function(config) {
         var me = this,
             renderTo;
@@ -41,15 +37,18 @@ Ext.define('Ext.overrides.Widget', {
         }
     },
 
-    addCls: function(cls) {
-        this.el.addCls(cls);
-    },
-
     addClsWithUI: function(cls) {
         this.el.addCls(cls);
     },
 
     afterComponentLayout: Ext.emptyFn,
+
+    updateLayout: function() {
+        var owner = this.getRefOwner();
+        if (owner) {
+            owner.updateLayout();
+        }
+    },
 
     destroy: function() {
         var me = this,
@@ -65,6 +64,11 @@ Ext.define('Ext.overrides.Widget', {
     finishRender: function () {
         this.rendering = false;
         this.initBindable();
+    },
+
+    getAnimationProps: function() {
+        // see Ext.util.Animate mixin
+        return {};
     },
 
     getComponentLayout: function() {
@@ -115,51 +119,27 @@ Ext.define('Ext.overrides.Widget', {
     },
 
     onAdded: function (container, pos, instanced) {
-        var me = this,
-            inheritedState = me.inheritedState;
+        var me = this;
 
         me.ownerCt = container;
 
-        // The container constructed us, so it's not possible for our
-        // inheritedState to be invalid, so we only need to clear it
-        // if we've been added as an instance
-        if (inheritedState && instanced) {
-            me.invalidateInheritedState();
-        }
-
-        if (me.reference) {
-            me.fixReference();
-        }
+        me.onInheritedAdd(me, instanced);
     },
 
     onRemoved: function(destroying) {
-        var me = this,
-            refHolder;
-
-        if (me.reference) {
-            refHolder = me.lookupReferenceHolder();
-            if (refHolder) {
-                refHolder.clearReference(me);
-            }
-        }
+        var me = this;
 
         if (!destroying) {
             me.removeBindings();
         }
 
-        if (me.inheritedState && !destroying) {
-            me.invalidateInheritedState();
-        }
+        me.onInheritedRemove(destroying);
 
         me.ownerCt = me.ownerLayout = null;
     },
 
     parseBox: function(box) {
         return Ext.Element.parseBox(box);
-    },
-
-    removeCls: function(cls) {
-        this.el.removeCls(cls);
     },
 
     removeClsWithUI: function(cls) {
@@ -208,14 +188,37 @@ Ext.define('Ext.overrides.Widget', {
     
     onFocusLeave: function() {
         return Ext.Component.prototype.onFocusLeave.apply(this, arguments);
+    },
+
+    isLayoutChild: function(candidate) {
+        var ownerCt = this.ownerCt;
+        return ownerCt ? (ownerCt === candidate || ownerCt.isLayoutChild(candidate)) : false;
+    },
+
+    privates: {
+        doAddListener: function(name, fn, scope, options, order, caller, manager) {
+            if (name == 'painted' || name == 'resize') {
+                this.element.doAddListener(name, fn, scope || this, options, order);
+            }
+
+            this.callParent([name, fn, scope, options, order, caller, manager]);
+        },
+
+        doRemoveListener: function(name, fn, scope) {
+            if (name == 'painted' || name == 'resize') {
+                this.element.doRemoveListener(name, fn, scope);
+            }
+
+            this.callParent([name, fn, scope]);
+        }
     }
 
 }, function(Cls) {
     var prototype = Cls.prototype;
 
-    if (Ext.isIE8) {
-        // Since IE8 does not support Object.defineProperty we can't add the reference
-        // node on demand, so we just fall back to adding all references up front.
+    if (Ext.isIE9m) {
+        // Since IE8/9 don't not support Object.defineProperty correctly we can't add the reference
+        // nodes on demand, so we just fall back to adding all references up front.
         prototype.addElementReferenceOnDemand = prototype.addElementReference;
     }
 });

@@ -7,24 +7,11 @@ Ext.define('Ext.tab.Tab', {
     extend: 'Ext.button.Button',
     alias: 'widget.tab',
 
-    requires: [
-        'Ext.util.KeyNav'
-    ],
-
     /**
      * @property {Boolean} isTab
      * `true` in this class to identify an object as an instantiated Tab, or subclass thereof.
      */
     isTab: true,
-    
-    /**
-     * @cfg {Number} tabIndex
-     * Sets a DOM tabIndex for this tab. Tab's tabIndex is automatically managed by the framework
-     * and doesn't generally require modification.  
-     *
-     * tabIndex on tab defaults to -1.
-     */
-     tabIndex: -1,
 
     baseCls: Ext.baseCSSPrefix + 'tab',
     closeElOverCls: Ext.baseCSSPrefix + 'tab-close-btn-over',
@@ -64,11 +51,13 @@ Ext.define('Ext.tab.Tab', {
 
     //<locale>
     /**
-     * @cfg {String} closeText
+     * @cfg {String} [closeText="removable"]
      * The accessible text label for the close button link to be announced by screen readers
-     * when the tab is focused. Only used when {@link #cfg-closable} = true.
+     * when the tab is focused. This text does not appear visually and is only used when
+     * {@link #cfg-closable} is `true`.
      */
-    closeText: 'Close Tab',
+    // The wording is chosen to be less confusing to blind users.
+    closeText: 'removable',
     //</locale>
 
     /**
@@ -115,6 +104,12 @@ Ext.define('Ext.tab.Tab', {
      */
 
     ariaRole: 'tab',
+    tabIndex: -1,
+    
+    keyMap: {
+        scope: 'this',
+        DELETE: 'onDeleteKey'
+    },
 
     _btnWrapCls: Ext.baseCSSPrefix + 'tab-wrap',
     _btnCls: Ext.baseCSSPrefix + 'tab-button',
@@ -174,7 +169,23 @@ Ext.define('Ext.tab.Tab', {
 
     initComponent: function() {
         var me = this;
-
+        
+        // Although WAI-ARIA spec has a provision for deleting tab panels,
+        // according to accessibility experts at University of Washington
+        // closable tab panels can be very confusing to vision impaired users.
+        // On top of that there are some technical issues with screen readers
+        // not recognizing the changed number of open tabs, so it is better
+        // to avoid closable tabs in accessible applications.
+        //<debug>
+        if (me.closable) {
+            Ext.ariaWarn(me,
+                "Closable tabs can be confusing to users relying on Assistive Technologies " +
+                "such as Screen Readers, and are not recommended in accessible applications. " +
+                "Please consider setting " + me.title + " tab (" + me.id + ") to closable: false."
+            );
+        }
+        //</debug>
+        
         if (me.card) {
             me.setCard(me.card);
         }
@@ -295,19 +306,6 @@ Ext.define('Ext.tab.Tab', {
             me.closeEl.addClsOnOver(me.closeElOverCls);
             me.closeEl.addClsOnClick(me.closeElPressedCls);
         }
-        
-        me.initKeyNav();
-    },
-    
-    initKeyNav: function() {
-        var me = this;
-
-        me.keyNav = new Ext.util.KeyNav(me.el, {
-            space: me.onEnterKey,
-            enter: me.onEnterKey,
-            del: me.onDeleteKey,
-            scope: me
-        });
     },
 
     setElOrientation: function() {
@@ -322,7 +320,6 @@ Ext.define('Ext.tab.Tab', {
         }
     },
 
-    // inherit docs
     enable: function(silent) {
         var me = this;
 
@@ -333,7 +330,6 @@ Ext.define('Ext.tab.Tab', {
         return me;
     },
 
-    // inherit docs
     disable: function(silent) {
         var me = this;
 
@@ -342,15 +338,6 @@ Ext.define('Ext.tab.Tab', {
         me.addCls(me._disabledCls);
 
         return me;
-    },
-
-    onDestroy: function() {
-        var me = this;
-
-        Ext.destroy(me.keyNav);
-        delete me.keyNav;
-
-        me.callParent(arguments);
     },
 
     /**
@@ -480,6 +467,8 @@ Ext.define('Ext.tab.Tab', {
 
         if (me.tabBar) {
             me.tabBar.onClick(e, me.el);
+            e.stopEvent();
+            return false;
         }
     },
 
@@ -489,6 +478,8 @@ Ext.define('Ext.tab.Tab', {
     onDeleteKey: function(e) {
         if (this.closable) {
             this.onCloseClick();
+            e.stopEvent();
+            return false;
         }
     },
 

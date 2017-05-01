@@ -186,9 +186,11 @@ Ext.define('Ext.Button', {
 
     xtype: 'button',
 
+    isButton: true,
+
     /**
      * @event tap
-     * @preventable doTap
+     * @preventable
      * Fires whenever a button is tapped.
      * @param {Ext.Button} this The item added to the Container.
      * @param {Ext.EventObject} e The event object.
@@ -196,7 +198,7 @@ Ext.define('Ext.Button', {
 
     /**
      * @event release
-     * @preventable doRelease
+     * @preventable
      * Fires whenever the button is released.
      * @param {Ext.Button} this The item added to the Container.
      * @param {Ext.EventObject} e The event object.
@@ -204,11 +206,18 @@ Ext.define('Ext.Button', {
 
     cachedConfig: {
         /**
-         * @cfg {String} pressedCls
-         * The CSS class to add to the Button when it is pressed.
+         * @cfg {String} pressingCls
+         * The CSS class to add to the Button when it is {@link #pressed}.
          * @accessor
          */
-        pressedCls: Ext.baseCSSPrefix + 'button-pressing',
+        pressedCls: Ext.baseCSSPrefix + 'button-pressed',
+
+        /**
+         * @cfg {String} pressingCls
+         * The CSS class to add to the Button when it is being pressed by the user.
+         * @accessor
+         */
+        pressingCls: Ext.baseCSSPrefix + 'button-pressing',
 
         /**
          * @cfg {String} badgeCls
@@ -227,6 +236,14 @@ Ext.define('Ext.Button', {
         hasBadgeCls: Ext.baseCSSPrefix + 'hasbadge',
 
         /**
+         * @cfg {String} hasLabelCls
+         * The CSS class to add to the Button if it has text inside its label
+         * @private
+         * @accessor
+         */
+        hasLabelCls: Ext.baseCSSPrefix + 'haslabel',
+
+        /**
          * @cfg {String} labelCls
          * The CSS class to add to the field's label element.
          * @accessor
@@ -235,14 +252,58 @@ Ext.define('Ext.Button', {
 
         /**
          * @cfg {String} iconCls
-         * Optional CSS class to add to the icon element. This is useful if you want to use a CSS
-         * background image to create your Button icon.
+         * One or more space separated CSS classes to be applied to the icon element.  
+         * The CSS rule(s) applied should specify a background image to be used as the 
+         * icon.
+         *
+         * An example of specifying a custom icon class would be something like:
+         *
+         *     // specify the property in the config for the class:
+         *     iconCls: 'my-home-icon'
+         *
+         *     // css rule specifying the background image to be used as the icon image:
+         *     .my-home-icon {
+         *         background-image: url(../images/my-home-icon.gif) !important;
+         *     }
+         * 
+         * In addition to specifying your own classes, you can use the font icons 
+         * provided in the SDK using the following syntax:
+         * 
+         *     // using Font Awesome
+         *     iconCls: 'x-fa fa-home'
+         * 
+         *     // using Pictos
+         *     iconCls: 'pictos pictos-home'
+         * 
+         * Depending on the theme you're using, you may need include the font icon 
+         * packages in your application in order to use the icons included in the 
+         * SDK.  For more information see:
+         * 
+         *  - [Font Awesome icons](http://fortawesome.github.io/Font-Awesome/cheatsheet/)
+         *  - [Pictos icons](http://docs.sencha.com/extjs/6.0/core_concepts/font_ext.html)
+         *  - [Theming Guide](http://docs.sencha.com/extjs/6.0/core_concepts/theming.html)
          * @accessor
          */
-        iconCls: null
+        iconCls: null,
+
+        /**
+         * @cfg {"left"/"right"/"center"} [textAlign="center"]
+         * @since 6.0.1
+         */
+        textAlign: null
     },
 
     config: {
+        /**
+         * @cfg {Boolean} allowDepress
+         * `true` to allow user interaction to set {@link #pressed} to `false` when
+         * the button is in the {@link #pressed} state. Only valid when {@link #pressed}
+         * is configured.
+         *
+         * @since 6.0.2
+         */
+        allowDepress: true,
+
         /**
          * @cfg {String} badgeText
          * Optional badge text.  Badges appear as small numbers, letters, or icons that sit on top of your button.  For instance, a small red number indicating how many updates are available.
@@ -274,7 +335,7 @@ Ext.define('Ext.Button', {
 
         /**
          * @cfg {Number/Boolean} pressedDelay
-         * The amount of delay between the `tapstart` and the moment we add the `pressedCls` (in milliseconds).
+         * The amount of delay between the `tapstart` and the moment we add the `pressingCls` (in milliseconds).
          * Settings this to `true` defaults to 100ms.
          */
         pressedDelay: 0,
@@ -304,7 +365,7 @@ Ext.define('Ext.Button', {
          * @cfg {String} ui
          * The ui style to render this button with. The valid default options are:
          *
-         * - `'normal'` - a basic gray button (default).
+         * - `null` - a basic gray button (default).
          * - `'back'` - a back button.
          * - `'forward'` - a forward button.
          * - `'round'` - a round button.
@@ -321,7 +382,7 @@ Ext.define('Ext.Button', {
          *
          * @accessor
          */
-        ui: 'normal',
+        ui: null,
 
         /**
          * @cfg {String} html The HTML to put in this button.
@@ -333,8 +394,35 @@ Ext.define('Ext.Button', {
          * @cfg
          * @inheritdoc
          */
-        baseCls: Ext.baseCSSPrefix + 'button'
+        baseCls: Ext.baseCSSPrefix + 'button',
+
+        /**
+         * @cfg {Boolean} enableToggle
+         * Allows this button to have the pressed state toggled via user
+         * interaction.
+         *
+         * @since 6.0.2
+         */
+        enableToggle: false,
+
+        /**
+         * @cfg {String/Number} value
+         * The value of this button.  Only applicable when used as an item of a {@link Ext.SegmentedButton Segmented Button}.
+         */
+        value: null
     },
+
+    eventedConfig: {
+        /**
+         * @cfg {Boolean} pressed
+         * Sets the pressed state of the button.
+         *
+         * @since 6.0.2
+         */
+        pressed: false
+    },
+
+    defaultBindProperty: 'text',
 
     template: [
         {
@@ -344,7 +432,10 @@ Ext.define('Ext.Button', {
         },
         {
             tag: 'span',
-            className: Ext.baseCSSPrefix + 'button-icon',
+            classList: [
+                Ext.baseCSSPrefix + 'button-icon',
+                Ext.baseCSSPrefix + 'font-icon'
+            ],
             reference: 'iconElement'
         },
         {
@@ -363,6 +454,25 @@ Ext.define('Ext.Button', {
             touchstart : 'onPress',
             touchend   : 'onRelease'
         });
+    },
+
+    /**
+     * `true` if this button is currently in a pressed state. See {@link #pressed}.
+     * @return {Boolean} The pressed state.
+     *
+     * @since 6.0.2
+     */
+    isPressed: function() {
+        return Boolean(this.getPressed());
+    },
+
+    /**
+     * Toggles the {@link #pressed} state.
+     *
+     * @since 6.0.2
+     */
+    toggle: function() {
+        this.setPressed(!this.isPressed());
     },
 
     /**
@@ -397,6 +507,7 @@ Ext.define('Ext.Button', {
                 textElement.hide();
             }
 
+            this.toggleCls(this.getHasLabelCls(), !!text);
             this.refreshIconAlign();
         }
     },
@@ -441,9 +552,25 @@ Ext.define('Ext.Button', {
         this.textElement.replaceCls(oldLabelCls, labelCls);
     },
 
+    applyPressed: function(pressed) {
+        return Boolean(pressed);
+    },
+
+    updatePressed: function(pressed) {
+        this.element.toggleCls(this.getPressedCls(), pressed);
+    },
+
     /**
      * @private
      */
+    updatePressingCls: function(pressingCls, oldPressingCls) {
+        var element = this.element;
+
+        if (element.hasCls(oldPressingCls)) {
+            element.replaceCls(oldPressingCls, pressingCls);
+        }
+    },
+
     updatePressedCls: function(pressedCls, oldPressedCls) {
         var element = this.element;
 
@@ -483,7 +610,7 @@ Ext.define('Ext.Button', {
             element.replaceCls(oldIconCls, iconCls);
             me.refreshIconAlign();
         } else {
-			element.removeCls(oldIconCls);
+            element.removeCls(oldIconCls);
             if (!me.getIcon()) {
                 me.hideIconElement();
             }
@@ -498,14 +625,28 @@ Ext.define('Ext.Button', {
             baseCls = Ext.baseCSSPrefix + 'iconalign-';
 
         if (!this.getText()) {
-            alignment = "center";
+            alignment = 'center';
         }
 
-        element.removeCls(baseCls + "center");
+        element.removeCls(baseCls + 'center');
         element.removeCls(baseCls + oldAlignment);
         if (this.getIcon() || this.getIconCls()) {
             element.addCls(baseCls + alignment);
         }
+    },
+
+    _textAlignCls: {
+        left: Ext.baseCSSPrefix + 'text-align-left',
+        right: Ext.baseCSSPrefix + 'text-align-right',
+        center: ''
+    },
+
+    updateTextAlign: function (textAlign, oldValue) {
+        var textAlignClasses = this._textAlignCls,
+            add = textAlignClasses[textAlign || 'center'],
+            remove = textAlignClasses[oldValue || 'center'];
+
+        this.replaceCls(remove, add);
     },
 
     refreshIconAlign: function() {
@@ -539,59 +680,6 @@ Ext.define('Ext.Button', {
         this.setScope(scope);
     },
 
-    /**
-     * Used by `icon` and `iconCls` configurations to hide the icon element.
-     * @private
-     */
-    hideIconElement: function() {
-        this.iconElement.removeCls(Ext.baseCSSPrefix + 'shown');
-        this.iconElement.addCls(Ext.baseCSSPrefix + 'hidden');
-    },
-
-    /**
-     * Used by `icon` and `iconCls` configurations to show the icon element.
-     * @private
-     */
-    showIconElement: function() {
-        this.iconElement.removeCls(Ext.baseCSSPrefix + 'hidden');
-        this.iconElement.addCls(Ext.baseCSSPrefix + 'shown');
-    },
-
-    /**
-     * We override this to check for '{ui}-back'. This is because if you have a UI of back, you need to actually add two class names.
-     * The ui class, and the back class:
-     *
-     * `ui: 'action-back'` would turn into:
-     *
-     * `class="x-button-action x-button-back"`
-     *
-     * But `ui: 'action'` would turn into:
-     *
-     * `class="x-button-action"`
-     *
-     * So we just split it up into an array and add both of them as a UI, when it has `back`.
-     * @private
-     */
-    applyUi: function(config) {
-        if (config && Ext.isString(config)) {
-            var array  = config.split('-');
-            if (array && (array[1] == "back" || array[1] == "forward")) {
-                return array;
-            }
-        }
-
-        return config;
-    },
-
-    getUi: function() {
-        //Now that the UI can sometimes be an array, we need to check if it an array and return the proper value.
-        var ui = this._ui;
-        if (Ext.isArray(ui)) {
-            return ui.join('-');
-        }
-        return ui;
-    },
-
     applyPressedDelay: function(delay) {
         if (Ext.isNumber(delay)) {
             return delay;
@@ -606,19 +694,18 @@ Ext.define('Ext.Button', {
         var me = this,
             element = me.element,
             pressedDelay = me.getPressedDelay(),
-            pressedCls = me.getPressedCls();
+            pressingCls = me.getPressingCls();
 
         if (!me.getDisabled()) {
             if (pressedDelay > 0) {
                 me.pressedTimeout = Ext.defer(function() {
                     delete me.pressedTimeout;
                     if (element) {
-                        element.addCls(pressedCls);
+                        element.addCls(pressingCls);
                     }
                 }, pressedDelay);
-            }
-            else {
-                element.addCls(pressedCls);
+            } else {
+                element.addCls(pressingCls);
             }
         }
     },
@@ -638,9 +725,8 @@ Ext.define('Ext.Button', {
             if (me.hasOwnProperty('pressedTimeout')) {
                 clearTimeout(me.pressedTimeout);
                 delete me.pressedTimeout;
-            }
-            else {
-                me.element.removeCls(me.getPressedCls());
+            } else {
+                me.element.removeCls(me.getPressingCls());
             }
         }
     },
@@ -660,12 +746,7 @@ Ext.define('Ext.Button', {
      * @private
      */
     doTap: function(me, e) {
-        var handler = me.getHandler(),
-            scope = me.getScope();
-
-        if (!handler) {
-            return;
-        }
+        var handler = me.getHandler();
 
         //this is done so if you hide the button in the handler, the tap event will not fire on the new element
         //where the button was.
@@ -673,6 +754,43 @@ Ext.define('Ext.Button', {
             e.preventDefault();
         }
 
-        Ext.callback(handler, scope, [me, e], 0, me);
+        if (me.getEnableToggle() && (me.getAllowDepress() || !me.isPressed())) {
+            me.toggle();
+        }
+
+        if (handler) {
+            Ext.callback(handler, me.getScope(), [me, e], 0, me);
+        }
+    },
+
+    doDestroy: function() {
+        if (this.hasOwnProperty('pressedTimeout')) {
+            clearTimeout(this.pressedTimeout);
+        }
+        this.callParent();
+    },
+
+    privates: {
+        /**
+         * Used by `icon` and `iconCls` configurations to hide the icon element.
+         * @private
+         */
+        hideIconElement: function() {
+            var el = this.iconElement;
+            el.removeCls(Ext.baseCSSPrefix + 'shown');
+            el.addCls(Ext.baseCSSPrefix + 'hidden');
+            this.element.addCls(Ext.baseCSSPrefix + 'button-no-icon');
+        },
+
+        /**
+         * Used by `icon` and `iconCls` configurations to show the icon element.
+         * @private
+         */
+        showIconElement: function() {
+            var el = this.iconElement;
+            el.addCls(Ext.baseCSSPrefix + 'shown');
+            el.removeCls(Ext.baseCSSPrefix + 'hidden');
+            this.element.removeCls(Ext.baseCSSPrefix + 'button-no-icon');
+        }
     }
 });

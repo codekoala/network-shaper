@@ -38,6 +38,9 @@ describe("Ext.plugin.PullRefresh", function() {
     });
 
     afterEach(function() {
+        list.destroy();
+        list = null;
+        
         Ext.supports.Touch = supportsTouch;
         Ext.supports.touchScroll = supportsTouchScroll;
     });

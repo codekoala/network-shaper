@@ -1,8 +1,9 @@
 describe("Ext.plugin.Viewport", function() {
     var c;
 
-    function makeComponent(cfg) {
-        c = new Ext.Component(Ext.apply({
+    function makeComponent(cfg, ComponentClass) {
+        var Cls = ComponentClass || Ext.Component;
+        c = new Cls(Ext.apply({
             renderTo: Ext.getBody(),
             plugins: 'viewport'
         }, cfg));
@@ -124,42 +125,163 @@ describe("Ext.plugin.Viewport", function() {
     });
 
     describe("destruction", function() {
-        it("should not pollute the rootInheritedState with a viewmodel", function() {
-            var vm = new Ext.app.ViewModel();
-            makeComponent({
-                viewModel: vm
+        describe("inheritedState", function() {
+            it("should not pollute the rootInheritedState with a viewmodel", function() {
+                var vm = new Ext.app.ViewModel();
+                makeComponent({
+                    viewModel: vm
+                });
+                c.destroy();
+                expect(Ext.rootInheritedState.viewModel).toBeUndefined();
             });
-            c.destroy();
-            expect(Ext.rootInheritedState.viewModel).toBeUndefined();
+
+            it("should not pollute the rootInheritedState with a session", function() {
+                var session = new Ext.data.Session();
+                makeComponent({
+                    session: session
+                });
+                c.destroy();
+                expect(Ext.rootInheritedState.session).toBeUndefined();
+                session.destroy();
+            });
+
+            it("should not pollute the rootInheritedState with a controller", function() {
+                var controller = new Ext.app.ViewController();
+                makeComponent({
+                    controller: controller
+                });
+                c.destroy();
+                expect(Ext.rootInheritedState.controller).toBeUndefined();
+            });
         });
 
-        it("should not pollute the rootInheritedState with a session", function() {
-            var session = new Ext.data.Session();
-            makeComponent({
-                session: session
+        describe("classes", function() {
+            it("should remove the layout target class", function() {
+                makeComponent({
+                    layout: 'hbox'
+                }, Ext.container.Container);
+                expect(Ext.getBody()).toHaveCls('x-box-layout-ct');
+                c.destroy();
+                expect(Ext.getBody()).not.toHaveCls('x-box-layout-ct');
             });
-            c.destroy();
-            expect(Ext.rootInheritedState.session).toBeUndefined();
-            session.destroy();
-        });
-
-        it("should not pollute the rootInheritedState with a controller", function() {
-            var controller = new Ext.app.ViewController();
-            makeComponent({
-                controller: controller
-            });
-            c.destroy();
-            expect(Ext.rootInheritedState.controller).toBeUndefined();
         });
     });
-    
+
+    describe("classes", function() {
+        function makeSuite(type) {
+            describe("for " + type.$className, function() {
+                it("should not get the targetCls warning where the layout has a targetCls", function() {
+                    var called = false;
+
+                    spyOn(Ext.log, 'warn').andCallFake(function(s) {
+                        called = s.indexOf('targetCls') > -1;
+                    });
+
+                    makeComponent({
+                        layout: 'hbox'
+                    }, type);
+                    expect(c.getTargetEl()).toHaveCls('x-box-layout-ct');
+                });
+            });
+        }
+
+        makeSuite(Ext.container.Container);
+        makeSuite(Ext.panel.Panel);
+    });
+
     describe("ARIA attributes", function() {
-        beforeEach(function() {
-            makeComponent();
-        });
-        
         it("should assign role=application to the document body", function() {
+            makeComponent();
             expect(Ext.getBody().dom.getAttribute('role')).toBe('application');
         });
+    });
+
+    describe("viewport scroll events", function() {
+        function makeSuite(name, cls) {
+            describe("auto layout " + name, function() {
+                var viewportScrollCount = 0;
+
+                beforeEach(function() {
+                    document.documentElement.style.height = '2000px';
+                    document.documentElement.style.overflow = 'auto';
+                    makeComponent({
+                        scrollable: true,
+                        items: {
+                            xtype: 'component',
+                            height: 5000,
+                            width: 100
+                        }
+                    }, cls);
+                    c.getScrollable().on({
+                        scroll: function() {
+                            viewportScrollCount++;
+                        }
+                    });
+                });
+
+                afterEach(function() {
+                    document.documentElement.style.height = document.documentElement.style.overflow = '';
+                });
+                
+                it('should only fire one global scroll event per scroll', function() {
+                    c.scrollTo(null, 500);
+
+                    // Wait for potentially asynchronous scroll events to fire.
+                    waitsFor(function() {
+                        return viewportScrollCount === 1;
+                    }, "scroll never fired");
+
+                    runs(function() {
+                        expect(viewportScrollCount).toBe(1);
+                    });
+                });
+            });
+        }
+        makeSuite('Container', Ext.container.Container);
+        makeSuite('Panel', Ext.panel.Panel);
+    });
+
+    describe("global DOM scroll viewport", function() {
+        function makeSuite(name, cls) {
+            describe("auto layout " + name, function() {
+                var viewportScrollCount = 0;
+
+                beforeEach(function() {
+                    document.documentElement.style.height = '2000px';
+                    document.documentElement.style.overflow = 'auto';
+
+                    Ext.on('scroll', function() {
+                        viewportScrollCount++;
+                    });
+                    makeComponent({
+                        scrollable: true,
+                        items: {
+                            xtype: 'component',
+                            height: 5000,
+                            width: 100
+                        }
+                    }, cls);
+                });
+
+                afterEach(function() {
+                    document.documentElement.style.height = document.documentElement.style.overflow = '';
+                });
+                
+                it('should only fire one global scroll event per scroll', function() {
+                    c.scrollTo(null, 500);
+
+                    // Wait for potentially asynchronous scroll events to fire.
+                    waitsFor(function() {
+                        return viewportScrollCount === 1;
+                    }, "scroll never fired");
+
+                    runs(function() {
+                        expect(viewportScrollCount).toBe(1);
+                    });
+                });
+            });
+        }
+        //makeSuite('Container', Ext.container.Container);
+        makeSuite('Panel', Ext.panel.Panel);
     });
 });

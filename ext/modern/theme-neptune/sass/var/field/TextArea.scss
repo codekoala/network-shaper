@@ -1,9 +1,2 @@
-/**
- * @class Ext.field.TextArea
- */
-
-/**
- * @var {measurement} $form-textarea-height
- * Default height for form textareas.
- */
-$form-textarea-height: 6em !dynamic;
+$textareafield-padding: dynamic(.3em .4em);
+$textareafield-input-min-height: dynamic(6em);

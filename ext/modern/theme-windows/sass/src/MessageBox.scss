@@ -1,6 +1,4 @@
-/**
- * Includes default message box styles.
- */
+// Includes default message box styles.
 
 .x-msgbox {
     max-height: 90%;
@@ -36,21 +34,22 @@
         }
     }
 
-    .x-msgbox-info {
-        @include inline-icon('info');
-    }
-
-    .x-msgbox-warning {
-        @include inline-icon('warning_black');
-    }
-
-    .x-msgbox-question {
-        @include inline-icon('help');
-    }
-
-    .x-msgbox-error {
-        @include inline-icon('delete_black1');
-    }
+    // TODO: use FontAwesome
+    //.x-msgbox-info {
+    //    @include inline-icon('info');
+    //}
+    //
+    //.x-msgbox-warning {
+    //    @include inline-icon('warning_black');
+    //}
+    //
+    //.x-msgbox-question {
+    //    @include inline-icon('help');
+    //}
+    //
+    //.x-msgbox-error {
+    //    @include inline-icon('delete_black1');
+    //}
 
     .x-title {
         font-size: $font-size-medium-large;
@@ -74,7 +73,7 @@
         background: #fff;
     }
 
-    .x-form-field {
+    .x-input-el {
         min-height: 32px;
         padding-right: 0 !important;
         -webkit-appearance: none;

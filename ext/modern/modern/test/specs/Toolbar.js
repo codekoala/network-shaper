@@ -1,17 +1,20 @@
 describe('Ext.Toolbar', function() {
-    var toolbar,
-        createToolbar = function(config) {
-            config = Ext.apply(config, {
-                
-            });
+    var toolbar;
+    
+    function createToolbar(config) {
+        config = Ext.apply({
+            
+        }, config);
 
-            toolbar = Ext.create('Ext.Toolbar', config);
-        };
+        toolbar = Ext.create('Ext.Toolbar', config);
+    };
 
     afterEach(function() {
         if (toolbar) {
-            // toolbar.destroy();
+            toolbar.destroy();
         }
+        
+        toolbar = null;
     });
 
     // deprecated
@@ -64,58 +67,3 @@ describe('Ext.Toolbar', function() {
     });
     // end configs
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

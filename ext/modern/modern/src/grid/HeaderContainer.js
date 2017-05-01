@@ -8,18 +8,34 @@ Ext.define('Ext.grid.HeaderContainer', {
     xtype: 'headercontainer',
 
     config: {
-        baseCls: Ext.baseCSSPrefix + 'grid-header-container',
-        height: 65,
         docked: 'top',
-        translationMethod: 'auto',
+
+        /**
+         * A default {@link #ui ui} to use for {@link Ext.grid.Column columns} in this header.
+         */
+        defaultColumnUI: null,
+
         defaultType: 'column',
+        layout: {
+            type: 'hbox',
+            align: 'stretch'
+        },
 
         /**
          * @private
          * Set this to `false` to disable sorting via tap on all column headers
          */
-        sortable: true
+        sortable: true,
+
+        scrollable: {
+            x: false,
+            y: false
+        },
+
+        grid: null
     },
+
+    classCls: Ext.baseCSSPrefix + 'headercontainer',
 
     initialize: function() {
         var me = this;
@@ -39,9 +55,11 @@ Ext.define('Ext.grid.HeaderContainer', {
         });
 
         me.on({
+            tap: 'onGroupTap',
             show: 'onGroupShow',
             hide: 'onGroupHide',
             add: 'onColumnAdd',
+            move: 'onColumnMove',
             remove: 'onColumnRemove',
             scope: me,
             delegate: 'gridheadergroup'
@@ -49,13 +67,18 @@ Ext.define('Ext.grid.HeaderContainer', {
 
         me.on({
             add: 'onColumnAdd',
+            move: 'onColumnMove',
             remove: 'onColumnRemove',
             scope: me
         });
+    },
 
-        if (Ext.browser.getPreferredTranslationMethod({translationMethod: this.getTranslationMethod()}) == 'scrollposition') {
-            me.innerElement.setLeft(500000);
+    factoryItem: function (item) {
+        // If the columns contains a columns config, then create a HeaderGroup
+        if (item.columns) {
+            return Ext.factory(item, Ext.grid.HeaderGroup);
         }
+        return this.callParent([item]);
     },
 
     getColumns: function() {
@@ -64,48 +87,120 @@ Ext.define('Ext.grid.HeaderContainer', {
 
     getAbsoluteColumnIndex: function(column) {
         var items = this.getInnerItems(),
-            ln = items.length,
-            index = 0,
-            innerIndex, i, item;
+            ret = this.getBottomColumnIndex(items, column);
 
-        for (i = 0; i < ln; i++) {
+        return ret.found ? ret.index : items.length;
+    },
+
+    getBottomColumnIndex: function(items, column){
+        var i = 0,
+            ln = items.length,
+            ret = {
+                found: false,
+                index: 0
+            },
+            innerIndex, item, retV;
+
+        while (!ret.found && i < ln) {
             item = items[i];
 
             if (item === column) {
-                return index;
+                ret.found = true;
             }
             else if (item.isHeaderGroup) {
                 innerIndex = item.innerIndexOf(column);
                 if (innerIndex !== -1) {
-                    index += innerIndex;
-                    return index;
+                    ret.index += innerIndex;
+                    ret.found = true;
                 }
                 else {
-                    index += item.getInnerItems().length;
+                    retV = this.getBottomColumnIndex(item.getInnerItems(), column);
+                    ret.index += retV.index;
+                    ret.found = retV.found;
                 }
             }
             else {
-                index += 1;
+                ret.index++;
             }
+            i++;
         }
+        return ret;
     },
 
     onColumnAdd: function(parent, column) {
+        this.doColumnAdd(column, null);
+    },
+
+    doColumnAdd: function(column, group){
         var me = this,
             columns = me.columns,
             columnIndex = me.getAbsoluteColumnIndex(column),
-            groupColomns, ln, i;
+            groupColumns, ln, i, ui;
 
         if (column.isHeaderGroup) {
-            groupColomns = column.getItems().items;
+            groupColumns = column.getItems().items;
 
-            for (i = 0, ln = groupColomns.length; i < ln; i++) {
-                columns.splice(columnIndex + i, 0, groupColomns[i]);
-                me.fireEvent('columnadd', me, groupColomns[i], column);
+            for (i = 0, ln = groupColumns.length; i < ln; i++) {
+                me.doColumnAdd(groupColumns[i], column);
             }
         } else {
+            ui = column.getUi();
+
+            if (ui == null) {
+                column.setUi(me.getDefaultColumnUI());
+            }
+
             columns.splice(columnIndex, 0, column);
-            me.fireEvent('columnadd', me, column, null);
+            me.fireEvent('columnadd', me, column, group);
+        }
+    },
+
+    onColumnMove: function(parent, column) {
+        var me = this,
+            columns = me.columns,
+            columnIndex = me.getAbsoluteColumnIndex(column),
+            groupColumns, ln, i, groupColumn,
+            after, oldIndex, fromIdx, toIdx;
+
+        if (column.isHeaderGroup) {
+            groupColumns = column.getItems().items;
+
+            for (i = 0, ln = groupColumns.length; i < ln; i++) {
+                groupColumn = groupColumns[i];
+
+                if (i === 0) {
+                    oldIndex = columns.indexOf(groupColumn);
+                    after = oldIndex - columnIndex < 0;
+                }
+
+                // Treat the moves as sequential
+                if (after) {
+                    // |  Group   | c | d     ->     | c | d |   Group   |
+                    //    a   b                                  a   b
+                    //
+                    // We need to fire:
+                    // a from 0 -> 3, since b is still in place
+                    // b from 0 -> 3, to account for a still in place
+                    toIdx = columnIndex + ln - 1;
+                    fromIdx = oldIndex;
+                } else {
+                    // | c | d |   Group   |      ->     |  Group   | c | d
+                    //             a   b                    a   b
+                    //
+                    // We need to fire:
+                    // a from 2 -> 0
+                    // b from 2 -> 1, to account for a moving
+                    fromIdx = oldIndex + i;
+                    toIdx = columnIndex + i;
+                }
+                Ext.Array.move(columns, fromIdx, toIdx);
+                me.fireEvent('columnmove', me, groupColumn, column, fromIdx, toIdx);
+            }
+        } else {
+            fromIdx = columns.indexOf(column);
+            toIdx = columnIndex;
+            Ext.Array.move(columns, fromIdx, toIdx);
+            me.fireEvent('columnmove', me, column, null, fromIdx, toIdx);
         }
     },
 
@@ -116,8 +211,7 @@ Ext.define('Ext.grid.HeaderContainer', {
                 i;
 
             for (i = 0; i < ln; i++) {
-                Ext.Array.remove(this.columns, columns[i]);
-                this.fireEvent('columnremove', this, columns[i]);
+                this.onColumnRemove(column, columns[i]);
             }
         } else {
             Ext.Array.remove(this.columns, column);
@@ -168,8 +262,12 @@ Ext.define('Ext.grid.HeaderContainer', {
         }
     },
 
-    onColumnResize: function(column, width) {
-        this.fireEvent('columnresize', this, column, width);
+    onGroupTap: function(column) {
+        this.fireEvent('headergrouptap', this, column);
+    },
+
+    onColumnResize: function(column, width, oldWidth) {
+        this.fireEvent('columnresize', this, column, width, oldWidth);
     },
 
     onColumnSort: function(column, direction, newDirection) {
@@ -179,13 +277,37 @@ Ext.define('Ext.grid.HeaderContainer', {
     },
 
     scrollTo: function(x) {
-        switch (Ext.browser.getPreferredTranslationMethod({translationMethod: this.getTranslationMethod()})) {
-            case 'scrollposition':
-                this.renderElement.dom.scrollLeft = 500000 + x;
-                break;
-            case 'csstransform':
-                this.innerElement.translate(-x, 0);
-                break;
+        this.getScrollable().scrollTo(x);
+    },
+
+    updateGrid: function(grid) {
+        this.parent = grid;
+    },
+
+    doDestroy: function() {
+        var me = this,
+            task = me.spacerTask;
+
+        if (task) {
+            task.cancel();
+            me.spacerTask = null;
+        }
+        
+        me.setGrid(null);
+        me.callParent();
+    },
+
+    privates: {
+        setScrollbarSpacer: function(scrollbarSize) {
+            var me = this,
+                spacerEl = me.spacerEl;
+
+            if (!spacerEl) {
+                spacerEl = me.spacerEl = Ext.dom.Element.create();
+            }
+
+            me.innerElement.appendChild(spacerEl); // spacer element must always be the last child
+            spacerEl.setStyle('min-width', scrollbarSize + 'px');
         }
     }
 });

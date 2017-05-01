@@ -1,5 +1,5 @@
-$toolbar-footer-background-color: $neutral-highlight-color !dynamic;
-$toolbar-tool-glyph-color: $neutral-dark-color !dynamic;
-$toolbar-scroller-width: 24px !dynamic;
-$toolbar-scroller-height: 24px !dynamic;
-$toolbar-border-color: $neutral-color !dynamic;
+$toolbar-footer-background-color: dynamic($neutral-highlight-color);
+$toolbar-tool-glyph-color: dynamic($neutral-dark-color);
+$toolbar-scroller-width: dynamic(24px);
+$toolbar-scroller-height: dynamic(24px);
+$toolbar-border-color: dynamic($neutral-color);

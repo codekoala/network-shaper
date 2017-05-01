@@ -1,1 +1,1 @@
-$window-base-color: $panel-base-color !dynamic;
+$window-base-color: dynamic($panel-base-color);

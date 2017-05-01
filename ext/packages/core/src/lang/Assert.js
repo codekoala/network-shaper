@@ -3,6 +3,7 @@
 // @require Ext.lang.Error
 //<debug>
 /**
+ * @class Ext.Assert
  * This class provides help value testing methods useful for diagnostics. These are often
  * used in `debugHooks`:
  * 
@@ -10,7 +11,7 @@
  *
  *          debugHooks: {
  *              method: function (a) {
- *                  Ext.Assert.truthy(a, 'Expected "a" to be truthy");
+ *                  Ext.Assert.truthy(a, 'Expected "a" to be truthy');
  *              },
  *
  *              foo: function (object) {

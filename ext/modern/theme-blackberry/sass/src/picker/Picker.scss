@@ -2,7 +2,7 @@
  * @class Ext.picker.Picker
  */
 
-$picker-row-height: 2.9em !dynamic;
+$picker-row-height: 2.9em !default;
 
 .x-picker .x-picker-inner {
     overflow: hidden;
@@ -10,19 +10,13 @@ $picker-row-height: 2.9em !dynamic;
 }
 
 .x-picker-slot {
-    background-color: #040404;
-    -webkit-transition: .3s;
-    transition: .3s;
-
-    &.x-scrolling {
-        background-color: #222;
-    }
+    background-color: $highlight-color;
 }
 
 .x-picker-bar {
     border-top: 1px solid rgba($base-color, .7);
     border-bottom: 1px solid rgba($base-color, .7);
-    background: rgba(#777, .3);
+    background: rgba(#fff, .3);
     height: $picker-row-height;
 }
 
@@ -45,11 +39,9 @@ $picker-row-height: 2.9em !dynamic;
 }
 
 .x-picker-slot {
-	border-right: 1px solid #292929;
-
     .x-dataview-item {
         text-align: center;
-        color: #fff;
+        color: #000;
         height: $picker-row-height;
         line-height: $picker-row-height;
         padding: 0 10px;

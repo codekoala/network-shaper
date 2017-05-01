@@ -1,15 +1,2 @@
-/**
- * @class Ext.field.Slider
- */
-
-/**
- * @var {measurement} $form-thumb-size
- * Default size of "thumbs" for form sliders/toggles.
- */
-$form-thumb-size: 2.2em !dynamic;
-
-/**
- * @var {measurement} $form-slider-size
- * Height of the slider "track."
- */
-$form-slider-size: .8em !dynamic;
+$sliderfield-padding: dynamic(0.3462em 0);
+$sliderfield-padding-big: dynamic(0.1334em 0);

@@ -299,6 +299,15 @@ describe('Ext.toolbar.Breadcrumb', function() {
                 breadcrumbBar.setSelection(null);
                 expect(breadcrumbBar.items.getCount()).toBe(0);
             });
+
+            it("should mantain selections correctly when changing parents", function() {
+                breadcrumbBar.setSelection(store.getNodeById('/SSD/bin/cp'));
+                expectSelection('/SSD/bin/cp');
+                breadcrumbBar.setSelection(store.getNodeById('/SSD/etc'));
+                expectSelection('/SSD/etc');
+                breadcrumbBar.setSelection(store.getNodeById('/SSD/bin/cp'));
+                expectSelection('/SSD/bin/cp');
+            });
         });
 
         describe("using the UI", function() {
@@ -496,7 +505,7 @@ describe('Ext.toolbar.Breadcrumb', function() {
 
         function getById(id) {
             var found = null;
-            store.getRoot().cascadeBy(function(rec) {
+            store.getRoot().cascade(function(rec) {
                 if (rec.id === id) {
                     found = rec;
                     return false;

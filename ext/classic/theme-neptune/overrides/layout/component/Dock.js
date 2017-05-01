@@ -73,7 +73,7 @@ Ext.define('Ext.theme.neptune.layout.component.Dock', {
 
         // Borders have to be calculated using expanded docked item collection.
         me.collapsed = false;
-        docked = me.getDockedItems();
+        docked = me.getDockedItems('visual');
         me.collapsed = collapsed;
 
         for (i = 0, ln = docked.length; i < ln; i++) {
@@ -256,13 +256,21 @@ Ext.define('Ext.theme.neptune.layout.component.Dock', {
     },
 
     onRemove: function (item) {
-        var lastBorderMask = item.lastBorderMask;
+        var me = this,
+            lastBorderMask = item.lastBorderMask,
+            lastBorderCollapse = item.lastBorderCollapse;
 
-        if (!item.destroyed && !item.ignoreBorderManagement && lastBorderMask) {
-            item.lastBorderMask = 0;
-            item.removeCls(this.noBorderClassTable[lastBorderMask]);
+        if (!item.destroyed && !item.ignoreBorderManagement) {
+            if (lastBorderMask) {
+                item.lastBorderMask = 0;
+                item.removeCls(me.noBorderClassTable[lastBorderMask]);
+            }
+            if (lastBorderCollapse) {
+                item.lastBorderCollapse = 0;
+                item.removeCls(me.getBorderCollapseTable()[lastBorderCollapse]);
+            }
         }
 
-        this.callParent([item]);
+        me.callParent([item]);
     }
 });

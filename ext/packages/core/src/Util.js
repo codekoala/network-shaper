@@ -124,18 +124,18 @@ Ext.apply(Ext, {
      * Numbers and numeric strings are coerced to Dates using the value as the millisecond era value.
      *
      * Strings are coerced to Dates by parsing using the {@link Ext.Date#defaultFormat defaultFormat}.
-     * 
+     *
      * For example
      *
      *     Ext.coerce('false', true);
-     *     
+     *
      * returns the boolean value `false` because the second parameter is of type `Boolean`.
-     * 
+     *
      * @param {Mixed} from The value to coerce
      * @param {Mixed} to The value it must be compared against
      * @return The coerced value.
      */
-    coerce: function(from, to) {
+    coerce: function (from, to) {
         var fromType = Ext.typeOf(from),
             toType = Ext.typeOf(to),
             isString = typeof from === 'string';
@@ -147,11 +147,13 @@ Ext.apply(Ext, {
                 case 'number':
                     return Number(from);
                 case 'boolean':
-                    return isString && (!from || from === 'false') ? false : Boolean(from);
+                    // See http://ecma262-5.com/ELS5_HTML.htm#Section_11.9.3 as to why '0'.
+                    // TL;DR => ('0' == 0), so if given string '0', we must return boolean false.
+                    return isString && (!from || from === 'false' || from === '0') ? false : Boolean(from);
                 case 'null':
-                    return isString && (!from || from === 'null') ? null : from;
+                    return isString && (!from || from === 'null') ? null : false;
                 case 'undefined':
-                    return isString && (!from || from === 'undefined') ? undefined : from;
+                    return isString && (!from || from === 'undefined') ? undefined : false;
                 case 'date':
                     return isString && isNaN(from) ? Ext.Date.parse(from, Ext.Date.defaultFormat) : Date(Number(from));
             }
@@ -180,6 +182,9 @@ Ext.apply(Ext, {
      * @param {Boolean} [usePrototypeKeys=false] Pass `true` to copy keys off of the
      * prototype as well as the instance.
      * @return {Object} The `dest` object.
+     * @deprecated 6.0.1 Use {@link Ext#copy Ext.copy} instead. This old method
+     * would copy the named preoperties even if they did not exist in the source which
+     * could produce `undefined` values in the destination.
      */
     copyTo: function (dest, source, names, usePrototypeKeys) {
         if (typeof names === 'string') {
@@ -190,6 +195,46 @@ Ext.apply(Ext, {
             name = names[i];
 
             if (usePrototypeKeys || source.hasOwnProperty(name)) {
+                dest[name] = source[name];
+            }
+        }
+
+        return dest;
+    },
+    /**
+     * @method copy
+     * @member Ext
+     * Copies a set of named properties fom the source object to the destination object.
+     *
+     * Example:
+     *
+     *     var foo = { a: 1, b: 2, c: 3 };
+     *
+     *     var bar = Ext.copy({}, foo, 'a,c');
+     *     // bar = { a: 1, c: 3 };
+     *
+     * Important note: To borrow class prototype methods, use {@link Ext.Base#borrow} instead.
+     *
+     * @param {Object} dest The destination object.
+     * @param {Object} source The source object.
+     * @param {String/String[]} names Either an Array of property names, or a comma-delimited list
+     * of property names to copy.
+     * @param {Boolean} [usePrototypeKeys=false] Pass `true` to copy keys off of the
+     * prototype as well as the instance.
+     * @return {Object} The `dest` object.
+     */
+    copy: function (dest, source, names, usePrototypeKeys) {
+        if (typeof names === 'string') {
+            names = names.split(Ext.propertyNameSplitRe);
+        }
+
+        for (var name, i = 0, n = names ? names.length : 0; i < n; i++) {
+            name = names[i];
+
+            // Only copy a property if the source actually *has* that property.
+            // If we are including prototype properties, then ensure that a property of
+            // that name can be found *somewhere* in the prototype chain (otherwise we'd be copying undefined in which may break things)
+            if (source.hasOwnProperty(name) || (usePrototypeKeys && name in source)) {
                 dest[name] = source[name];
             }
         }
@@ -217,6 +262,9 @@ Ext.apply(Ext, {
      * @param {String/String[]} names Either an Array of property names, or a single string
      * with a list of property names separated by ",", ";" or spaces.
      * @return {Object} The `dest` object.
+     * @deprecated 6.0.1 Use {@link Ext#copyIf Ext.copyIf} instead. This old method
+     * would copy the named preoperties even if they did not exist in the source which
+     * could produce `undefined` values in the destination.
      */
     copyToIf: function (destination, source, names) {
         if (typeof names === 'string') {
@@ -235,6 +283,42 @@ Ext.apply(Ext, {
     },
 
     /**
+     * @method copyIf
+     * @member Ext
+     * Copies a set of named properties fom the source object to the destination object
+     * if the destination object does not already have them.
+     *
+     * Example:
+     *
+     *     var foo = { a: 1, b: 2, c: 3 };
+     *
+     *     var bar = Ext.copyIf({ a:42 }, foo, 'a,c');
+     *     // bar = { a: 42, c: 3 };
+     *
+     * @param {Object} destination The destination object.
+     * @param {Object} source The source object.
+     * @param {String/String[]} names Either an Array of property names, or a single string
+     * with a list of property names separated by ",", ";" or spaces.
+     * @return {Object} The `dest` object.
+     */
+    copyIf: function (destination, source, names) {
+        if (typeof names === 'string') {
+            names = names.split(Ext.propertyNameSplitRe);
+        }
+
+        for (var name, i = 0, n = names ? names.length : 0; i < n; i++) {
+            name = names[i];
+
+            // Only copy a property if the destination has no property by that name
+            if (!(name in destination) && (name in source)) {
+                destination[name] = source[name];
+            }
+        }
+
+        return destination;
+    },
+
+    /**
      * @method extend
      * @member Ext
      * This method deprecated. Use {@link Ext#define Ext.define} instead.
@@ -243,17 +327,19 @@ Ext.apply(Ext, {
      * @return {Function} The subclass constructor from the <tt>overrides</tt> parameter, or a generated one if not provided.
      * @deprecated 4.0.0 Use {@link Ext#define Ext.define} instead
      */
-    extend: (function() {
+    extend: (function () {
         // inline overrides
         var objectConstructor = Object.prototype.constructor,
-            inlineOverrides = function(o) {
-            for (var m in o) {
-                if (!o.hasOwnProperty(m)) {
-                    continue;
+            inlineOverrides = function (o) {
+                var m;
+
+                for (m in o) {
+                    if (!o.hasOwnProperty(m)) {
+                        continue;
+                    }
+                    this[m] = o[m];
                 }
-                this[m] = o[m];
-            }
-        };
+            };
 
         return function(subclass, superclass, overrides) {
             // First we check if the user passed in just the superClass with overrides
@@ -332,6 +418,51 @@ Ext.apply(Ext, {
         else {
             Ext.Object.each.call(Ext.Object, object, fn, scope);
         }
+    },
+
+    _resourcePoolRe: /^[<]([^<>@:]*)(?:[@]([^<>@:]+))?[>](.+)$/,
+
+    /**
+     * Resolves a resource URL that may contain a resource pool identifier token at the
+     * front. The tokens are formatted as HTML tags "&lt;poolName@packageName&gt;" followed
+     * by a normal relative path. This token is only processed if present at the first
+     * character of the given string.
+     *
+     * These tokens are parsed and the pieces are then passed to the
+     * {@link Ext#getResourcePath} method.
+     *
+     * For example:
+     *
+     *      [{
+     *          xtype: 'image',
+     *          src: '<shared>images/foo.png'
+     *      },{
+     *          xtype: 'image',
+     *          src: '<@package>images/foo.png'
+     *      },{
+     *          xtype: 'image',
+     *          src: '<shared@package>images/foo.png'
+     *      }]
+     *
+     * In the above example, "shared" is the name of a Sencha Cmd resource pool and
+     * "package" is the name of a Sencha Cmd package.
+     * @member Ext
+     * @param {String} url The URL that may contain a resource pool token at the front.
+     * @return {String}
+     * @since 6.0.1
+     */
+    resolveResource: function (url) {
+        var ret = url,
+            m;
+
+        if (url && url.charAt(0) === '<') {
+            m = Ext._resourcePoolRe.exec(url);
+            if (m) {
+                ret = Ext.getResourcePath(m[3], m[1], m[2]);
+            }
+        }
+
+        return ret;
     },
 
     /**
@@ -507,7 +638,7 @@ Ext.apply(Ext, {
      *     button = Ext.factory({ text: 'Updated Button' }, 'Ext.Button', button); // Button updated
      *
      * @param {Object} config  The config object to instantiate or update an instance with.
-     * @param {String} classReference  The class to instantiate from.
+     * @param {String} [classReference]  The class to instantiate from (if there is a default).
      * @param {Object} [instance]  The instance to update.
      * @param [aliasNamespace]
      * @member Ext
@@ -538,12 +669,17 @@ Ext.apply(Ext, {
         }
 
         if (config === true) {
+            //<debug>
+            if (!instance && !classReference) {
+                Ext.raise('[Ext.factory] Cannot determine type of class to create');
+            }
+            //</debug>
             return instance || Ext.create(classReference);
         }
 
         //<debug>
         if (!Ext.isObject(config)) {
-            Ext.Logger.error("Invalid config, must be a valid config object");
+            Ext.raise("Invalid config, must be a valid config object");
         }
         //</debug>
 
@@ -674,9 +810,9 @@ Ext.apply(Ext, {
                         } else if (value === null || primitiveRe.test(type) || Ext.isDate(value)) {
                             member = Ext.encode(value);
                         } else if (Ext.isArray(value)) {
-                            member = this.dumpObject(value, level+1, maxLevel, withFunctions);
+                            member = dumpObject(value, level+1, maxLevel, withFunctions);
                         } else if (Ext.isObject(value)) {
-                            member = this.dumpObject(value, level+1, maxLevel, withFunctions);
+                            member = dumpObject(value, level+1, maxLevel, withFunctions);
                         } else {
                             member = type;
                         }
@@ -810,3 +946,4 @@ Ext.apply(Ext, {
             return nullLog;
         }())
 });
+

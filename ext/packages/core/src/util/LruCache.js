@@ -118,7 +118,7 @@ Ext.define('Ext.util.LruCache', {
      */
     clear: function(/* private */ initial) {
         this.first = this.last = null;
-        return this.callParent(arguments);
+        return this.callParent([initial]);
     },
 
     /**

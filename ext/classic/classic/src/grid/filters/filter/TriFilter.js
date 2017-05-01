@@ -60,17 +60,23 @@ Ext.define('Ext.grid.filters.filter.TriFilter', {
         // Note use the alpha alias for the operators ('gt', 'lt', 'eq') so they map in Filters.onFilterRemove().
         filter.lt = filterLt || me.createFilter({
             operator: 'lt',
-            value: (!stateful && value && value.lt) || null
+            value: (!stateful && value && Ext.isDefined(value.lt)) ?
+                value.lt :
+                null
         }, 'lt');
 
         filter.gt = filterGt || me.createFilter({
             operator: 'gt',
-            value: (!stateful && value && value.gt) || null
+            value: (!stateful && value && Ext.isDefined(value.gt)) ?
+                value.gt :
+                null
         }, 'gt');
 
         filter.eq = filterEq || me.createFilter({
             operator: 'eq',
-            value: (!stateful && value && value.eq) || null
+            value: (!stateful && value && Ext.isDefined(value.eq)) ?
+                value.eq :
+                null
         }, 'eq');
 
         me.filter = filter;
@@ -106,20 +112,24 @@ Ext.define('Ext.grid.filters.filter.TriFilter', {
             field = fields[operator];
             value = filter.getValue();
 
-            if (value) {
-                field.setValue(value);
+            if (value || value === 0) {
+                if (field.isComponent) {
+                    field.setValue(value);
 
-                // Some types, such as Date, have additional menu check items in their Filter menu hierarchy. Others, such as Number, do not.
-                // Because of this, it is necessary to make sure that the direct menuitem ancestor of the fields is not the rootMenuItem (the
-                // "Filters" menu item), which has its checked state controlled elsewhere.
-                //
-                // In other words, if the ancestor is not the rootMenuItem, check it.
-                if (isRootMenuItem === undefined) {
-                    isRootMenuItem = me.owner.activeFilterMenuItem === field.up('menuitem');
-                }
+                    // Some types, such as Date, have additional menu check items in their Filter menu hierarchy. Others, such as Number, do not.
+                    // Because of this, it is necessary to make sure that the direct menuitem ancestor of the fields is not the rootMenuItem (the
+                    // "Filters" menu item), which has its checked state controlled elsewhere.
+                    //
+                    // In other words, if the ancestor is not the rootMenuItem, check it.
+                    if (isRootMenuItem === undefined) {
+                        isRootMenuItem = me.owner.activeFilterMenuItem === field.up('menuitem');
+                    }
 
-                if (!isRootMenuItem) {
-                    field.up('menuitem').setChecked(true, /*suppressEvents*/ true);
+                    if (!isRootMenuItem) {
+                        field.up('menuitem').setChecked(true, /*suppressEvents*/ true);
+                    }
+                } else {
+                    field.value = value;
                 }
 
                 // Note that we only want to add store filters when they've been removed, which means that when Filter.showMenu() is called
@@ -138,7 +148,7 @@ Ext.define('Ext.grid.filters.filter.TriFilter', {
     deactivate: function () {
         var me = this,
             filters = me.filter,
-            f, filter;
+            f, filter, value;
 
         if (!me.countActiveFilters() || me.preventFilterRemoval) {
             return;
@@ -149,7 +159,8 @@ Ext.define('Ext.grid.filters.filter.TriFilter', {
         for (f in filters) {
             filter = filters[f];
 
-            if (filter.getValue()) {
+            value = filter.getValue();
+            if (value || value === 0) {
                 me.removeStoreFilter(filter);
             }
         }
@@ -200,7 +211,7 @@ Ext.define('Ext.grid.filters.filter.TriFilter', {
             remove = [],
             active = false,
             filterCollection = me.getGridStore().getFilters(),
-            field, filter, v, i, len, rLen, aLen;
+            filter, v, i, rLen, aLen;
 
         if (me.preventFilterRemoval) {
             return;
@@ -290,3 +301,4 @@ Ext.define('Ext.grid.filters.filter.TriFilter', {
         me.preventFilterRemoval = false;
     }
 });
+

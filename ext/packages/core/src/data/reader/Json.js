@@ -98,7 +98,7 @@
  *
  *     reader: {
  *         type  : 'json',
- *         root  : 'users',
+ *         rootProperty  : 'users',
  *         record: 'user'
  *     }
  *
@@ -121,7 +121,7 @@
  *
  *     reader: {
  *         type : 'json',
- *         root : 'root',
+ *         rootProperty : 'root',
  *         totalProperty  : 'total',
  *         successProperty: 'success',
  *         messageProperty: 'message'
@@ -140,7 +140,7 @@
  *             "email": "ed@sencha.com"
  *         }],
  *         "metaData": {
- *             "root": "users",
+ *             "rootProperty": "users",
  *             "totalProperty": 'count',
  *             "successProperty": 'ok',
  *             "messageProperty": 'msg'
@@ -246,40 +246,28 @@ Ext.define('Ext.data.reader.Json', {
     },
 
     /**
+     * @method readRecords
      * Reads a JSON object and returns a ResultSet. Uses the internal getTotal and getSuccess extractors to
      * retrieve meta data from the response, and extractData to turn the JSON data into model instances.
      * @param {Object} data The raw JSON data
      * @param {Object} [readOptions] See {@link #read} for details.
      * @return {Ext.data.ResultSet} A ResultSet containing model instances and meta data about the results
      */
-    readRecords: function(data, readOptions, /* private */ internalReadOptions) {
-        var me = this,
-            meta;
-            
-        //this has to be before the call to super because we use the meta data in the superclass readRecords
-        if (me.getMeta) {
-            meta = me.getMeta(data);
-            if (meta) {
-                me.onMetaChange(meta);
-            }
-        } else if (data.metaData) {
-            me.onMetaChange(data.metaData);
-        }
 
-        return me.callParent([data, readOptions, internalReadOptions]);
-    },
-
-    //inherit docs
     getResponseData: function(response) {
+        var error;
+
         try {
             return Ext.decode(response.responseText);
         } catch (ex) {
+            error = this.createReadError(ex.message);
+
             Ext.Logger.warn('Unable to parse the JSON returned by the server');
-            return this.createReadError(ex.message);   
+            this.fireEvent('exception', this, response, error);
+            return error;
         }
     },
 
-    //inherit docs
     buildExtractors : function() {
         var me = this,
             metaProp, rootProp;

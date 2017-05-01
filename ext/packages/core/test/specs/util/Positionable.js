@@ -10,7 +10,8 @@ describe("Ext.util.Positionable", function() {
                 left: '6px',
                 top: '7px',
                 'z-index': 10,
-                position: 'absolute'
+                position: 'absolute',
+                backgroundColor: 'green'
             }
         }, cfg));
     }
@@ -25,14 +26,15 @@ describe("Ext.util.Positionable", function() {
                 left: '6px',
                 top: '7px',
                 'z-index': 10,
-                position: 'absolute'
+                position: 'absolute',
+                backgroundColor: 'green'
             }
         }, cfg));
     }
 
     beforeEach(function() {
         // creates an absolute positioned wrapper element so that specs can
-        // append Elements/Components to it to test potioning to page-coordinates
+        // append Elements/Components to it to test positioning to page-coordinates
         wrap = Ext.getBody().createChild({
             style: {
                 width: '100px',
@@ -86,7 +88,8 @@ describe("Ext.util.Positionable", function() {
                         height: '60px',
                         left: '60px',
                         top: '60px',
-                        position: 'absolute'
+                        position: 'absolute',
+                        backgroundColor: 'red'
                     }
                 });
             });
@@ -111,7 +114,7 @@ describe("Ext.util.Positionable", function() {
             });
         });
 
-        describe("aligning " + suiteType + ' with constraining', function() {
+        describe("aligning " + suiteType + ' with "?" constraining', function() {
             // Test tesult with constraining.
             // alignToEl is positioned offset so that the positioned element sometimes swaps sides
             // and sometimes is just constrained.
@@ -188,7 +191,7 @@ describe("Ext.util.Positionable", function() {
                 "b-bl?": [15, 60],
                 "b-b?": [45, 60],
                 "b-br?": [75, 60],
-                "br-tl?": [95, 100],
+                "br-tl?": [15, 100],
                 "br-t?": [25, 100],
                 "br-tr?": [55, 100],
                 "br-l?": [95, 30],
@@ -224,11 +227,12 @@ describe("Ext.util.Positionable", function() {
             afterEach(function() {
                 alignToEl.destroy();
             });
+            
             Ext.each(positions, function(pos) {
                 Ext.each(positions, function(alignToPos) {
                     var posString = pos + '-' + alignToPos + '?';
 
-                    it("should align " + posString + ' with constraining', function() {
+                    it('should align "' + posString + '"', function() {
                         var xy;
 
                         positionable.alignTo(alignToEl, posString);
@@ -239,7 +243,138 @@ describe("Ext.util.Positionable", function() {
                 });
             });
         });
+        
+        describe("aligning " + suiteType + ' with "!" constraining', function() {
+            // Test tesult with constraining.
+            // The only one test is enabled which we need to fix EXTJS-18971
+            // The others should be re-enabled in https://sencha.jira.com/browse/EXTJS-19018
+            var resultPositions = {
+//                 "tl-tl!": [35, 40],
+//                 "tl-t!": [55, 40],
+//                 "tl-tr!": [35, 40],
+//                 "tl-l!": [35, 60],
+//                 "tl-c!": [55, 60],
+//                 "tl-r!": [35, 60],
+//                 "tl-bl!": [35, 100],
+//                 "tl-b!": [65, 100],
+//                 "tl-br!": [95, 100],
+//                 "t-tl!": [15, 40],
+//                 "t-t!": [45, 40],
+//                 "t-tr!": [75, 40],
+//                 "t-l!": [15, 70],
+//                 "t-c!": [45, 70],
+//                 "t-r!": [75, 70],
+//                 "t-bl!": [15, 100],
+//                 "t-b!": [45, 100],
+//                 "t-br!": [75, 100],
+//                 "tr-tl!": [95, 40],
+//                 "tr-t!": [25, 40],
+//                 "tr-tr!": [55, 40],
+//                 "tr-l!": [95, 70],
+//                 "tr-c!": [25, 70],
+//                 "tr-r!": [55, 70],
+//                 "tr-bl!": [15, 100],
+//                 "tr-b!": [25, 100],
+//                 "tr-br!": [55, 100],
+//                 "l-tl!": [35, 20],
+//                 "l-t!": [65, 20],
+//                 "l-tr!": [95, 20],
+                "l-l!": [35, 50]
+//                 "l-c!": [65, 50],
+//                 "l-r!": [95, 50],
+//                 "l-bl!": [35, 80],
+//                 "l-b!": [65, 80],
+//                 "l-br!": [95, 80],
+//                 "c-tl!": [15, 20],
+//                 "c-t!": [45, 20],
+//                 "c-tr!": [75, 20],
+//                 "c-l!": [15, 50],
+//                 "c-c!": [45, 50],
+//                 "c-r!": [75, 50],
+//                 "c-bl!": [15, 80],
+//                 "c-b!": [45, 80],
+//                 "c-br!": [75, 80],
+//                 "r-tl!": [95, 20],
+//                 "r-t!": [25, 20],
+//                 "r-tr!": [55, 20],
+//                 "r-l!": [95, 50],
+//                 "r-c!": [25, 50],
+//                 "r-r!": [55, 50],
+//                 "r-bl!": [95, 80],
+//                 "r-b!": [25, 80],
+//                 "r-br!": [55, 80],
+//                 "bl-tl!": [35, 100],
+//                 "bl-t!": [65, 100],
+//                 "bl-tr!": [95, 20],
+//                 "bl-l!": [35, 30],
+//                 "bl-c!": [65, 30],
+//                 "bl-r!": [95, 30],
+//                 "bl-bl!": [35, 60],
+//                 "bl-b!": [65, 60],
+//                 "bl-br!": [95, 60],
+//                 "b-tl!": [15, 100],
+//                 "b-t!": [45, 100],
+//                 "b-tr!": [75, 100],
+//                 "b-l!": [15, 30],
+//                 "b-c!": [45, 30],
+//                 "b-r!": [75, 30],
+//                 "b-bl!": [15, 60],
+//                 "b-b!": [45, 60],
+//                 "b-br!": [75, 60],
+//                 "br-tl!": [95, 100],
+//                 "br-t!": [25, 100],
+//                 "br-tr!": [55, 100],
+//                 "br-l!": [95, 30],
+//                 "br-c!": [25, 30],
+//                 "br-r!": [55, 30],
+//                 "br-bl!": [95, 60],
+//                 "br-b!": [25, 60],
+//                 "br-br!": [55, 60]
+            },
+            positions = [ 'tl', 't', 'tr', 'l', 'c', 'r', 'bl', 'b', 'br' ],
+            alignToEl;
 
+            beforeEach(function() {
+                isComponent ? createComponent() : createElement();
+
+                wrap.setSize(120, 120);
+                wrap.dom.style.backgroundColor = 'white';
+                wrap.dom.appendChild(positionable.el.dom);
+                positionable.el.dom.style.backgroundColor = 'red';
+
+                alignToEl = Ext.getBody().createChild({
+                    style: {
+                        backgroundColor: 'black',
+                        width: '60px',
+                        height: '60px',
+                        left: '35px',
+                        top: '40px',
+                        position: 'absolute'
+                    }
+                });
+            });
+
+            afterEach(function() {
+                alignToEl.destroy();
+            });
+            
+            Ext.each(positions, function(pos) {
+                Ext.each(positions, function(alignToPos) {
+                    var posString = pos + '-' + alignToPos + '!',
+                        todoIt = resultPositions[posString] ? it : xit;
+                    
+                    todoIt('should align "' + posString + '"', function() {
+                        var xy;
+                        
+                        positionable.alignTo(alignToEl, posString);
+                        xy = positionable.getXY();
+                        expect(xy[0]).toBe(resultPositions[posString][0]);
+                        expect(xy[1]).toBe(resultPositions[posString][1]);
+                    });
+                });
+            });
+        });
+        
         describe("positioning " + suiteType, function() {
             beforeEach(function() {
                 isComponent ? createComponent() : createElement();
@@ -355,6 +490,67 @@ describe("Ext.util.Positionable", function() {
                     expect(region.right).toBe(61);
                     expect(region.bottom).toBe(67);
                     expect(region.left).toBe(21);
+                });
+            });
+            
+            // IE9 disabled because https://sencha.jira.com/browse/EXTJS-19483
+            (Ext.isIE9 ? xdescribe : describe)("getClientRegion", function() {
+                var scrollbarSize = Ext.getScrollbarSize(),
+                    el, region;
+                
+                function addScrollStyle(axis) {
+                    el.setStyle('overflow-' + axis, 'scroll');
+                }
+                
+                beforeEach(function() {
+                    el = isComponent ? positionable.el : positionable;
+                    
+                    // Default width and height of 40px is not enough
+                    // to display scrollbars in some browsers
+                    el.dom.style.width = el.dom.style.height = '100px';
+                    el.dom.style.backgroundColor = 'red';
+                    
+                    region = positionable.getRegion();
+                });
+                
+                it("should be the same as Region with no scrollbars", function() {
+                    var clientRegion = positionable.getClientRegion();
+                    
+                    expect(clientRegion.equals(region)).toBe(true);
+                });
+                
+                it("should account for vertical scrollbar", function() {
+                    addScrollStyle('y');
+                    
+                    var clientRegion = positionable.getClientRegion();
+                    
+                    expect(clientRegion.top).toBe(region.top);
+                    expect(clientRegion.right).toBe(region.right - scrollbarSize.width);
+                    expect(clientRegion.bottom).toBe(region.bottom);
+                    expect(clientRegion.left).toBe(region.left);
+                });
+                
+                it("should account for horizontal scrollbar", function() {
+                    addScrollStyle('x');
+                    
+                    var clientRegion = positionable.getClientRegion();
+                    
+                    expect(clientRegion.top).toBe(region.top);
+                    expect(clientRegion.right).toBe(region.right);
+                    expect(clientRegion.bottom).toBe(region.bottom - scrollbarSize.height);
+                    expect(clientRegion.left).toBe(region.left);
+                });
+                
+                it("should account for both scrollbars", function() {
+                    addScrollStyle('x');
+                    addScrollStyle('y');
+                    
+                    var clientRegion = positionable.getClientRegion();
+                    
+                    expect(clientRegion.top).toBe(region.top);
+                    expect(clientRegion.right).toBe(region.right - scrollbarSize.width);
+                    expect(clientRegion.bottom).toBe(region.bottom - scrollbarSize.height);
+                    expect(clientRegion.left).toBe(region.left);
                 });
             });
 

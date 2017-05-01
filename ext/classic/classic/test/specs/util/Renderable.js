@@ -147,9 +147,11 @@ describe('Ext.util.Renderable', function(){
                         '</UL>',
                     '</DIV> ',
                     '<DIV id=test-panel> ',
-                        '<DIV id=test-panel-body> ',
-                            '<DIV id=test-panel-outerCt> ',
-                                '<DIV id=test-panel-innerCt>test</DIV>',
+                        '<DIV id=test-panel-bodyWrap> ',
+                            '<DIV id=test-panel-body> ',
+                                '<DIV id=test-panel-outerCt> ',
+                                    '<DIV id=test-panel-innerCt>test</DIV>',
+                                '</DIV>',
                             '</DIV>',
                         '</DIV>',
                     '</DIV>'
@@ -165,9 +167,11 @@ describe('Ext.util.Renderable', function(){
                         '</ul>',
                     '</div>',
                     '<div id="test-panel">',
-                        '<div id="test-panel-body">',
-                            '<div id="test-panel-outerCt">',
-                                '<div id="test-panel-innerCt">test</div>',
+                        '<div id="test-panel-bodyWrap">',
+                            '<div id="test-panel-body">',
+                                '<div id="test-panel-outerCt">',
+                                    '<div id="test-panel-innerCt">test</div>',
+                                '</div>',
                             '</div>',
                         '</div>',
                     '</div>'
@@ -511,60 +515,6 @@ describe('Ext.util.Renderable', function(){
                             });
                             
                             attrIt('render aria-expanded', 'aria-expanded', 'true');
-                        });
-                    });
-                    
-                    describe("labels and descriptions", function() {
-                        describe("by id", function() {
-                            var label, desc;
-                            
-                            beforeEach(function() {
-                                label = Ext.getBody().createChild({
-                                    id: 'label',
-                                    html: 'label'
-                                });
-                                
-                                desc = Ext.getBody().createChild({
-                                    id: 'desc',
-                                    html: 'desc'
-                                });
-                                
-                                makeC({
-                                    ariaLabelledBy: '#label',
-                                    ariaDescribedBy: '#desc'
-                                });
-                            });
-                            
-                            afterEach(function() {
-                                Ext.destroy(label, desc);
-                                label = desc = null;
-                            });
-                            
-                            attrIt('resolve aria-labelledby', 'aria-labelledby', function() {
-                                return label.id;
-                            });
-                            
-                            attrIt('resolve aria-describedby', 'aria-describedby', function() {
-                                return desc.id;
-                            });
-                        });
-                        
-                        describe("by selector", function() {
-                            beforeEach(function() {
-                                makeC({
-                                    ariaLabelledBy: '.label',
-                                    ariaDescribedBy: '.desc',
-                                    childEls: ['wrapEl', 'labelEl', 'descEl'],
-                                });
-                            });
-                            
-                            attrIt('resolve aria-labelledby', 'aria-labelledby', function() {
-                                return c.labelEl.id;
-                            });
-                            
-                            attrIt('resolve aria-describedby', 'aria-describedby', function() {
-                                return c.descEl.id;
-                            });
                         });
                     });
                 });
