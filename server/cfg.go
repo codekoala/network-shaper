@@ -11,6 +11,7 @@ const DEFAULT_CFG = `
 {
   "host": "0.0.0.0",
   "port": 80,
+  "allow_no_ip": false,
   "inbound": {
     "device": "eth0",
     "netem": {
@@ -63,9 +64,10 @@ const DEFAULT_CFG = `
 `
 
 type ShaperConfig struct {
-	Host    string `json:"host"`
-	Port    int    `json:"port"`
-	Inbound struct {
+	Host      string `json:"host"`
+	Port      int    `json:"port"`
+	AllowNoIp bool   `json:"allow_no_ip"`
+	Inbound   struct {
 		Device string `json:"device"`
 		Netem  Netem  `json:"netem"`
 	} `json:"inbound"`

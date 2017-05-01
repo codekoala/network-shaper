@@ -206,6 +206,7 @@ func getValidNics(w http.ResponseWriter, req *http.Request) {
 	var allNics []SimpleNic
 	nics, _ := net.Interfaces()
 	for _, nic := range nics {
+		added := false
 		addrs, _ := nic.Addrs()
 		for _, addrO := range addrs {
 			addr := strings.Split(addrO.String(), "/")[0]
@@ -220,7 +221,15 @@ func getValidNics(w http.ResponseWriter, req *http.Request) {
 				Ip:    addr,
 				Label: fmt.Sprintf("%s: %s", nic.Name, addr),
 			})
+			added = true
 			break
+		}
+
+		if !added && config.AllowNoIp {
+			allNics = append(allNics, SimpleNic{
+				Name:  nic.Name,
+				Label: nic.Name,
+			})
 		}
 	}
 

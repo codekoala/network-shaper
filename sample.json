@@ -1,6 +1,7 @@
 {
   "host": "0.0.0.0",
   "port": 8080,
+  "allow_no_ip": true,
   "inbound": {
     "device": "br0",
     "netem": {
