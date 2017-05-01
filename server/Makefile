@@ -3,7 +3,7 @@ ASSETS := ../dist
 VERSION := 0.0.3
 
 all:
-	go build -ldflags '-X main.VERSION $(VERSION)' -o $(OUT)
+	go build -ldflags '-X main.VERSION=$(VERSION)' -o $(OUT)
 
 assets:
 	go-bindata-assetfs $(ASSETS)/...
