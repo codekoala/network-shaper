@@ -6,12 +6,9 @@ server:
 
 sencha:
 	docker run $(EX) --rm \
-		-e TGT_UID=$(UID) \
-		-e TGT_GID=$(GID) \
-		--user 0:0 \
-		-v `pwd`:/project \
-		--entrypoint /project/entrypoint.sh \
-		herloct/sencha-cmd \
+		--user $(UID):$(GID) \
+		-v `pwd`:/code \
+		codekoala/sencha:6 \
 		$(THECMD)
 
 build:

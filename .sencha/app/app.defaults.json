@@ -136,6 +136,9 @@
     "production": {
         "compressor": {
             "type": "yui"
+        },
+        "cache": {
+            "enable": true
         }
     },
 
@@ -362,7 +365,7 @@
         },
         "js": [
             {
-                "path": "phonegap.js",
+                "path": "cordova.js",
                 "remote": true,
                 "priority": 1000
             }
@@ -399,11 +402,20 @@
         "cache": {
             "enable": false
         }
+    },
+
+    /**
+     *
+     */
+    "fashion": {
+        "inliner": {
+            "enable": false
+        }
     }
 
     /**
-     * The space config object is used by the sencha app publish command to deploy this application to sencha space
-     * "space": {
+     * The manager config object is used by the sencha app publish command to deploy this application to sencha web application manager
+     * "manager": {
      *     // the space id for this application
      *     "id": 12345,
      *     // name of app in space deployments

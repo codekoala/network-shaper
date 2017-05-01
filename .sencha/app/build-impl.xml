@@ -183,8 +183,7 @@ this file in most cases.
                      -init-defaults,
                      -after-init-defaults,
                      -init-compiler,
-                     -init-native-package,
-                     -init-web-server"/>
+                     -init-native-package"/>
     
     <!--
     ===============================================================
@@ -445,25 +444,52 @@ this file in most cases.
     <target name="-before-publish"/>
     <target name="-after-publish"/>
     <target name="-publish">
-        <property name="app.space.file" value="${app.output.base}"/>
+        <property name="app.manager.file" value="${app.output.base}"/>
         <x-sencha-command>
             <![CDATA[
-            space
+            manager
                 version
                     create
-                        -id=${app.space.id}
+                        -id=${app.manager.id}
                         -name=${app.version}
-                        -host=${app.space.host}
-                        -secret=${app.space.secret}
-                        -apiKey=${app.space.apiKey}
-                        -file=${app.space.file}
+                        -host=${app.manager.host}
+                        -secret=${app.manager.secret}
+                        -apiKey=${app.manager.apiKey}
+                        -file=${app.manager.file}
             ]]>
         </x-sencha-command>
     </target>
     <target name="publish"
             depends="init,-before-publish,-publish,-after-publish"
-            description="publish app to sencha space"/>
+            description="Publish app to Sencha Web Application Manager"/>
 
+    <!--
+    ===============================================================
+    Build Dependencies
+    uses the compiler to build metadata files for all detected
+    file-to-file dependencies
+    ===============================================================
+    -->
+    <target name="build-dependencies" depends="init, -detect-app-build-properties">
+        <x-compile refid="${compiler.ref.id}">
+            <![CDATA[
+            restore
+                page
+            and
+            meta
+                -infoType=Dependencies
+                -basePath=${build.dir}
+                -tpl={0}
+                -out=${build.dir}/dependencies.json
+            and
+            meta
+                -infoType=AppManifest
+                -basePath=${build.dir}
+                -tpl={0}
+                -out=${build.dir}/bootsequence.json
+            ]]>
+        </x-compile>
+    </target>
 
     <!--
     ===============================================================

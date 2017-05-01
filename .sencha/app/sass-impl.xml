@@ -28,10 +28,36 @@
                 page
         </property>
 
-        <condition property="theme.name.suffix" value="!dynamic">
+        <local name="var.begin"/>
+        <local name="var.end"/>
+        <local name="resource.map.base"/>
+
+        <condition property="var.begin" value="dynamic(">
             <isset property="framework.isV6"/>
         </condition>
-        <property name="theme.name.suffix" value="!default"/>
+        <condition property="var.end" value=")">
+            <isset property="framework.isV6"/>
+        </condition>
+
+        <property name="var.begin" value=""/>
+        <property name="var.end" value="!default"/>
+
+        <condition property="resource.map.base" value="${css.output.rel.path}">
+            <x-is-true value="${app.sass.dynamic}"/>
+        </condition>
+        <property name="resource.map.base" value=""/>
+
+        <if>
+            <x-is-true value="${app.sass.dynamic}"/>
+            <then>
+                <x-get-relative-path
+                        from="${build.out.css.dir}"
+                        to="${build.out.base.path}"
+                        property="css.output.rel.path"/>
+            </then>
+        </if>
+
+        <property name="css.output.rel.path" value=""/>
 
         <x-compile refid="${compiler.ref.id}">
             <![CDATA[
@@ -40,9 +66,10 @@
                 #only set variables for used classes eg. $include-class-name
                 sass
                     +class-name-vars
-                    -variable=$app-name: '${app.name}' ${theme.name.suffix}
+                    -variable=$app-name: ${var.begin} '${app.name}' ${var.end}
                     -variable=$image-search-path:'${image.search.path}'
-                    -variable=$theme-name: '${theme.name}' ${theme.name.suffix}
+                    -variable=$theme-name: ${var.begin} '${theme.name}' ${var.end}
+                    -resourceMapBase=${css.output.rel.path}
                     -output=${app.out.scss.tmp}
                     -forward=${app.sass.dynamic}
                 and
@@ -175,9 +202,81 @@
                                     toFile="${app.out.css}"/>
                         </then>
                         <else>
-                            <x-sass-build input="${app.out.scss}"
-                                          output="${app.out.css}"
-                                          refId="app.web.server"/>
+                            <x-fashion-live-update input="${app.out.scss}"
+                                                   output="${app.out.css}"
+                                                   refId="app.web.server"
+                                                   split="${build.css.selector.limit}"
+                                                   compress="${build.css.compress}"
+                                                   compilerRefId="${compiler.ref.id}"/>
+
+                            <x-compile refid="${compiler.ref.id}">
+                                <![CDATA[
+                                microload
+                                    -operation=manifest
+                                    -fashion=false
+                                    -tpl=${build.microloader.json.tpl.standalone}
+                                    -out=${build.out.json.path}
+                                    -resourcePath=${build.out.base.path}
+                                    -basePath=${build.out.metadata.dir}
+                                ]]>
+                            </x-compile>
+
+                            <x-sencha-command>
+                                fashion
+                                    -config=${build.out.json.path}
+                                    -compress=${build.css.compress}
+                                    -split=${build.css.selector.limit}
+                                    -saveFile=${app.dir}/${app.sass.generated.var}
+                                    ${app.out.scss}
+                                    ${app.out.css}
+                            </x-sencha-command>
+
+                            <x-update-css-array input="${app.out.css}"
+                                                compilerRefId="${compiler.ref.id}"/>
+
+                            <if>
+                                <and>
+                                    <available file="${build.out.css.dir}/css-vars.js"/>
+                                </and>
+                                <then>
+
+                                    <x-sencha-command>
+                                        <![CDATA[
+                                        fs
+                                            concat
+                                                -to=${build.out.css.dir}/css-vars.js.tmp
+                                                ${cmd.dir}/extensions/sencha-fashion/fashion/fashion-export-min.js
+                                                ${build.out.css.dir}/css-vars.js
+                                        ]]>
+                                    </x-sencha-command>
+
+                                    <if>
+                                        <not>
+                                            <equals arg1="${build.compression}" arg2=""/>
+                                        </not>
+                                        <then>
+                                            <x-compress-js srcFile="${build.out.css.dir}/css-vars.js.tmp"
+                                                           outFile="${build.out.css.dir}/css-vars.js.tmp"/>
+                                        </then>
+                                    </if>
+
+                                    <delete file="${build.out.css.dir}/css-vars.js"/>
+                                    <move file="${build.out.css.dir}/css-vars.js.tmp"
+                                          tofile="${build.out.css.dir}/css-vars.js"/>
+
+                                    <if>
+                                        <not>
+                                            <equals arg1="${build.environment}" arg2="development"/>
+                                        </not>
+                                        <then>
+                                            <concat destfile="${build.out.js.path}" append="true">
+                                                <filelist files="${build.out.css.dir}/css-vars.js"/>
+                                            </concat>
+                                        </then>
+                                    </if>
+
+                                </then>
+                            </if>
                         </else>
                     </if>
                 </then>
@@ -192,24 +291,23 @@
                             cssdir="${compass.css.dir}"
                             config="${compass.config.file}"/>
 
-                </else>
-            </if>
-            
-            <uptodate property="compress.uptodate"
-                      value="true"
-                      srcfile="${app.out.scss}.tmp"
-                      targetfile="${app.out.css}"/>
+                    <uptodate property="compress.uptodate"
+                              value="true"
+                              srcfile="${app.out.scss}.tmp"
+                              targetfile="${app.out.css}"/>
 
-            <if>
-                <x-is-true value="${compress.uptodate}"/>
-                <!--<x-is-true value="true"/>-->
-                <then>
-                    <x-compress-css-files dir="${build.out.css.dir}"
-                                          prefix="${app.out.base.debug}"
-                                          outprefix="${app.out.base}"
-                                          preprocess="${build.css.preprocess}"
-                                          compress="${build.css.compress}"/>
-                </then>
+                    <if>
+                        <x-is-true value="${compress.uptodate}"/>
+                        <!--<x-is-true value="true"/>-->
+                        <then>
+                            <x-compress-css-files dir="${build.out.css.dir}"
+                                                  prefix="${app.out.base.debug}"
+                                                  outprefix="${app.out.base}"
+                                                  preprocess="${build.css.preprocess}"
+                                                  compress="${build.css.compress}"/>
+                        </then>
+                    </if>
+                </else>
             </if>
         </x-run-if-true>
     </target>
