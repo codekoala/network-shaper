@@ -1,10 +1,4 @@
-node_modules
-dist
 /build/
-test/temp
-bower_components
-.tmp
-test/bower_components/
+/ext-6.2.0-gpl/
 server/network-shaper
 server/bindata*.go
-*.rpm
