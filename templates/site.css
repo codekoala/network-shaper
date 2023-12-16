@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  h1 {
+    @apply text-3xl font-bold;
+  }
+
+  h2 {
+    @apply text-2xl font-bold;
+  }
+
+  h3 {
+    @apply text-xl font-bold;
+  }
+}
+
+@layer components {
+  .tech-title {
+    @apply text-center text-lg font-bold text-red-500;
+  }
+
+  .technique {
+    @apply mx-1 my-2 rounded border-2 border-solid bg-zinc-800 p-3 text-center;
+  }
+
+  .tech-status-disabled {
+    @apply technique border-stone-500 bg-zinc-900 text-zinc-400;
+  }
+
+  .tech-status-0 {
+    @apply technique border-zinc-500 bg-zinc-800;
+  }
+
+  .tech-status-1 {
+    @apply technique border-amber-800 bg-amber-500 text-zinc-950;
+  }
+
+  .tech-status-2 {
+    @apply technique border-red-900 bg-red-800 text-white;
+  }
+}
+
+table {
+  @apply my-4 w-full table-auto border-collapse;
+}
+
+tr th {
+  @apply border-b-4 border-neutral-500 bg-neutral-900 p-4 text-center align-bottom text-lg;
+}
+
+tr {
+  @apply odd:bg-neutral-800 even:bg-neutral-900;
+}
+
+tr td {
+  @apply border-b border-neutral-700 p-2 align-top;
+}

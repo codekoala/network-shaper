@@ -1,0 +1,14 @@
+{
+  "packages": [
+    "go_1_21@latest",
+    "github:a-h/templ",
+    "air@latest",
+    "tailwindcss@latest",
+    "curl@latest",
+    "nodePackages.prettier@latest"
+  ],
+  "shell": {
+    "init_hook": [],
+    "scripts":   {}
+  }
+}

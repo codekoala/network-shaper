@@ -1,0 +1,104 @@
+{% extends "base.django" %}
+
+{% block content %}
+<div class="bg-base-300 my-5 p-3 rounded-xl">
+  <div class="form-control">
+    <label class="label cursor-pointer">
+      <span class="label-text text-lg font-bold">Delay</span>
+      <input type="checkbox" class="toggle toggle-primary" checked />
+    </label>
+  </div>
+
+  <div>
+    Adds the chosen delay to the packets outgoing to chosen network interface.
+    The optional parameters allow to introduce a delay variation and a
+    correlation. Delay and jitter values are expressed in ms while correlation
+    is percentage.
+  </div>
+
+  {% if true %}
+  <section>
+    <div class="flex flex-row gap-3 my-3 form-control">
+      <div class="basis-1/5">
+        <label class="label" for="delay_time">
+          <span class="label-text text-lg">Time:</span>
+        </label>
+      </div>
+      <div class="basis-3/5 align-middle">
+        <input name="delay_time" type="range" min="0" max="10000" value="40" class="range range-primary" />
+      </div>
+      <div class="basis-1/5">
+        <div class="join">
+          <div>
+            <input type="text" class="input input-bordered input-primary input-sm w-full max-w-xs" />
+          </div>
+          <div class="mx-2 align-middle">
+            ms
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-row">
+      <div class="text-sm">
+        Amount of time to delay each packet.
+      </div>
+    </div>
+
+
+    <div class="flex flex-row gap-3 my-3 form-control">
+      <div class="basis-1/5">
+        <label class="label" for="delay_time">
+          <span class="label-text text-lg">Jitter:</span>
+        </label>
+      </div>
+      <div class="basis-3/5 align-middle">
+        <input name="delay_time" type="range" min="0" max="10000" value="40" class="range range-primary" />
+      </div>
+      <div class="basis-1/5">
+        <div class="join">
+          <div>
+            <input type="text" class="input input-bordered input-primary input-sm w-full max-w-xs" />
+          </div>
+          <div class="mx-2 align-middle">
+            ms
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-row">
+      <div class="text-sm">
+        <span class="italic">Optional</span>. Delay each packet &#177; the jitter value.
+      </div>
+    </div>
+
+
+    <div class="flex flex-row gap-3 my-3 form-control">
+      <div class="basis-1/5">
+        <label class="label" for="delay_time">
+          <span class="label-text text-lg">Correlation:</span>
+        </label>
+      </div>
+      <div class="basis-3/5 align-middle">
+        <input name="delay_time" type="range" min="0" max="10000" value="40" class="range range-primary" />
+      </div>
+      <div class="basis-1/5">
+        <div class="join">
+          <div>
+            <input type="text" class="input input-bordered input-primary input-sm w-full max-w-xs" />
+          </div>
+          <div class="mx-3 align-middle">%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-row">
+      <div class="text-sm">
+        <span class="italic">Optional</span>. Amount that the next delay value depends on the previous delay value.
+      </div>
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

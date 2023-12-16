@@ -1,24 +1,11 @@
-server:
-	$(MAKE) -C server
+run:
+	go run ./cmd/network-shaper
 
-build:
-	gulp
-	find dist/bower_components \( \( -type f -not -name "webcomponents.min.js" \) -o \( -type d -empty \) \) -delete
+css:
+	tailwindcss -i ./templates/site.css -o ./static/site.css $(ARGS)
 
-assets:
-	$(MAKE) -C server assets
+devcss:
+	$(MAKE) css ARGS="--watch --minify"
 
-dist: build
-	$(MAKE) -C server dist
-
-rpm:
-	$(MAKE) -C server rpm
-
-arch:
-	$(MAKE) -C server arch
-
-clean:
-	find . -type f \( -iname "*.rpm" -o -iname "*.tar.xz*" \) -delete
-	gulp clean
-
-.PHONY: server build
+daisyui:
+	curl -Lo ./static/daisyui.css https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css
