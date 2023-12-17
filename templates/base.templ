@@ -1,0 +1,70 @@
+package templates
+
+templ NavButton(state GlobalState, page Page) {
+  <a role="tab" href={ templ.URL(page.Path) }
+    if state.IsActive(page) {
+      class="tab tab-active"
+    } else {
+      class="tab"
+    }
+  >{ page.Title }</a>
+}
+
+templ Base(state GlobalState, content templ.Component) {
+  <!doctype html>
+  <html>
+    <head>
+      <title>Network Shaper - { state.GetTitle() }</title>
+      <script src="/static/htmx.min.js"></script>
+      <link href="/static/daisyui.css" rel="stylesheet" />
+      <link href="/static/site.css" rel="stylesheet" />
+    </head>
+
+    <body>
+      <div
+        class="bg-base-200 container mx-auto my-3 w-9/12 max-w-5xl rounded-xl p-5 shadow-xl"
+      >
+        <div class="flex w-full">
+          <div class="basis-1/12">
+            <img src="/static/images/logo.svg" alt="Networking Icon" />
+          </div>
+          <div class="basis-11/12 align-middle">
+            <h1 class="text-6xl">
+              Network Shaper
+            </h1>
+          </div>
+        </div>
+
+        <div role="tablist" class="tabs tabs-boxed">
+          for _, page := range state.Nav {
+            @NavButton(state, page)
+          }
+        </div>
+
+        @content
+
+        <div class="divider"></div>
+
+        <div class="flex w-full">
+          <div class="grid h-10 flex-grow card place-items-center">
+            Network Shaper
+          </div>
+
+          <div class="divider divider-horizontal"></div>
+
+          <div class="grid h-10 flex-grow card place-items-center text-xs">
+            <div>Network Shaper</div>
+            <div>Copyright &copy; 2015-2023</div>
+            <div>Josh VanderLinden</div>
+          </div>
+
+          <div class="divider divider-horizontal"></div>
+
+          <div class="grid h-10 flex-grow card place-items-center">
+            Josh VanderLinden
+          </div>
+        </div>
+      </div>
+    </body>
+  </html>
+}
