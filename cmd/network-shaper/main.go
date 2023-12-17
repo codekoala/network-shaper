@@ -48,7 +48,7 @@ func VIndex(c *fiber.Ctx) error {
 }
 
 func VInbound(c *fiber.Ctx) error {
-	return Render(c, templates.Foo())
+	return Render(c, templates.RulesForm())
 }
 
 func VOutbound(c *fiber.Ctx) error {

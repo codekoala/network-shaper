@@ -4,3 +4,27 @@ templ Foo() {
   <div>Hello World</div>
   <h1>Hi</h1>
 }
+
+templ RulesForm() {
+  <div class="bg-base-300 my-5 p-3 rounded-xl">
+    <div class="form-control">
+      <label class="label cursor-pointer">
+        <span class="label-text text-lg font-bold">Delay</span>
+        <input type="checkbox" class="toggle toggle-primary" checked />
+      </label>
+    </div>
+
+    <div>
+      Adds the chosen delay to the packets outgoing to chosen network interface.
+      The optional parameters allow to introduce a delay variation and a
+      correlation. Delay and jitter values are expressed in ms while correlation
+      is percentage.
+    </div>
+
+    <section>
+      @FloatSlider("Time", "Amount of time to delay each packet.", "ms")
+      @OptionalFloatSlider("Jitter", "Delay each packet ± the jitter value.", "ms")
+      @OptionalFloatSlider("Correlation", "Amount that the next delay value depends on the previous delay value.", "%")
+    </section>
+  </div>
+}

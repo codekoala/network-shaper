@@ -1,6 +1,14 @@
 package templates
 
 templ FloatSlider(label, description, unit string) {
+  @floatSlider(label, description, unit, false)
+}
+
+templ OptionalFloatSlider(label, description, unit string) {
+  @floatSlider(label, description, unit, true)
+}
+
+templ floatSlider(label, description, unit string, optional bool) {
   <div class="flex flex-row gap-3 my-3 form-control">
     <div class="basis-1/5">
       <label class="label" for="delay_time">
@@ -24,6 +32,9 @@ templ FloatSlider(label, description, unit string) {
 
   <div class="flex flex-row">
     <div class="text-sm">
+      if optional {
+        <span class="italic">Optional</span>. &nbsp;
+      }
       { description }
     </div>
   </div>
