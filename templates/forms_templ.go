@@ -71,7 +71,7 @@ func floatSlider(label, description, unit string, optional bool) templ.Component
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-row gap-3 my-3 form-control\"><div class=\"basis-1/5\"><label class=\"label\" for=\"delay_time\"><span class=\"label-text text-lg\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-row gap-3 my-3 form-control\" x-data=\"{ value: 0 }\"><div class=\"basis-1/5\"><label class=\"label\" for=\"delay_time\"><span class=\"label-text text-lg\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -85,7 +85,7 @@ func floatSlider(label, description, unit string, optional bool) templ.Component
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span></label></div><div class=\"basis-3/5 align-middle\"><input name=\"delay_time\" type=\"range\" min=\"0\" max=\"10000\" value=\"40\" class=\"range range-primary\"></div><div class=\"basis-1/5\"><div class=\"join\"><div><input type=\"text\" class=\"input input-bordered input-primary input-sm w-full max-w-xs\"></div><div class=\"mx-2 align-middle\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span></label></div><div class=\"basis-3/5 align-middle\"><input name=\"delay_time\" type=\"range\" min=\"0\" max=\"10000\" value=\"40\" class=\"range range-primary\" x-model=\"value\"></div><div class=\"basis-1/5\"><div class=\"join\"><div><input type=\"text\" class=\"input input-bordered input-primary input-sm w-full max-w-xs\" x-model=\"value\"></div><div class=\"mx-2 align-middle\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -15,7 +15,8 @@ templ Base(state GlobalState, content templ.Component) {
   <html>
     <head>
       <title>Network Shaper - { state.GetTitle() }</title>
-      <script src="/static/htmx.min.js"></script>
+      <script src="/static/htmx.min.js" defer></script>
+      <script src="/static/alpinejs.min.js" defer></script>
       <link href="/static/daisyui.css" rel="stylesheet" />
       <link href="/static/site.css" rel="stylesheet" />
     </head>
