@@ -65,7 +65,7 @@ func DelaySettings() templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"bg-base-300 my-5 p-3 rounded-xl\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text text-lg font-bold\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"bg-base-300 my-5 p-3 rounded-xl\" x-data=\"{ enabled: false }\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text text-lg font-bold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -74,7 +74,7 @@ func DelaySettings() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <input type=\"checkbox\" class=\"toggle toggle-primary\" checked></label></div><div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <input type=\"checkbox\" class=\"toggle toggle-primary\" x-model=\"enabled\"></label></div><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -110,7 +110,7 @@ func DelaySettings() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><section>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><section x-show=\"enabled\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

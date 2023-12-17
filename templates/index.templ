@@ -6,11 +6,11 @@ templ Foo() {
 }
 
 templ DelaySettings() {
-  <div class="bg-base-300 my-5 p-3 rounded-xl">
+  <div class="bg-base-300 my-5 p-3 rounded-xl" x-data="{ enabled: false }">
     <div class="form-control">
       <label class="label cursor-pointer">
         <span class="label-text text-lg font-bold">Delay</span>
-        <input type="checkbox" class="toggle toggle-primary" checked />
+        <input type="checkbox" class="toggle toggle-primary" x-model="enabled" />
       </label>
     </div>
 
@@ -21,7 +21,7 @@ templ DelaySettings() {
       is percentage.
     </div>
 
-    <section>
+    <section x-show="enabled">
       @FloatSlider("Time", "Amount of time to delay each packet.", "ms")
       @OptionalFloatSlider("Jitter", "Delay each packet ± the jitter value.", "ms")
       @OptionalFloatSlider("Correlation", "Amount that the next delay value depends on the previous delay value.", "%")
