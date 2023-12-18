@@ -1,0 +1,17 @@
+package component
+
+import (
+  "github.com/codekoala/network-shaper/view/model"
+)
+
+
+templ NavButton(state model.GlobalState, page model.Page) {
+  <a role="tab" href={ templ.URL(page.Path) }
+    if state.IsActive(page) {
+      class="tab tab-active"
+    } else {
+      class="tab"
+    }
+  >{ page.Title }</a>
+}
+

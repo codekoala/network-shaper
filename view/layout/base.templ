@@ -1,16 +1,11 @@
-package templates
+package layout
 
-templ NavButton(state GlobalState, page Page) {
-  <a role="tab" href={ templ.URL(page.Path) }
-    if state.IsActive(page) {
-      class="tab tab-active"
-    } else {
-      class="tab"
-    }
-  >{ page.Title }</a>
-}
+import (
+  "github.com/codekoala/network-shaper/view/component"
+  "github.com/codekoala/network-shaper/view/model"
+)
 
-templ Base(state GlobalState, content templ.Component) {
+templ Base(state model.GlobalState, content templ.Component) {
   <!doctype html>
   <html>
     <head>
@@ -38,7 +33,7 @@ templ Base(state GlobalState, content templ.Component) {
 
         <div role="tablist" class="tabs tabs-boxed">
           for _, page := range state.Nav {
-            @NavButton(state, page)
+            @component.NavButton(state, page)
           }
         </div>
 

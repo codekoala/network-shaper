@@ -1,4 +1,8 @@
-package templates
+package view
+
+import (
+  "github.com/codekoala/network-shaper/view/component"
+)
 
 templ Foo() {
   <div>Hello World</div>
@@ -21,10 +25,10 @@ templ DelaySettings() {
       is percentage.
     </div>
 
-    <section x-show="enabled">
-      @FloatSlider("Time", "Amount of time to delay each packet.", "ms")
-      @OptionalFloatSlider("Jitter", "Delay each packet ± the jitter value.", "ms")
-      @OptionalFloatSlider("Correlation", "Amount that the next delay value depends on the previous delay value.", "%")
+    <section x-show="enabled" x-transition>
+      @component.FloatSlider("Time", "Amount of time to delay each packet.", "ms")
+      @component.OptionalFloatSlider("Jitter", "Delay each packet ± the jitter value.", "ms")
+      @component.OptionalFloatSlider("Correlation", "Amount that the next delay value depends on the previous delay value.", "%")
     </section>
   </div>
 }

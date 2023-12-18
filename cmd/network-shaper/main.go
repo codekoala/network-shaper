@@ -4,7 +4,9 @@ import (
 	"os"
 
 	"github.com/a-h/templ"
-	"github.com/codekoala/network-shaper/templates"
+	"github.com/codekoala/network-shaper/view"
+	"github.com/codekoala/network-shaper/view/layout"
+	"github.com/codekoala/network-shaper/view/model"
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -32,8 +34,8 @@ func main() {
 }
 
 func Render(c *fiber.Ctx, comp templ.Component) (err error) {
-	page := templates.Base(
-		templates.StateFromCtx(c),
+	page := layout.Base(
+		model.StateFromCtx(c),
 		comp,
 	)
 
@@ -44,17 +46,17 @@ func Render(c *fiber.Ctx, comp templ.Component) (err error) {
 }
 
 func VIndex(c *fiber.Ctx) error {
-	return Render(c, templates.Foo())
+	return Render(c, view.Foo())
 }
 
 func VInbound(c *fiber.Ctx) error {
-	return Render(c, templates.RulesForm())
+	return Render(c, view.RulesForm())
 }
 
 func VOutbound(c *fiber.Ctx) error {
-	return Render(c, templates.Foo())
+	return Render(c, view.Foo())
 }
 
 func VDevices(c *fiber.Ctx) error {
-	return Render(c, templates.Foo())
+	return Render(c, view.Foo())
 }

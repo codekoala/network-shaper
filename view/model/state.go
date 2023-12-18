@@ -1,8 +1,6 @@
-package templates
+package model
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -51,7 +49,6 @@ func (gs GlobalState) IsActive(page Page) bool {
 }
 
 func (gs GlobalState) GetTitle() string {
-	fmt.Println("FARTS", gs.ctx.Path())
 	page, ok := gs.Pages[gs.ctx.Path()]
 	if !ok {
 		return "Let's Begin"
