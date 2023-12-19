@@ -586,11 +586,6 @@ h3 {
   }
 }
 
-.mx-2 {
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
-}
-
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -628,10 +623,6 @@ h3 {
 
 .max-w-5xl {
   max-width: 64rem;
-}
-
-.max-w-xs {
-  max-width: 20rem;
 }
 
 .flex-grow {

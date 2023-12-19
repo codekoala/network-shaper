@@ -6,6 +6,7 @@ import (
 )
 
 type (
+	// go:generate do magic
 	FloatSliderOpts struct {
 		Label    string
 		Descr    string

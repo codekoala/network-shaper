@@ -8,3 +8,4 @@ server/network-shaper
 server/bindata*.go
 *.rpm
 *.tar.xz*
+*.fiber.gz

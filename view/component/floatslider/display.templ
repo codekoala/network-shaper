@@ -12,12 +12,10 @@ templ FloatSlider(opts *FloatSliderOpts) {
     </div>
     <div class="basis-1/5">
       <div class="join">
-        <div>
-          <input type="number" min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="input input-bordered input-primary input-sm w-full max-w-xs text-right" x-model="value" />
-        </div>
-        <div class="mx-2 align-middle">
+        <input type="number" min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="join-item input input-bordered input-primary text-right" x-model="value" />
+        <button class="btn join-item">
           { opts.Unit }
-        </div>
+        </button>
       </div>
     </div>
   </div>

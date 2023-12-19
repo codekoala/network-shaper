@@ -69,7 +69,7 @@ func FloatSlider(opts *FloatSliderOpts) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"range range-primary\" x-model=\"value\"></div><div class=\"basis-1/5\"><div class=\"join\"><div><input type=\"number\" min=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"range range-primary\" x-model=\"value\"></div><div class=\"basis-1/5\"><div class=\"join\"><input type=\"number\" min=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -93,7 +93,7 @@ func FloatSlider(opts *FloatSliderOpts) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"input input-bordered input-primary input-sm w-full max-w-xs text-right\" x-model=\"value\"></div><div class=\"mx-2 align-middle\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"join-item input input-bordered input-primary text-right\" x-model=\"value\"> <button class=\"btn join-item\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -102,7 +102,7 @@ func FloatSlider(opts *FloatSliderOpts) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></div></div><div class=\"flex flex-row\"><div class=\"text-sm\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div></div></div><div class=\"flex flex-row\"><div class=\"text-sm\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
