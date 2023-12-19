@@ -11,7 +11,7 @@ import "io"
 import "bytes"
 
 import (
-	"github.com/codekoala/network-shaper/view/component"
+	fs "github.com/codekoala/network-shaper/view/component/floatslider"
 )
 
 func Foo() templ.Component {
@@ -118,15 +118,31 @@ func DelaySettings() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = component.FloatSlider("Time", "Amount of time to delay each packet.", "ms").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = fs.FloatSlider(fs.With(
+			fs.Label("Time"),
+			fs.Descr("Amount of time to delay each packet."),
+			fs.Max(10000.0),
+			fs.Step(1.0),
+		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = component.OptionalFloatSlider("Jitter", "Delay each packet ± the jitter value.", "ms").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = fs.FloatSlider(fs.With(
+			fs.Label("Jitter"),
+			fs.Descr("Delay each packet ± the jitter value."),
+			fs.Max(10000.0),
+			fs.Step(1.0),
+			fs.Optional(true),
+		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = component.OptionalFloatSlider("Correlation", "Amount that the next delay value depends on the previous delay value.", "%").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = fs.FloatSlider(fs.With(
+			fs.Label("Correlation"),
+			fs.Descr("Amount that the next delay value depends on the previous delay value."),
+			fs.Unit("%"),
+			fs.Optional(true),
+		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

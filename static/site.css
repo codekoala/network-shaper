@@ -682,6 +682,10 @@ h3 {
   padding: 1.25rem;
 }
 
+.text-right {
+  text-align: right;
+}
+
 .align-middle {
   vertical-align: middle;
 }
