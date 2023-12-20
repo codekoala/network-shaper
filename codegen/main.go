@@ -200,7 +200,7 @@ func genPrelude(fset *token.FileSet, out *os.File, structName string, fields []*
 	}
 
 	printer.Fprint(out, fset, optDecl)
-	fmt.Fprintln(out, "")
+	fmt.Fprintln(out, "\n")
 
 	var defaults []ast.Expr
 	for _, field := range fields {
@@ -293,7 +293,93 @@ func genPrelude(fset *token.FileSet, out *os.File, structName string, fields []*
 	}
 
 	printer.Fprint(out, fset, withDecl)
-	fmt.Fprintln(out, "")
+	fmt.Fprintln(out, "\n")
+
+	genWithMethod(fset, out, structName)
+}
+
+func genWithMethod(fset *token.FileSet, out *os.File, structName string) {
+	selfIdent := ast.NewIdent("o")
+	optsParam := ast.NewIdent("opts")
+	optVar := ast.NewIdent("opt")
+
+	withDecl := &ast.FuncDecl{
+		// define the method receiver
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{selfIdent},
+					Type: &ast.StarExpr{
+						X: ast.NewIdent(structName),
+					},
+				},
+			},
+		},
+
+		// define the method name
+		Name: ast.NewIdent("With"),
+
+		// define the method signature
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						// receive one or more Opts
+						Names: []*ast.Ident{optsParam},
+						Type: &ast.Ellipsis{
+							Elt: ast.NewIdent("Opt"),
+						},
+					},
+				},
+			},
+
+			// return a pointer to the same struct
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.StarExpr{
+							X: ast.NewIdent(structName),
+						},
+					},
+				},
+			},
+		},
+
+		// define the method body
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				// iterate over the Opts
+				&ast.RangeStmt{
+					Key:   ast.NewIdent("_"),
+					Value: optVar,
+					Tok:   token.DEFINE,
+					X:     optsParam,
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							// Create the expression statement node
+							&ast.ExprStmt{
+								// Create the call expression node
+								X: &ast.CallExpr{
+									Fun: optVar,
+									Args: []ast.Expr{
+										selfIdent,
+									},
+								},
+							},
+						},
+					},
+				},
+
+				// return the struct for easy chaining
+				&ast.ReturnStmt{
+					Results: []ast.Expr{selfIdent},
+				},
+			},
+		},
+	}
+
+	printer.Fprint(out, fset, withDecl)
+	fmt.Fprintln(out, "\n")
 }
 
 func genFunc(fset *token.FileSet, out *os.File, structName, fieldName string, fieldType ast.Expr) {
@@ -363,5 +449,81 @@ func genFunc(fset *token.FileSet, out *os.File, structName, fieldName string, fi
 
 	// Write the function declaration to the file
 	printer.Fprint(out, fset, funcDecl)
-	fmt.Fprintln(out, "")
+	fmt.Fprintln(out, "\n")
+
+	if fieldIdent, ok := fieldType.(*ast.Ident); ok {
+		if fieldIdent.Name == "float64" {
+			genFloat64StrFunc(fset, out, structName, fieldName, fieldType)
+		}
+	}
+}
+
+func genFloat64StrFunc(fset *token.FileSet, out *os.File, structName, fieldName string, fieldType ast.Expr) {
+	selfIdent := ast.NewIdent("o")
+	fieldIdent := ast.NewIdent(fieldName)
+
+	fnDecl := &ast.FuncDecl{
+		// define the method receiver
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{selfIdent},
+					Type: &ast.StarExpr{
+						X: ast.NewIdent(structName),
+					},
+				},
+			},
+		},
+
+		// define the method name
+		Name: ast.NewIdent(fieldName + "Str"),
+
+		// define the method signature
+		Type: &ast.FuncType{
+			// return a string
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: ast.NewIdent("string"),
+					},
+				},
+			},
+		},
+
+		// define the method body
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("strconv"),
+								Sel: ast.NewIdent("FormatFloat"),
+							},
+							Args: []ast.Expr{
+								&ast.SelectorExpr{
+									X:   selfIdent,
+									Sel: fieldIdent,
+								},
+								&ast.BasicLit{
+									Kind:  token.CHAR,
+									Value: "'f'",
+								},
+								&ast.BasicLit{
+									Kind:  token.INT,
+									Value: "1",
+								},
+								&ast.BasicLit{
+									Kind:  token.INT,
+									Value: "64",
+								},
+							},
+						}},
+				},
+			},
+		},
+	}
+
+	printer.Fprint(out, fset, fnDecl)
+	fmt.Fprintln(out, "\n")
 }
