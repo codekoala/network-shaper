@@ -6,16 +6,16 @@ import (
 )
 
 type (
-	// go:generate do magic
+	//templ:component-opts
 	FloatSliderOpts struct {
 		Label    string
 		Descr    string
-		Unit     string
+		Unit     string `default:"ms"`
 		Optional bool
 		Disabled bool
-		Min      float64
-		Max      float64
-		Step     float64
+		Min      float64 `default:"0.0"`
+		Max      float64 `default:"100.0"`
+		Step     float64 `default:"0.1"`
 		Value    float64
 	}
 
