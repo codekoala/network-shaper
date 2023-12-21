@@ -30,7 +30,7 @@ func main() {
 		}
 
 		// Skip non-Go files and directories
-		if info.IsDir() || !strings.HasSuffix(path, ".go") {
+		if info.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "codegen.go") {
 			return nil
 		}
 
@@ -150,12 +150,14 @@ func genFuncs(fset *token.FileSet, file *ast.File, structName string, fields []*
 	fmt.Fprintln(out, "")
 
 	// Write the imports
-	fmt.Fprintln(out, "import (")
-	for _, imp := range file.Imports {
-		fmt.Fprintln(out, imp.Path.Value)
-	}
-	fmt.Fprintln(out, ")")
+	fmt.Fprintln(out, `import "strconv"`)
 	fmt.Fprintln(out, "")
+	// fmt.Fprintln(out, "import (")
+	// for _, imp := range file.Imports {
+	// 	fmt.Fprintln(out, imp.Path.Value)
+	// }
+	// fmt.Fprintln(out, ")")
+	// fmt.Fprintln(out, "")
 
 	// Iterate over the fields
 	for _, field := range fields {
