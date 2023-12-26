@@ -19,11 +19,13 @@ templ FloatSlider(opts *Opts) {
         </button>
     </div>
 
-    <div class="col-span-5 text-sm">
-      if opts.Optional {
-        <span class="italic">Optional</span>. &nbsp;
-      }
-      { opts.Descr }
-    </div>
+    if opts.Optional || len(opts.Descr) > 0 {
+      <div class="col-span-5 text-sm">
+        if opts.Optional {
+          <span class="italic">Optional</span>. &nbsp;
+        }
+        { opts.Descr }
+      </div>
+    }
   </div>
 }
