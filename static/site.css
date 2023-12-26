@@ -590,6 +590,10 @@ h3 {
   grid-column: span 3 / span 3;
 }
 
+.col-span-5 {
+  grid-column: span 5 / span 5;
+}
+
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -617,6 +621,14 @@ h3 {
   height: 1.25rem;
 }
 
+.w-14 {
+  width: 3.5rem;
+}
+
+.w-32 {
+  width: 8rem;
+}
+
 .w-9\/12 {
   width: 75%;
 }
@@ -637,16 +649,8 @@ h3 {
   flex-basis: 8.333333%;
 }
 
-.basis-1\/5 {
-  flex-basis: 20%;
-}
-
 .basis-11\/12 {
   flex-basis: 91.666667%;
-}
-
-.basis-3\/5 {
-  flex-basis: 60%;
 }
 
 .cursor-pointer {
@@ -657,20 +661,12 @@ h3 {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
-.flex-row {
-  flex-direction: row;
-}
-
 .place-items-center {
   place-items: center;
 }
 
 .gap-2 {
   gap: 0.5rem;
-}
-
-.gap-3 {
-  gap: 0.75rem;
 }
 
 .rounded-xl {
