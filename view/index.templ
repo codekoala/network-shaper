@@ -26,7 +26,6 @@ templ DelaySettings() {
     </div>
 
     <section x-show="enabled" x-transition>
-      <div class="grid grid-cols-5 gap-2">
       @fs.FloatSlider(fs.With(
         fs.Label("Time"),
         fs.Descr("Amount of time to delay each packet."),
@@ -48,7 +47,6 @@ templ DelaySettings() {
         fs.Unit("%"),
         fs.Optional(true),
       ))
-      </div>
     </section>
   </div>
 }

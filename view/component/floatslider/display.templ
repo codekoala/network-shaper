@@ -1,27 +1,29 @@
 package floatslider
 
 templ FloatSlider(opts *Opts) {
-  <div class="align-middle" x-data={ opts.AlpineValue() }>
-    <label class="label" for="delay_time">
-      <span class="label-text text-lg">{ opts.Label }:</span>
-    </label>
-  </div>
+  <div class="grid grid-cols-5 gap-2 form-control my-2" x-data={ opts.AlpineValue() }>
+    <div class="align-middle">
+      <label class="label" for="delay_time">
+        <span class="label-text text-lg">{ opts.Label }:</span>
+      </label>
+    </div>
 
-  <div class="align-middle col-span-3">
-    <input name="delay_time" type="range" min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="range range-primary" x-model="value" />
-  </div>
+    <div class="align-middle col-span-3 py-3">
+      <input name="delay_time" type="range" min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="range range-primary" x-model="value" />
+    </div>
 
-  <div class="align-middle join">
-      <input type="number" min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="join-item input input-bordered input-primary text-right w-32" x-model="value" />
-      <button class="btn input-bordered join-item w-14" disabled>
-        { opts.Unit }
-      </button>
-  </div>
+    <div class="align-middle join">
+        <input type="number" min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="join-item input input-bordered input-primary text-right w-32" x-model="value" />
+        <button class="btn input-bordered join-item w-14" disabled>
+          { opts.Unit }
+        </button>
+    </div>
 
-  <div class="col-span-5 text-sm">
-    if opts.Optional {
-      <span class="italic">Optional</span>. &nbsp;
-    }
-    { opts.Descr }
+    <div class="col-span-5 text-sm">
+      if opts.Optional {
+        <span class="italic">Optional</span>. &nbsp;
+      }
+      { opts.Descr }
+    </div>
   </div>
 }
