@@ -5,6 +5,7 @@ css:
 	tailwindcss -i ./view/site.css -o ./static/site.css $(ARGS)
 
 templ:
+	templ-component-gen ./view/
 	templ generate $(ARGS) ./...
 
 devcss:

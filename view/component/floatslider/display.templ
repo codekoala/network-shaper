@@ -1,6 +1,6 @@
 package floatslider
 
-templ FloatSlider(opts *FloatSliderOpts) {
+templ FloatSlider(opts *Opts) {
   <div class="flex flex-row gap-3 my-3 form-control" x-data={ opts.AlpineValue() }>
     <div class="basis-1/5">
       <label class="label" for="delay_time">
@@ -13,7 +13,7 @@ templ FloatSlider(opts *FloatSliderOpts) {
     <div class="basis-1/5">
       <div class="join">
         <input type="number" min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="join-item input input-bordered input-primary text-right" x-model="value" />
-        <button class="btn join-item">
+        <button class="btn input-bordered join-item" disabled>
           { opts.Unit }
         </button>
       </div>

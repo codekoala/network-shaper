@@ -10,7 +10,7 @@ import "context"
 import "io"
 import "bytes"
 
-func FloatSlider(opts *FloatSliderOpts) templ.Component {
+func FloatSlider(opts *Opts) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -93,7 +93,7 @@ func FloatSlider(opts *FloatSliderOpts) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"join-item input input-bordered input-primary text-right\" x-model=\"value\"> <button class=\"btn join-item\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"join-item input input-bordered input-primary text-right\" x-model=\"value\"> <button class=\"btn input-bordered join-item\" disabled>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
