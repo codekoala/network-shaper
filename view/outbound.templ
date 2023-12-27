@@ -1,0 +1,17 @@
+package view
+
+import (
+  "github.com/codekoala/network-shaper/view/component"
+)
+
+templ OutboundRulesForm() {
+  <div>
+    <h1>Outbound Traffic Shaping</h1>
+  </div>
+
+  <div>
+    These settings apply to traffic leaving the network controlled by the network shaper.
+  </div>
+
+  @component.RulesForm()
+}

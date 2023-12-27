@@ -50,11 +50,11 @@ func VIndex(c *fiber.Ctx) error {
 }
 
 func VInbound(c *fiber.Ctx) error {
-	return Render(c, view.RulesForm())
+	return Render(c, view.InboundRulesForm())
 }
 
 func VOutbound(c *fiber.Ctx) error {
-	return Render(c, view.Foo())
+	return Render(c, view.OutboundRulesForm())
 }
 
 func VDevices(c *fiber.Ctx) error {

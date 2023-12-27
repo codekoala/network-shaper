@@ -1,0 +1,35 @@
+package component
+
+import (
+  fs "github.com/codekoala/network-shaper/view/component/floatslider"
+)
+
+templ PacketLossSettings() {
+  <div class="bg-base-300 my-5 p-3 rounded-xl" x-data="{ enabled: true }">
+    <div class="form-control">
+      <label class="label cursor-pointer">
+        <span class="label-text text-lg font-bold">Packet Loss</span>
+        <input type="checkbox" class="toggle toggle-primary" x-model="enabled" />
+      </label>
+    </div>
+
+    <div>
+      Adds an independent loss probability to the packets outgoing from the
+      chosen network interface. It is also possible to add a correlation, but
+      this option is now deprecated due to the noticed bad behavior.
+    </div>
+
+    <section x-show="enabled" x-transition>
+      @fs.FloatSlider(fs.With(
+        fs.Label("Percent"),
+        fs.Unit("%"),
+      ))
+
+      @fs.FloatSlider(fs.With(
+        fs.Label("Correlation"),
+        fs.Unit("%"),
+        fs.Optional(true),
+      ))
+    </section>
+  </div>
+}
