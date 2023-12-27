@@ -11,6 +11,7 @@ import "io"
 import "bytes"
 
 import (
+	"github.com/codekoala/network-shaper/view/component"
 	fs "github.com/codekoala/network-shaper/view/component/floatslider"
 )
 
@@ -312,6 +313,10 @@ func RulesForm() templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = DelaySettings().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = component.RateLimitSettings().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
