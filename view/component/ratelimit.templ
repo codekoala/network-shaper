@@ -1,11 +1,20 @@
 package component
 
 import (
+	"fmt"
 	fs "github.com/codekoala/network-shaper/view/component/floatslider"
+	"github.com/codekoala/network-shaper/netem"
 )
 
-templ RateLimitSettings() {
-	<div class="bg-base-300 my-5 p-3 rounded-xl" x-data="{ enabled: true, reorder: true }">
+func GetRateLimitData(cfg *netem.Netem) string {
+	return fmt.Sprintf(
+    `{ enabled: %v }`,
+    cfg.HasRateLimitSettings(),
+  )
+}
+
+templ RateLimitSettings(cfg *netem.Netem) {
+	<div class="bg-base-300 my-5 p-3 rounded-xl" x-data={ GetRateLimitData(cfg) }>
 		<div class="form-control">
 			<label class="label cursor-pointer">
 				<span class="label-text text-lg font-bold">Rate Limit</span>

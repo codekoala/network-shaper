@@ -4,7 +4,7 @@ import "github.com/codekoala/network-shaper/netem"
 
 templ RulesForm(cfg *netem.Netem) {
   @DelaySettings(cfg)
-  @RateLimitSettings()
+  @RateLimitSettings(cfg)
   @CorruptionSettings()
   @DuplicationSettings()
   @PacketLossSettings()

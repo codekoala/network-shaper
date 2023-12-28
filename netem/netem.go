@@ -75,6 +75,10 @@ func (n *Netem) HasReorderSettings() bool {
 	return n.ReorderPct > 0 || n.ReorderCorr > 0 || n.ReorderGap > 0
 }
 
+func (n *Netem) HasRateLimitSettings() bool {
+	return n.Rate > 0 || n.RatePktOverhead != 0 || n.RateCellSize > 0 || n.RateCellOverhead != 0
+}
+
 // Parse method parses the netem state described by `rule`.
 func (n *Netem) Parse(rule string) {
 	n.ParseDelay(rule)
