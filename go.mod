@@ -3,7 +3,7 @@ module github.com/codekoala/network-shaper
 go 1.21.4
 
 require (
-	github.com/a-h/templ v0.2.476
+	github.com/a-h/templ v0.2.501
 	github.com/elazarl/go-bindata-assetfs v1.0.1
 	github.com/gofiber/fiber/v2 v2.51.0
 	github.com/rs/zerolog v1.31.0

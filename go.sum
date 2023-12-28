@@ -1,5 +1,7 @@
 github.com/a-h/templ v0.2.476 h1:+H4hP4CwK4kfJwXsE6kHeFWMGtcVOVoOm/I64uzARBk=
 github.com/a-h/templ v0.2.476/go.mod h1:zQ95mSyadNTGHv6k5Fm+wQU8zkBMMbHCHg7eAvUZKNM=
+github.com/a-h/templ v0.2.501 h1:9rIo5u+B+NDJIkbHGthckUGRguCuWKY/7ri8e2ckn9M=
+github.com/a-h/templ v0.2.501/go.mod h1:9gZxTLtRzM3gQxO8jr09Na0v8/jfliS97S9W5SScanM=
 github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=

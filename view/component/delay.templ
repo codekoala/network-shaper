@@ -1,95 +1,91 @@
 package component
 
 import (
-  fs "github.com/codekoala/network-shaper/view/component/floatslider"
+	fs "github.com/codekoala/network-shaper/view/component/floatslider"
 )
 
 templ DelaySettings() {
-  <div class="bg-base-300 my-5 p-3 rounded-xl" x-data="{ enabled: true, reorder: true }">
-    <div class="form-control">
-      <label class="label cursor-pointer">
-        <span class="label-text text-lg font-bold">Delay</span>
-        <input type="checkbox" class="toggle toggle-primary" x-model="enabled" />
-      </label>
-    </div>
-
-    <div>
-      Adds the chosen delay to the packets outgoing to chosen network interface.
-      The optional parameters allow to introduce a delay variation and a
-      correlation. Delay and jitter values are expressed in ms while correlation
-      is percentage.
-    </div>
-
-    <section x-show="enabled" x-transition>
-      @fs.FloatSlider(fs.With(
+	<div class="bg-base-300 my-5 p-3 rounded-xl" x-data="{ enabled: true, reorder: true }">
+		<div class="form-control">
+			<label class="label cursor-pointer">
+				<span class="label-text text-lg font-bold">Delay</span>
+				<input type="checkbox" class="toggle toggle-primary" x-model="enabled"/>
+			</label>
+		</div>
+		<div>
+			Adds the chosen delay to the packets outgoing to chosen network interface.
+			The optional parameters allow to introduce a delay variation and a
+			correlation. Delay and jitter values are expressed in ms while correlation
+			is percentage.
+		</div>
+		<section x-show="enabled" x-transition>
+			@fs.FloatSlider(fs.With(
         fs.Label("Time"),
         fs.Descr("Amount of time to delay each packet."),
         fs.Max(10000.0),
         fs.Step(1.0),
       ))
-
-      @fs.FloatSlider(fs.With(
+			@fs.FloatSlider(fs.With(
         fs.Label("Jitter"),
         fs.Descr("Delay each packet ± the jitter value."),
         fs.Max(10000.0),
         fs.Step(1.0),
         fs.Optional(true),
       ))
-
-      @fs.FloatSlider(fs.With(
+			@fs.FloatSlider(fs.With(
         fs.Label("Correlation"),
         fs.Descr("Amount that the next delay value depends on the previous delay value."),
         fs.Unit("%"),
         fs.Optional(true),
       ))
-
-      <div class="form-control">
-        <label class="label cursor-pointer">
-          <span class="label-text text-lg font-bold">Reorder Packets</span>
-          <input type="checkbox" class="toggle toggle-primary" x-model="reorder" />
-        </label>
-      </div>
-
-      <section x-show="reorder" x-transition class="p-3">
-        There are two ways to use this option (assuming 'delay 10ms' in the options list).
-
-        <div class="bg-slate-800 my-5 p-3 rounded-lg">
-          <pre><code>reorder 25% 50% gap 5</code></pre>
-        </div>
-
-        In this first example, the first 4 (gap - 1) packets are delayed by 10ms
-        and subsequent packets are sent immediately with a probability of 0.25
-        (with correlation of 50%) or delayed with a probability of 0.75. After a
-        packet is reordered, the process restarts i.e. the next 4 packets are
-        delayed and subsequent packets are sent immediately or delayed based on
-        reordering probability. To cause a repeatable pattern where every 5th
-        packet is reordered reliably, a reorder probability of 100% can be used.
-
-        <div class="bg-slate-800 my-5 p-3 rounded-lg">
-          <pre><code>reorder 25% 50%</code></pre>
-        </div>
-
-        In this second example 25% of packets are sent immediately (with
-        correlation of 50%) while the others are delayed by 10 ms.
-
-        @fs.FloatSlider(fs.With(
+			<div class="form-control">
+				<label class="label cursor-pointer">
+					<span class="label-text text-lg font-bold">Reorder Packets</span>
+					<input type="checkbox" class="toggle toggle-primary" x-model="reorder"/>
+				</label>
+			</div>
+			<section x-show="reorder" x-transition class="p-3">
+				<div class="my-5 w-11/12 mx-auto">
+					<div>
+						<span class="float-left px-2">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+						</span>
+						<span class="clear-right">
+							There are two ways to use this option (assuming 'delay 10ms' in the options list).
+						</span>
+					</div>
+					<div class="bg-slate-800 my-5 p-3 rounded-lg">
+						<pre><code>reorder 25% 50% gap 5</code></pre>
+					</div>
+					In this first example, the first 4 (gap - 1) packets are delayed by 10ms
+					and subsequent packets are sent immediately with a probability of 0.25
+					(with correlation of 50%) or delayed with a probability of 0.75. After a
+					packet is reordered, the process restarts i.e. the next 4 packets are
+					delayed and subsequent packets are sent immediately or delayed based on
+					reordering probability. To cause a repeatable pattern where every 5th
+					packet is reordered reliably, a reorder probability of 100% can be used.
+					<div class="bg-slate-800 my-5 p-3 rounded-lg">
+						<pre><code>reorder 25% 50%</code></pre>
+					</div>
+					In this second example 25% of packets are sent immediately (with
+					correlation of 50%) while the others are delayed by 10 ms.
+				</div>
+				@fs.FloatSlider(fs.With(
           fs.Label("Percent"),
           fs.Unit("%"),
         ))
-
-        @fs.FloatSlider(fs.With(
+				@fs.FloatSlider(fs.With(
           fs.Label("Correlation"),
           fs.Unit("%"),
           fs.Optional(true),
         ))
-
-        @fs.FloatSlider(fs.With(
+				@fs.FloatSlider(fs.With(
           fs.Label("Gap"),
           fs.Unit("pkts"),
           fs.Optional(true),
           fs.Descr("Reorder every nth packet."),
         ))
-      </section>
-    </section>
-  </div>
+			</section>
+		</section>
+	</div>
 }
