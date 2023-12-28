@@ -249,6 +249,7 @@ func DelaySettings(cfg *netem.Netem) templ.Component {
 		templ_7745c5c3_Err = fs.FloatSlider(fs.With(
 			fs.Label("Percent"),
 			fs.Unit("%"),
+			fs.Value(cfg.ReorderPct),
 		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -257,6 +258,7 @@ func DelaySettings(cfg *netem.Netem) templ.Component {
 			fs.Label("Correlation"),
 			fs.Unit("%"),
 			fs.Optional(true),
+			fs.Value(cfg.ReorderCorr),
 		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -264,8 +266,10 @@ func DelaySettings(cfg *netem.Netem) templ.Component {
 		templ_7745c5c3_Err = fs.FloatSlider(fs.With(
 			fs.Label("Gap"),
 			fs.Unit("pkts"),
+			fs.Step(1.0),
 			fs.Optional(true),
 			fs.Descr("Reorder every nth packet."),
+			fs.Value(float64(cfg.ReorderGap)),
 		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

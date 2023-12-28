@@ -86,17 +86,21 @@ templ DelaySettings(cfg *netem.Netem) {
 				@fs.FloatSlider(fs.With(
           fs.Label("Percent"),
           fs.Unit("%"),
+          fs.Value(cfg.ReorderPct),
         ))
 				@fs.FloatSlider(fs.With(
           fs.Label("Correlation"),
           fs.Unit("%"),
           fs.Optional(true),
+          fs.Value(cfg.ReorderCorr),
         ))
 				@fs.FloatSlider(fs.With(
           fs.Label("Gap"),
           fs.Unit("pkts"),
+          fs.Step(1.0),
           fs.Optional(true),
           fs.Descr("Reorder every nth packet."),
+          fs.Value(float64(cfg.ReorderGap)),
         ))
 			</section>
 		</section>
