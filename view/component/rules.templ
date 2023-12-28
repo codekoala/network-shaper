@@ -1,7 +1,9 @@
 package component
 
-templ RulesForm() {
-  @DelaySettings()
+import "github.com/codekoala/network-shaper/netem"
+
+templ RulesForm(cfg *netem.Netem) {
+  @DelaySettings(cfg)
   @RateLimitSettings()
   @CorruptionSettings()
   @DuplicationSettings()

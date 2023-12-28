@@ -1,16 +1,17 @@
 package netem
 
 import (
-	"log"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
-	// VALID_TIME_UNITS is a mapping of acceptable packet delay units based on
+	// ValidTimeUnits is a mapping of acceptable packet delay units based on
 	// tc(8)
-	VALID_TIME_UNITS = map[string]string{
+	ValidTimeUnits = map[string]string{
 		"usecs": "us",
 		"usec":  "us",
 		"us":    "us",
@@ -22,9 +23,9 @@ var (
 		"s":     "s",
 	}
 
-	// VALID_RATE_UNITS is a mapping of acceptable packet rate units based on
+	// ValidRateUnits is a mapping of acceptable packet rate units based on
 	// tc(8)
-	VALID_RATE_UNITS = map[string]string{
+	ValidRateUnits = map[string]string{
 		"bit":  "bit",
 		"kbit": "kbit",
 		"mbit": "mbit",
@@ -41,7 +42,7 @@ var (
 // GetTimeUnit is a helper function to get the correct unit of time that is
 // acceptable to tc, or to fallback to a default unit of time.
 func GetTimeUnit(unit, def string) string {
-	u, ok := VALID_TIME_UNITS[unit]
+	u, ok := ValidTimeUnits[unit]
 	if !ok {
 		u = def
 	}
@@ -52,7 +53,7 @@ func GetTimeUnit(unit, def string) string {
 // GetRateUnit is a helper function to get the correct unit of speed that is
 // acceptable to tc, or to fallback to a default unit of speed.
 func GetRateUnit(unit, def string) string {
-	u, ok := VALID_RATE_UNITS[unit]
+	u, ok := ValidRateUnits[unit]
 	if !ok {
 		u = def
 	}
@@ -65,7 +66,7 @@ func GetRateUnit(unit, def string) string {
 func ParseCurrentNetem(device string) *Netem {
 	out, err := exec.Command("tc", "qdisc", "show", "dev", device).Output()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("failed to parse current netem configuration")
 	}
 
 	rules := strings.ToLower(string(out))
@@ -87,13 +88,11 @@ func RemoveNetemConfig(device string) error {
 	cmd := exec.Command("tc", "qdisc", "del", "dev", device, "root")
 	out, err := cmd.CombinedOutput()
 	if err != nil && err.Error() != "exit status 2" {
-		log.Println("Failed to remove netem settings: " + err.Error())
-		log.Println(string(out))
+		log.Error().Err(err).Str("output", string(out)).Msg("failed to remove netem settings")
 		return err
 	}
 
-	log.Println("Successfully removed netem settings for", device)
-	SaveConfig(config, *cfgPath)
+	log.Info().Str("device", device).Msg("successfully removed netem settings")
 
 	return nil
 }
@@ -112,6 +111,7 @@ func f2str(val float64) string {
 	return strconv.FormatFloat(val, 'f', 2, 32)
 }
 
+// UnitToMs function parses units included in netem output to consistently be milliseconds.
 func UnitToMs(value float64, unit string) (float64, string) {
 	if unit == "us" {
 		value /= 1000

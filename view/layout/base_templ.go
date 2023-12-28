@@ -100,7 +100,7 @@ func Base(state model.GlobalState, content templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Var8 := `Copyright &copy; 2015-2023 Josh VanderLinden`
+		templ_7745c5c3_Var8 := `Copyright &copy; 2015-2024 Josh VanderLinden`
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

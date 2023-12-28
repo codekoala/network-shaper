@@ -1,34 +1,36 @@
+// Package netem provides utilities for parsing and setting netem configuration.
 package netem
 
 import (
-	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
-	// DELAY_RE is used to parse packet delay configuration from tc
-	DELAY_RE = regexp.MustCompile(`delay\s+(?P<delay>\d+(?:\.\d+)?)(?P<delay_unit>(?:m|u)?s)(?:\s+(?P<delay_jitter>\d+(?:\.\d+)?)(?P<delay_jitter_unit>(?:m|u)?s)(?:\s+(?P<delay_corr>\d+(?:\.\d+)?)%)?)?`)
+	// DelayRE is used to parse packet delay configuration from tc
+	DelayRE = regexp.MustCompile(`delay\s+(?P<delay>\d+(?:\.\d+)?)(?P<delay_unit>(?:m|u)?s)(?:\s+(?P<delay_jitter>\d+(?:\.\d+)?)(?P<delay_jitter_unit>(?:m|u)?s)(?:\s+(?P<delay_corr>\d+(?:\.\d+)?)%)?)?`)
 
-	// LOSS_RE is used to parse packet loss configuration from tc
-	LOSS_RE = regexp.MustCompile(`loss\s+(?P<loss_pct>\d+(?:\.\d+)?)%(?:\s+(?P<loss_corr>\d+(?:\.\d+)?)%)?`)
+	// LossRE is used to parse packet loss configuration from tc
+	LossRE = regexp.MustCompile(`loss\s+(?P<loss_pct>\d+(?:\.\d+)?)%(?:\s+(?P<loss_corr>\d+(?:\.\d+)?)%)?`)
 
-	// DUPE_RE is used to parse packet duplication configuration from tc
-	DUPE_RE = regexp.MustCompile(`duplicate\s+(?P<dup_pct>\d+(?:\.\d+)?)%(?:\s+(?P<dup_corr>\d+(?:\.\d+)?)%)?`)
+	// DupeRE is used to parse packet duplication configuration from tc
+	DupeRE = regexp.MustCompile(`duplicate\s+(?P<dup_pct>\d+(?:\.\d+)?)%(?:\s+(?P<dup_corr>\d+(?:\.\d+)?)%)?`)
 
-	// REORDER_RE is used to parse packet reordering configuration from tc
-	REORDER_RE = regexp.MustCompile(`reorder\s+(?P<reorder_pct>\d+(?:\.\d+)?)%(?:\s+(?P<reorder_corr>\d+(?:\.\d+)?)%)?`)
+	// ReorderRE is used to parse packet reordering configuration from tc
+	ReorderRE = regexp.MustCompile(`reorder\s+(?P<reorder_pct>\d+(?:\.\d+)?)%(?:\s+(?P<reorder_corr>\d+(?:\.\d+)?)%)?`)
 
-	// GAP_RE is used to parse packet reordering gap configuration from tc
-	GAP_RE = regexp.MustCompile(`gap\s+(?P<reorder_gap>\d+)`)
+	// GapRE is used to parse packet reordering gap configuration from tc
+	GapRE = regexp.MustCompile(`gap\s+(?P<reorder_gap>\d+)`)
 
-	// CORRUPT_RE is used to parse packet corruption configuration from tc
-	CORRUPT_RE = regexp.MustCompile(`corrupt\s+(?P<corrupt_pct>\d+(?:\.\d+)?)%(?:\s+(?P<corrupt_corr>\d+(?:\.\d+)?)%)?`)
+	// CorruptRE is used to parse packet corruption configuration from tc
+	CorruptRE = regexp.MustCompile(`corrupt\s+(?P<corrupt_pct>\d+(?:\.\d+)?)%(?:\s+(?P<corrupt_corr>\d+(?:\.\d+)?)%)?`)
 
-	// RATE_RE is used to parse rate limiting configuration from tc
-	RATE_RE = regexp.MustCompile(`rate\s+(?P<rate>\d+(?:\.\d+)?)(?P<rate_unit>bit|kbit|mbit|gbit|tbit|bps|kbps|mbps|gbps|tbps)(?:\s+packetoverhead\s+(?P<rate_packet_overhead>\d+)(?:\s+cellsize\s+(?P<rate_cell_size>\d+)(?:\s+celloverhead\s+(?P<rate_cell_overhead>\d+))?)?)?`)
+	// RateRE is used to parse rate limiting configuration from tc
+	RateRE = regexp.MustCompile(`rate\s+(?P<rate>\d+(?:\.\d+)?)(?P<rate_unit>bit|kbit|mbit|gbit|tbit|bps|kbps|mbps|gbps|tbps)(?:\s+packetoverhead\s+(?P<rate_packet_overhead>\d+)(?:\s+cellsize\s+(?P<rate_cell_size>\d+)(?:\s+celloverhead\s+(?P<rate_cell_overhead>\d+))?)?)?`)
 )
 
 // Netem represents the netem configuration of a specific network interface
@@ -65,6 +67,15 @@ type Netem struct {
 	RateCellOverhead int64   `json:"rate_cell_overhead"`
 }
 
+func (n *Netem) HasDelaySettings() bool {
+	return n.Delay > 0 || n.DelayJitter > 0 || n.DelayCorr > 0 || n.HasReorderSettings()
+}
+
+func (n *Netem) HasReorderSettings() bool {
+	return n.ReorderPct > 0 || n.ReorderCorr > 0 || n.ReorderGap > 0
+}
+
+// Parse method parses the netem state described by `rule`.
 func (n *Netem) Parse(rule string) {
 	n.ParseDelay(rule)
 	n.ParseLoss(rule)
@@ -74,11 +85,14 @@ func (n *Netem) Parse(rule string) {
 	n.ParseRate(rule)
 }
 
+// Apply method configures netem for the specified device.
 func (n *Netem) Apply(device string) error {
 	var (
 		args []string
 		unit string
 	)
+
+	l := log.With().Str("device", device).Logger()
 
 	if n.Delay > 0 {
 		unit = GetTimeUnit(n.DelayUnit, "ms")
@@ -160,10 +174,10 @@ func (n *Netem) Apply(device string) error {
 		defArgs := []string{"qdisc", "replace", "dev", device, "root", "netem"}
 		args = append(defArgs, args...)
 
-		log.Println("Applying: tc", strings.Join(args, " "))
+		l.Info().Str("rule", strings.Join(args, " ")).Msg("applying rule")
 		out, err := exec.Command("tc", args...).CombinedOutput()
 		if err != nil {
-			log.Println("Error: ", string(out))
+			l.Error().Err(err).Str("output", string(out)).Msg("failed to apply rule")
 			return err
 		}
 
@@ -175,8 +189,9 @@ func (n *Netem) Apply(device string) error {
 	return RemoveNetemConfig(device)
 }
 
+// ParseDelay method attempts to parse the delay settings from a netem rule string.
 func (n *Netem) ParseDelay(rule string) {
-	match := DELAY_RE.FindStringSubmatch(rule)
+	match := DelayRE.FindStringSubmatch(rule)
 	if len(match) >= 3 {
 		n.Delay, n.DelayUnit = UnitToMs(str2f(match[1]), match[2])
 
@@ -190,8 +205,9 @@ func (n *Netem) ParseDelay(rule string) {
 	}
 }
 
+// ParseLoss method attempts to parse the packet loss settings from a netem rule string.
 func (n *Netem) ParseLoss(rule string) {
-	match := LOSS_RE.FindStringSubmatch(rule)
+	match := LossRE.FindStringSubmatch(rule)
 	if len(match) >= 2 {
 		n.LossPct = str2f(match[1])
 
@@ -201,8 +217,9 @@ func (n *Netem) ParseLoss(rule string) {
 	}
 }
 
+// ParseDuplication method attempts to parse the packet duplication settings from a netem rule string.
 func (n *Netem) ParseDuplication(rule string) {
-	match := DUPE_RE.FindStringSubmatch(rule)
+	match := DupeRE.FindStringSubmatch(rule)
 	if len(match) >= 2 {
 		n.DupePct = str2f(match[1])
 
@@ -212,8 +229,9 @@ func (n *Netem) ParseDuplication(rule string) {
 	}
 }
 
+// ParseCorruption method attempts to parse the corruption settings from a netem rule string.
 func (n *Netem) ParseCorruption(rule string) {
-	match := CORRUPT_RE.FindStringSubmatch(rule)
+	match := CorruptRE.FindStringSubmatch(rule)
 	if len(match) >= 2 {
 		n.CorruptPct = str2f(match[1])
 
@@ -223,8 +241,9 @@ func (n *Netem) ParseCorruption(rule string) {
 	}
 }
 
+// ParseReorder method attempts to parse the packet reordering settings from a netem rule string.
 func (n *Netem) ParseReorder(rule string) {
-	match := REORDER_RE.FindStringSubmatch(rule)
+	match := ReorderRE.FindStringSubmatch(rule)
 	if len(match) >= 2 {
 		n.ReorderPct = str2f(match[1])
 
@@ -232,15 +251,16 @@ func (n *Netem) ParseReorder(rule string) {
 			n.ReorderCorr = str2f(match[2])
 		}
 
-		match = GAP_RE.FindStringSubmatch(rule)
+		match = GapRE.FindStringSubmatch(rule)
 		if len(match) == 2 {
 			n.ReorderGap = str2i(match[1])
 		}
 	}
 }
 
+// ParseRate method attempts to parse the rate limiting settings from a netem rule string.
 func (n *Netem) ParseRate(rule string) {
-	match := RATE_RE.FindStringSubmatch(rule)
+	match := RateRE.FindStringSubmatch(rule)
 	if len(match) >= 3 {
 		n.Rate = str2f(match[1])
 		n.RateUnit = match[2]

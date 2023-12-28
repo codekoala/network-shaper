@@ -11,10 +11,20 @@ import "io"
 import "bytes"
 
 import (
+	"fmt"
+	"github.com/codekoala/network-shaper/netem"
 	fs "github.com/codekoala/network-shaper/view/component/floatslider"
 )
 
-func DelaySettings() templ.Component {
+func GetDelayData(cfg *netem.Netem) string {
+	return fmt.Sprintf(
+		`{ enabled: %v, reorder: %v }`,
+		cfg.HasDelaySettings(),
+		cfg.HasReorderSettings(),
+	)
+}
+
+func DelaySettings(cfg *netem.Netem) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -27,7 +37,15 @@ func DelaySettings() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"bg-base-300 my-5 p-3 rounded-xl\" x-data=\"{ enabled: true, reorder: true }\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text text-lg font-bold\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"bg-base-300 my-5 p-3 rounded-xl\" x-data=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(GetDelayData(cfg)))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text text-lg font-bold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -81,6 +99,7 @@ func DelaySettings() templ.Component {
 			fs.Descr("Amount of time to delay each packet."),
 			fs.Max(10000.0),
 			fs.Step(1.0),
+			fs.Value(cfg.Delay),
 		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -91,6 +110,7 @@ func DelaySettings() templ.Component {
 			fs.Max(10000.0),
 			fs.Step(1.0),
 			fs.Optional(true),
+			fs.Value(cfg.DelayJitter),
 		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -100,6 +120,7 @@ func DelaySettings() templ.Component {
 			fs.Descr("Amount that the next delay value depends on the previous delay value."),
 			fs.Unit("%"),
 			fs.Optional(true),
+			fs.Value(cfg.DelayCorr),
 		)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

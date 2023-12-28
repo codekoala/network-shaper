@@ -1,5 +1,8 @@
-run:
+run: generate
 	go run ./cmd/network-shaper
+
+generate:
+	go generate ./...
 
 css:
 	tailwindcss -i ./view/site.css -o ./static/site.css $(ARGS)

@@ -1,11 +1,21 @@
 package component
 
 import (
+	"fmt"
 	fs "github.com/codekoala/network-shaper/view/component/floatslider"
+	"github.com/codekoala/network-shaper/netem"
 )
 
-templ DelaySettings() {
-	<div class="bg-base-300 my-5 p-3 rounded-xl" x-data="{ enabled: true, reorder: true }">
+func GetDelayData(cfg *netem.Netem) string {
+	return fmt.Sprintf(
+    `{ enabled: %v, reorder: %v }`,
+    cfg.HasDelaySettings(),
+    cfg.HasReorderSettings(),
+  )
+}
+
+templ DelaySettings(cfg *netem.Netem) {
+	<div class="bg-base-300 my-5 p-3 rounded-xl" x-data={ GetDelayData(cfg) }>
 		<div class="form-control">
 			<label class="label cursor-pointer">
 				<span class="label-text text-lg font-bold">Delay</span>
@@ -24,6 +34,7 @@ templ DelaySettings() {
         fs.Descr("Amount of time to delay each packet."),
         fs.Max(10000.0),
         fs.Step(1.0),
+        fs.Value(cfg.Delay),
       ))
 			@fs.FloatSlider(fs.With(
         fs.Label("Jitter"),
@@ -31,12 +42,14 @@ templ DelaySettings() {
         fs.Max(10000.0),
         fs.Step(1.0),
         fs.Optional(true),
+        fs.Value(cfg.DelayJitter),
       ))
 			@fs.FloatSlider(fs.With(
         fs.Label("Correlation"),
         fs.Descr("Amount that the next delay value depends on the previous delay value."),
         fs.Unit("%"),
         fs.Optional(true),
+        fs.Value(cfg.DelayCorr),
       ))
 			<div class="form-control">
 				<label class="label cursor-pointer">

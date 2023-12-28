@@ -2,9 +2,10 @@ package view
 
 import (
   "github.com/codekoala/network-shaper/view/component"
+	"github.com/codekoala/network-shaper/netem"
 )
 
-templ InboundRulesForm() {
+templ InboundRulesForm(cfg *netem.Netem) {
   <div>
     <h1>Inbound Traffic Shaping</h1>
   </div>
@@ -13,5 +14,5 @@ templ InboundRulesForm() {
     These settings apply to traffic entering the network controlled by the network shaper.
   </div>
 
-  @component.RulesForm()
+  @component.RulesForm(cfg)
 }

@@ -2,7 +2,7 @@
 
 Everything in this repo is BSD style license unless otherwise specified.
 
-Copyright (c) 2015-2023 Josh VanderLinden. All rights reserved.
+Copyright (c) 2015-2024 Josh VanderLinden. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

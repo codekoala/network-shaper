@@ -1,9 +1,11 @@
+// Package main is the primary entrypoint for the Network Shaper tool
 package main
 
 import (
 	"os"
 
 	"github.com/a-h/templ"
+	networkshaper "github.com/codekoala/network-shaper"
 	"github.com/codekoala/network-shaper/view"
 	"github.com/codekoala/network-shaper/view/layout"
 	"github.com/codekoala/network-shaper/view/model"
@@ -11,6 +13,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
+
+var cfg = networkshaper.GetDefaultConfig()
 
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -23,10 +27,10 @@ func main() {
 		Browse:    false,
 	})
 
-	app.Get("/", VIndex)
-	app.Get("/inbound", VInbound)
-	app.Get("/outbound", VOutbound)
-	app.Get("/devices", VDevices)
+	app.Get("/", vIndex)
+	app.Get("/inbound", vInbound)
+	app.Get("/outbound", vOutbound)
+	app.Get("/devices", vDevices)
 
 	if err := app.Listen(":3000"); err != nil {
 		log.Fatal().Err(err).Msg("error running server")
@@ -45,18 +49,18 @@ func Render(c *fiber.Ctx, comp templ.Component) (err error) {
 	return err
 }
 
-func VIndex(c *fiber.Ctx) error {
+func vIndex(c *fiber.Ctx) error {
 	return Render(c, view.Foo())
 }
 
-func VInbound(c *fiber.Ctx) error {
-	return Render(c, view.InboundRulesForm())
+func vInbound(c *fiber.Ctx) error {
+	return Render(c, view.InboundRulesForm(&cfg.Inbound.Netem))
 }
 
-func VOutbound(c *fiber.Ctx) error {
-	return Render(c, view.OutboundRulesForm())
+func vOutbound(c *fiber.Ctx) error {
+	return Render(c, view.OutboundRulesForm(&cfg.Outbound.Netem))
 }
 
-func VDevices(c *fiber.Ctx) error {
+func vDevices(c *fiber.Ctx) error {
 	return Render(c, view.Foo())
 }
