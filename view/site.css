@@ -3,6 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  h1 {
+    @apply text-3xl font-bold capitalize font-mono;
+  }
+
+  h2 {
+    @apply text-2xl font-bold;
+  }
+
+  h3 {
+    @apply text-xl font-bold;
+  }
 }
 
 @layer components {
