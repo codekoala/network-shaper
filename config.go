@@ -1,3 +1,4 @@
+// Package networkshaper defines top-level configuration for the Network Shaper tool
 package networkshaper
 
 import (
@@ -9,14 +10,16 @@ import (
 )
 
 type (
+	// ShaperConfig defines the top-level configuration for the Network Shaper tool
 	ShaperConfig struct {
 		Host      string      `json:"host"`
 		Port      int         `json:"port"`
-		AllowNoIp bool        `json:"allow_no_ip"`
+		AllowNoIP bool        `json:"allow_no_ip"`
 		Inbound   NetemConfig `json:"inbound"`
 		Outbound  NetemConfig `json:"outbound"`
 	}
 
+	// NetemConfig defines the netem configuration for a device
 	NetemConfig struct {
 		Device string      `json:"device"`
 		Label  string      `json:"label"`
@@ -29,7 +32,7 @@ func GetDefaultConfig() *ShaperConfig {
 	return &ShaperConfig{
 		Host:      "0.0.0.0",
 		Port:      80,
-		AllowNoIp: false,
+		AllowNoIP: false,
 		Inbound: NetemConfig{Device: "eth0", Label: "Inbound", Netem: netem.Netem{
 			Delay:       123.45,
 			DelayJitter: 34.5,

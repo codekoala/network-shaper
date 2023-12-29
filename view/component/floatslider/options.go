@@ -1,5 +1,8 @@
+// Package floatslider defines the float slider component
 package floatslider
 
+// Opts defines the options for the float slider
+//
 //templ:component-opts
 type Opts struct {
 	Label    string

@@ -16,6 +16,7 @@ import (
 
 var cfg = networkshaper.GetDefaultConfig()
 
+// main is the entrypoint for the Network Shaper tool
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
@@ -37,6 +38,7 @@ func main() {
 	}
 }
 
+// Render a template
 func Render(c *fiber.Ctx, comp templ.Component) (err error) {
 	page := layout.Base(
 		model.StateFromCtx(c),

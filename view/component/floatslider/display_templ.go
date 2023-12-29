@@ -10,6 +10,14 @@ import "context"
 import "io"
 import "bytes"
 
+import (
+	"fmt"
+)
+
+func GetData(opts *Opts) string {
+	return fmt.Sprintf("{ value: %s }", opts.ValueStr())
+}
+
 func FloatSlider(opts *Opts) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
@@ -27,7 +35,7 @@ func FloatSlider(opts *Opts) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(opts.AlpineValue()))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(GetData(opts)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

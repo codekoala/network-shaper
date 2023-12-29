@@ -67,14 +67,17 @@ type Netem struct {
 	RateCellOverhead int64   `json:"rate_cell_overhead"`
 }
 
+// HasDelaySettings method returns true if any delay settings are set
 func (n *Netem) HasDelaySettings() bool {
 	return n.Delay > 0 || n.DelayJitter > 0 || n.DelayCorr > 0 || n.HasReorderSettings()
 }
 
+// HasReorderSettings method returns true if any reorder settings are set
 func (n *Netem) HasReorderSettings() bool {
 	return n.ReorderPct > 0 || n.ReorderCorr > 0 || n.ReorderGap > 0
 }
 
+// HasRateLimitSettings method returns true if any rate limit settings are set
 func (n *Netem) HasRateLimitSettings() bool {
 	return n.Rate > 0 || n.RatePktOverhead != 0 || n.RateCellSize > 0 || n.RateCellOverhead != 0
 }

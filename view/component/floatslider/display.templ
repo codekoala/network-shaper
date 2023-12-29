@@ -1,7 +1,15 @@
 package floatslider
 
+import (
+  "fmt"
+)
+
+func GetData(opts *Opts) string {
+	return fmt.Sprintf("{ value: %s }", opts.ValueStr())
+}
+
 templ FloatSlider(opts *Opts) {
-  <div class="grid grid-cols-5 gap-2 form-control my-2" x-data={ opts.AlpineValue() }>
+  <div class="grid grid-cols-5 gap-2 form-control my-2" x-data={ GetData(opts) }>
     <div class="align-middle">
       <label class="label" for="delay_time">
         <span class="label-text text-lg">{ opts.Label }:</span>
