@@ -67,7 +67,7 @@ templ DelaySettings(cfg *netem.Netem) {
 							There are two ways to use this option (assuming 'delay 10ms' in the options list).
 						</span>
 					</div>
-					<div class="bg-slate-800 my-5 p-3 rounded-lg">
+					<div class="bg-base-100 my-5 p-3 rounded-lg">
 						<pre><code>reorder 25% 50% gap 5</code></pre>
 					</div>
 					In this first example, the first 4 (gap - 1) packets are delayed by 10ms
@@ -77,7 +77,7 @@ templ DelaySettings(cfg *netem.Netem) {
 					delayed and subsequent packets are sent immediately or delayed based on
 					reordering probability. To cause a repeatable pattern where every 5th
 					packet is reordered reliably, a reorder probability of 100% can be used.
-					<div class="bg-slate-800 my-5 p-3 rounded-lg">
+					<div class="bg-base-100 my-5 p-3 rounded-lg">
 						<pre><code>reorder 25% 50%</code></pre>
 					</div>
 					In this second example 25% of packets are sent immediately (with
