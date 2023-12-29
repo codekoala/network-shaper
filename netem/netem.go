@@ -82,6 +82,21 @@ func (n *Netem) HasRateLimitSettings() bool {
 	return n.Rate > 0 || n.RatePktOverhead != 0 || n.RateCellSize > 0 || n.RateCellOverhead != 0
 }
 
+// HasCorruptionSettings method returns true if any corruption settings are set
+func (n *Netem) HasCorruptionSettings() bool {
+	return n.CorruptPct > 0 || n.CorruptCorr > 0
+}
+
+// HasDuplicationSettings method returns true if any duplication settings are set
+func (n *Netem) HasDuplicationSettings() bool {
+	return n.DupePct > 0 || n.DupeCorr > 0
+}
+
+// HasLossSettings method returns true if any loss settings are set
+func (n *Netem) HasLossSettings() bool {
+	return n.LossPct > 0 || n.LossCorr > 0
+}
+
 // Parse method parses the netem state described by `rule`.
 func (n *Netem) Parse(rule string) {
 	n.ParseDelay(rule)

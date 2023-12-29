@@ -33,15 +33,15 @@ func RulesForm(cfg *netem.Netem) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = CorruptionSettings().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = CorruptionSettings(cfg).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DuplicationSettings().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DuplicationSettings(cfg).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PacketLossSettings().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = PacketLossSettings(cfg).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
