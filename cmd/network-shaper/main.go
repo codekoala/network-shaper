@@ -10,17 +10,22 @@ import (
 	"github.com/codekoala/network-shaper/view/layout"
 	"github.com/codekoala/network-shaper/view/model"
 	fiber "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-var cfg = networkshaper.GetDefaultConfig()
+var (
+	cfg   = networkshaper.GetDefaultConfig()
+	store *session.Store
+)
 
 // main is the entrypoint for the Network Shaper tool
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	app := fiber.New()
+	store = session.New()
 
 	app.Static("/static", "./static", fiber.Static{
 		Compress:  true,
@@ -33,6 +38,21 @@ func main() {
 	app.Get("/outbound", vOutbound)
 	app.Get("/devices", vDevices)
 
+	app.Post("/theme", func(c *fiber.Ctx) error {
+		theme := c.FormValue("theme")
+		log.Info().Str("theme", theme).Msg("set theme")
+		sess, err := store.Get(c)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get session")
+		}
+		if theme == "" {
+			theme = model.DarkTheme
+		}
+		sess.Set("theme", theme)
+		sess.Save()
+		return c.Redirect("/")
+	})
+
 	if err := app.Listen(":3000"); err != nil {
 		log.Fatal().Err(err).Msg("error running server")
 	}
@@ -40,8 +60,13 @@ func main() {
 
 // Render a template
 func Render(c *fiber.Ctx, comp templ.Component) (err error) {
+	sess, err := store.Get(c)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get session")
+	}
+
 	page := layout.Base(
-		model.StateFromCtx(c),
+		model.StateFromCtx(c, sess),
 		comp,
 	)
 

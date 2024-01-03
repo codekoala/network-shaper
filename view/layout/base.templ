@@ -1,13 +1,21 @@
 package layout
 
 import (
+  "fmt"
 	"github.com/codekoala/network-shaper/view/component"
 	"github.com/codekoala/network-shaper/view/model"
 )
 
+func GetBaseData(state model.GlobalState) string {
+  return fmt.Sprintf(
+    `{ lightTheme: $persist(%v) }`,
+    state.Theme == "nord",
+  )
+}
+
 templ Base(state model.GlobalState, content templ.Component) {
 	<!DOCTYPE html>
-	<html>
+	<html data-theme={ state.Theme }>
 		<head>
 			<title>Network Shaper - { state.GetTitle() }</title>
 			<script src="/static/htmx.min.js" defer></script>
@@ -17,7 +25,7 @@ templ Base(state model.GlobalState, content templ.Component) {
 			<link href="/static/daisyui.css" rel="stylesheet"/>
 			<link href="/static/site.css" rel="stylesheet"/>
 		</head>
-		<body x-data="{ lightTheme: $persist(false) }">
+		<body x-data={ GetBaseData(state) }>
 			<div
 				class="bg-base-200 container mx-auto my-3 w-9/12 max-w-5xl rounded-xl p-5 shadow-xl"
 			>
@@ -42,7 +50,7 @@ templ Base(state model.GlobalState, content templ.Component) {
 					<div class="basis-1/12 mx-auto py-2">
 						<label class="flex cursor-pointer gap-2">
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-							<input type="checkbox" value="nord" class="toggle theme-controller" x-model="lightTheme" />
+							<input name="theme" type="checkbox" value="nord" class="toggle theme-controller" x-model="lightTheme" hx-post="/theme" />
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"></path></svg>
 						</label>
 					</div>

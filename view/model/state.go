@@ -2,12 +2,14 @@ package model
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 type (
 	GlobalState struct {
 		Pages map[string]Page
 		Nav   []Page
+		Theme string
 
 		ctx *fiber.Ctx
 	}
@@ -16,6 +18,11 @@ type (
 		Path  string
 		Title string
 	}
+)
+
+const (
+	DarkTheme  = "night"
+	LightTheme = "nord"
 )
 
 var (
@@ -35,12 +42,17 @@ func RegisterPage(page Page) {
 	Nav = append(Nav, page)
 }
 
-func StateFromCtx(c *fiber.Ctx) (gs GlobalState) {
+func StateFromCtx(c *fiber.Ctx, sess *session.Session) (gs GlobalState) {
 	gs = GlobalState{
 		Pages: Pages,
 		Nav:   Nav,
 		ctx:   c,
 	}
+	if gs.Theme, _ = sess.Get("theme").(string); gs.Theme == "" {
+		// default to dark theme
+		gs.Theme = DarkTheme
+	}
+
 	return gs
 }
 
