@@ -9,3 +9,4 @@ server/bindata*.go
 *.rpm
 *.tar.xz*
 *.fiber.gz
+*_templ.go
