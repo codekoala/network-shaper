@@ -7,6 +7,7 @@ import (
 	"github.com/a-h/templ"
 	networkshaper "github.com/codekoala/network-shaper"
 	"github.com/codekoala/network-shaper/view"
+	"github.com/codekoala/network-shaper/view/component"
 	"github.com/codekoala/network-shaper/view/layout"
 	"github.com/codekoala/network-shaper/view/model"
 	fiber "github.com/gofiber/fiber/v2"
@@ -50,7 +51,7 @@ func main() {
 		}
 		sess.Set("theme", theme)
 		sess.Save()
-		return c.Redirect("/")
+		return RenderPartial(c, component.Theme(GetState(c)), true)
 	})
 
 	if err := app.Listen(":3000"); err != nil {
@@ -60,15 +61,26 @@ func main() {
 
 // Render a template
 func Render(c *fiber.Ctx, comp templ.Component) (err error) {
+	return RenderPartial(c, comp, false)
+}
+
+func GetState(c *fiber.Ctx) model.GlobalState {
 	sess, err := store.Get(c)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get session")
 	}
+	return model.StateFromCtx(c, sess)
+}
 
-	page := layout.Base(
-		model.StateFromCtx(c, sess),
-		comp,
-	)
+func RenderPartial(c *fiber.Ctx, comp templ.Component, partial bool) (err error) {
+	state := GetState(c)
+
+	var page templ.Component
+	if partial {
+		page = comp
+	} else {
+		page = layout.Base(state, comp)
+	}
 
 	err = page.Render(c.Context(), c)
 	c.Response().Header.SetContentType("text/html; charset=utf-8")
