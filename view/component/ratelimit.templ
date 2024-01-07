@@ -33,6 +33,7 @@ templ RateLimitSettings(cfg *netem.Netem) {
 				can also add artificial delay.
 			</div>
 			@fs.FloatSlider(fs.With(
+        fs.Name("rate"),
         fs.Label("Rate"),
         fs.Descr("Maximum bitrate in kilobits per second."),
         fs.Unit("kb/s"),
@@ -40,6 +41,7 @@ templ RateLimitSettings(cfg *netem.Netem) {
         fs.Step(1.0),
       ))
 			@fs.FloatSlider(fs.With(
+        fs.Name("rate_pkt_overhead"),
         fs.Label("Packet Overhead"),
         fs.Descr(`Per packet overhead and can be negative. A positive
         value can be used to simulate additional link layer headers. A negative
@@ -52,6 +54,7 @@ templ RateLimitSettings(cfg *netem.Netem) {
         fs.Optional(true),
       ))
 			@fs.FloatSlider(fs.With(
+        fs.Name("rate_cell_size"),
         fs.Label("Cell size"),
         fs.Descr(`Can be used to simulate link layer schemes. ATM, for
         example, has an payload cell size of 48 bytes and 5 byte per cell
@@ -64,6 +67,7 @@ templ RateLimitSettings(cfg *netem.Netem) {
         fs.Optional(true),
       ))
 			@fs.FloatSlider(fs.With(
+        fs.Name("rate_cell_overhead"),
         fs.Label("Cell overhead"),
         fs.Descr(`Can be used to specify per cell overhead--5 for our
         ATM example. Cell overhead can be negative, but use negative values

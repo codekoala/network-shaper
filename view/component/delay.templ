@@ -8,10 +8,10 @@ import (
 
 func GetDelayData(cfg *netem.Netem) string {
 	return fmt.Sprintf(
-    `{ enabled: %v, reorder: %v }`,
-    cfg.HasDelaySettings(),
-    cfg.HasReorderSettings(),
-  )
+		`{ enabled: %v, reorder: %v }`,
+		cfg.HasDelaySettings(),
+		cfg.HasReorderSettings(),
+	)
 }
 
 templ DelaySettings(cfg *netem.Netem) {
@@ -30,6 +30,7 @@ templ DelaySettings(cfg *netem.Netem) {
 		</div>
 		<section x-show="enabled" x-transition>
 			@fs.FloatSlider(fs.With(
+        fs.Name("delay"),
         fs.Label("Time"),
         fs.Descr("Amount of time to delay each packet."),
         fs.Max(10000.0),
@@ -37,6 +38,7 @@ templ DelaySettings(cfg *netem.Netem) {
         fs.Value(cfg.Delay),
       ))
 			@fs.FloatSlider(fs.With(
+        fs.Name("delay_jitter"),
         fs.Label("Jitter"),
         fs.Descr("Delay each packet ± the jitter value."),
         fs.Max(10000.0),
@@ -45,6 +47,7 @@ templ DelaySettings(cfg *netem.Netem) {
         fs.Value(cfg.DelayJitter),
       ))
 			@fs.FloatSlider(fs.With(
+        fs.Name("delay_corr"),
         fs.Label("Correlation"),
         fs.Descr("Amount that the next delay value depends on the previous delay value."),
         fs.Unit("%"),
@@ -84,17 +87,20 @@ templ DelaySettings(cfg *netem.Netem) {
 					correlation of 50%) while the others are delayed by 10 ms.
 				</div>
 				@fs.FloatSlider(fs.With(
+          fs.Name("reorder_pct"),
           fs.Label("Percent"),
           fs.Unit("%"),
           fs.Value(cfg.ReorderPct),
         ))
 				@fs.FloatSlider(fs.With(
+          fs.Name("reorder_corr"),
           fs.Label("Correlation"),
           fs.Unit("%"),
           fs.Optional(true),
           fs.Value(cfg.ReorderCorr),
         ))
 				@fs.FloatSlider(fs.With(
+          fs.Name("reorder_gap"),
           fs.Label("Gap"),
           fs.Unit("pkts"),
           fs.Step(1.0),

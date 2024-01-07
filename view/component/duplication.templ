@@ -27,10 +27,12 @@ templ DuplicationSettings(cfg *netem.Netem) {
 		</div>
 		<section x-show="enabled" x-transition>
 			@fs.FloatSlider(fs.With(
+        fs.Name("dupe_pct"),
         fs.Label("Percent"),
         fs.Unit("%"),
       ))
 			@fs.FloatSlider(fs.With(
+         fs.Name("dupe_corr"),
         fs.Label("Correlation"),
         fs.Unit("%"),
         fs.Optional(true),

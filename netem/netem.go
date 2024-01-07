@@ -67,6 +67,101 @@ type Netem struct {
 	RateCellOverhead int64   `json:"rate_cell_overhead"`
 }
 
+func (n *Netem) Clone() *Netem {
+	return &Netem{
+		Delay:            n.Delay,
+		DelayUnit:        n.DelayUnit,
+		DelayJitter:      n.DelayJitter,
+		DelayJitterUnit:  n.DelayJitterUnit,
+		DelayCorr:        n.DelayCorr,
+		LossPct:          n.LossPct,
+		LossCorr:         n.LossCorr,
+		DupePct:          n.DupePct,
+		DupeCorr:         n.DupeCorr,
+		CorruptPct:       n.CorruptPct,
+		CorruptCorr:      n.CorruptCorr,
+		ReorderPct:       n.ReorderPct,
+		ReorderCorr:      n.ReorderCorr,
+		ReorderGap:       n.ReorderGap,
+		Rate:             n.Rate,
+		RateUnit:         n.RateUnit,
+		RatePktOverhead:  n.RatePktOverhead,
+		RateCellSize:     n.RateCellSize,
+		RateCellOverhead: n.RateCellOverhead,
+	}
+}
+
+// Diff returns the difference between two Netem objects
+func (n *Netem) Diff(other *Netem) map[string]any {
+	diff := make(map[string]any)
+
+	if n.Delay != other.Delay {
+		diff["delay"] = other.Delay
+	}
+
+	if n.DelayJitter != other.DelayJitter {
+		diff["delay_jitter"] = other.DelayJitter
+	}
+
+	if n.DelayCorr != other.DelayCorr {
+		diff["delay_corr"] = other.DelayCorr
+	}
+
+	if n.LossPct != other.LossPct {
+		diff["loss_pct"] = other.LossPct
+	}
+
+	if n.LossCorr != other.LossCorr {
+		diff["loss_corr"] = other.LossCorr
+	}
+
+	if n.DupePct != other.DupePct {
+		diff["dupe_pct"] = other.DupePct
+	}
+
+	if n.DupeCorr != other.DupeCorr {
+		diff["dupe_corr"] = other.DupeCorr
+	}
+
+	if n.CorruptPct != other.CorruptPct {
+		diff["corrupt_pct"] = other.CorruptPct
+	}
+
+	if n.CorruptCorr != other.CorruptCorr {
+		diff["corrupt_corr"] = other.CorruptCorr
+	}
+
+	if n.ReorderPct != other.ReorderPct {
+		diff["reorder_pct"] = other.ReorderPct
+	}
+
+	if n.ReorderCorr != other.ReorderCorr {
+		diff["reorder_corr"] = other.ReorderCorr
+	}
+
+	if n.ReorderGap != other.ReorderGap {
+		diff["reorder_gap"] = other.ReorderGap
+	}
+
+	if n.Rate != other.Rate {
+		diff["rate"] = other.Rate
+	}
+
+	if n.RatePktOverhead != other.RatePktOverhead {
+		diff["rate_pkt_overhead"] = other.RatePktOverhead
+	}
+
+	if n.RateCellSize != other.RateCellSize {
+		diff["rate_cell_size"] = other.RateCellSize
+	}
+
+	if n.RateCellOverhead != other.RateCellOverhead {
+		diff["rate_cell_overhead"] = other.RateCellOverhead
+	}
+
+	return diff
+}
+
 // HasDelaySettings method returns true if any delay settings are set
 func (n *Netem) HasDelaySettings() bool {
 	return n.Delay > 0 || n.DelayJitter > 0 || n.DelayCorr > 0 || n.HasReorderSettings()

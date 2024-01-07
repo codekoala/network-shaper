@@ -22,6 +22,12 @@ func (o *Opts) With(opts ...Opt) *Opts {
 	return o
 }
 
+func Name(in string) Opt {
+	return func(opts *Opts) {
+		opts.Name = in
+	}
+}
+
 func Label(in string) Opt {
 	return func(opts *Opts) {
 		opts.Label = in

@@ -5,6 +5,7 @@ package floatslider
 //
 //templ:component-opts
 type Opts struct {
+	Name     string
 	Label    string
 	Descr    string
 	Unit     string `default:"ms"`

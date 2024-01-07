@@ -6,6 +6,7 @@ import (
 
 	"github.com/a-h/templ"
 	networkshaper "github.com/codekoala/network-shaper"
+	"github.com/codekoala/network-shaper/netem"
 	"github.com/codekoala/network-shaper/view"
 	"github.com/codekoala/network-shaper/view/component"
 	"github.com/codekoala/network-shaper/view/layout"
@@ -19,6 +20,11 @@ import (
 var (
 	cfg   = networkshaper.GetDefaultConfig()
 	store *session.Store
+
+	currIn     *netem.Netem
+	pendingIn  *netem.Netem
+	currOut    *netem.Netem
+	pendingOut *netem.Netem
 )
 
 // main is the entrypoint for the Network Shaper tool
@@ -28,6 +34,14 @@ func main() {
 	app := fiber.New()
 	store = session.New()
 
+	cfg.Inbound.Device = "br0"
+	cfg.Outbound.Device = "wlan0"
+	currIn = netem.ParseCurrentNetem(cfg.Inbound.Device)
+	pendingIn = currIn.Clone()
+
+	currOut = netem.ParseCurrentNetem(cfg.Outbound.Device)
+	pendingOut = currOut.Clone()
+
 	app.Static("/static", "./static", fiber.Static{
 		Compress:  true,
 		ByteRange: true,
@@ -36,23 +50,12 @@ func main() {
 
 	app.Get("/", vIndex)
 	app.Get("/inbound", vInbound)
+	app.Post("/inbound/stage", stageChange)
 	app.Get("/outbound", vOutbound)
+	app.Post("/outbound/stage", stageChange)
 	app.Get("/devices", vDevices)
 
-	app.Post("/theme", func(c *fiber.Ctx) error {
-		theme := c.FormValue("theme")
-		log.Info().Str("theme", theme).Msg("set theme")
-		sess, err := store.Get(c)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to get session")
-		}
-		if theme == "" {
-			theme = model.DarkTheme
-		}
-		sess.Set("theme", theme)
-		sess.Save()
-		return RenderPartial(c, component.Theme(GetState(c)), true)
-	})
+	app.Post("/theme", setTheme)
 
 	if err := app.Listen(":3000"); err != nil {
 		log.Fatal().Err(err).Msg("error running server")
@@ -102,4 +105,30 @@ func vOutbound(c *fiber.Ctx) error {
 
 func vDevices(c *fiber.Ctx) error {
 	return Render(c, view.Foo())
+}
+
+func setTheme(c *fiber.Ctx) error {
+	theme := c.FormValue("theme")
+	log.Info().Str("theme", theme).Msg("set theme")
+	sess, err := store.Get(c)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get session")
+	}
+	if theme == "" {
+		theme = model.DarkTheme
+	}
+	sess.Set("theme", theme)
+	sess.Save()
+
+	return RenderPartial(c, component.Theme(GetState(c)), true)
+}
+
+func stageChange(c *fiber.Ctx) error {
+	device := c.FormValue("device")
+	field := c.FormValue("field")
+	value := c.FormValue("value")
+
+	log.Info().Str("device", device).Str("field", field).Str("value", value).Msg("stage change")
+
+	return c.JSON(fiber.Map{"success": true})
 }

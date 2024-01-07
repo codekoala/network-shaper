@@ -33,9 +33,9 @@ func GetDefaultConfig() *ShaperConfig {
 		Host:      "0.0.0.0",
 		Port:      80,
 		AllowNoIP: false,
-		Inbound: NetemConfig{Device: "eth0", Label: "Inbound", Netem: netem.Netem{
-			Delay:       123.45,
-			DelayJitter: 34.5,
+		Inbound:   NetemConfig{Device: "eth0", Label: "Inbound", Netem: netem.Netem{
+			// Delay:       123.45,
+			// DelayJitter: 34.5,
 		}},
 		Outbound: NetemConfig{Device: "eth1", Label: "Outbound", Netem: netem.Netem{}},
 	}
