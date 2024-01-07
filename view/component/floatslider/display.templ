@@ -17,11 +17,24 @@ templ FloatSlider(opts *Opts) {
     </div>
 
     <div class="align-middle col-span-3 py-3">
-      <input name={ opts.GetName() } type="range" min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="range range-primary" x-model="value" />
+      <input type="range"
+        min={ opts.MinStr() }
+        max={ opts.MaxStr() }
+        step={ opts.StepStr() }
+        class="range range-primary"
+        x-model="value"
+        hx-post="/stage" />
     </div>
 
     <div class="align-middle join">
-        <input type="number" name={ opts.GetName() } min={ opts.MinStr() } max={ opts.MaxStr() } step={ opts.StepStr() } class="join-item input input-bordered input-primary text-right w-32" x-model="value" />
+        <input type="number"
+          name={ opts.GetName() }
+          min={ opts.MinStr() }
+          max={ opts.MaxStr() }
+          step={ opts.StepStr() }
+          class="join-item input input-bordered input-primary text-right w-32"
+          x-model="value"
+          hx-post="/stage" />
         <button class="btn input-bordered join-item w-14" disabled>
           { opts.Unit }
         </button>

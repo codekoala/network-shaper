@@ -19,7 +19,13 @@ templ DelaySettings(cfg *netem.Netem) {
 		<div class="form-control">
 			<label class="label cursor-pointer">
 				<span class="label-text text-lg font-bold">Delay</span>
-				<input type="checkbox" class="toggle toggle-primary" x-model="enabled"/>
+				<input type="checkbox"
+          class="toggle toggle-primary"
+          x-model="enabled"
+          if cfg.HasDelaySettings() {
+            checked="checked"
+          }
+        />
 			</label>
 		</div>
 		<div>
@@ -57,7 +63,13 @@ templ DelaySettings(cfg *netem.Netem) {
 			<div class="form-control">
 				<label class="label cursor-pointer">
 					<span class="label-text text-lg font-bold">Reorder Packets</span>
-					<input type="checkbox" class="toggle toggle-primary" x-model="reorder"/>
+					<input type="checkbox"
+            class="toggle toggle-primary"
+            x-model="reorder"
+            if cfg.HasReorderSettings() {
+              checked="checked"
+            }
+          />
 				</label>
 			</div>
 			<section x-show="reorder" x-transition class="p-3">

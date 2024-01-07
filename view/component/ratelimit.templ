@@ -18,7 +18,13 @@ templ RateLimitSettings(cfg *netem.Netem) {
 		<div class="form-control">
 			<label class="label cursor-pointer">
 				<span class="label-text text-lg font-bold">Rate Limit</span>
-				<input type="checkbox" class="toggle toggle-primary" x-model="enabled"/>
+				<input type="checkbox"
+          class="toggle toggle-primary"
+          x-model="enabled"
+          if cfg.HasRateLimitSettings() {
+            checked="checked"
+          }
+        />
 			</label>
 		</div>
 		<div>
@@ -39,6 +45,7 @@ templ RateLimitSettings(cfg *netem.Netem) {
         fs.Unit("kb/s"),
         fs.Max(1000000.0),
         fs.Step(1.0),
+        fs.Value(cfg.Rate),
       ))
 			@fs.FloatSlider(fs.With(
         fs.Name("rate_pkt_overhead"),
@@ -52,6 +59,7 @@ templ RateLimitSettings(cfg *netem.Netem) {
         fs.Max(1000.0),
         fs.Step(1.0),
         fs.Optional(true),
+        fs.Value(float64(cfg.RatePktOverhead)),
       ))
 			@fs.FloatSlider(fs.With(
         fs.Name("rate_cell_size"),
@@ -65,6 +73,7 @@ templ RateLimitSettings(cfg *netem.Netem) {
         fs.Max(1000.0),
         fs.Step(1.0),
         fs.Optional(true),
+        fs.Value(float64(cfg.RateCellSize)),
       ))
 			@fs.FloatSlider(fs.With(
         fs.Name("rate_cell_overhead"),
@@ -77,6 +86,7 @@ templ RateLimitSettings(cfg *netem.Netem) {
         fs.Max(100.0),
         fs.Step(1.0),
         fs.Optional(true),
+        fs.Value(float64(cfg.RateCellOverhead)),
       ))
 		</section>
 	</div>

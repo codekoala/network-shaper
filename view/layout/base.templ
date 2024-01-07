@@ -1,16 +1,16 @@
 package layout
 
 import (
-  "fmt"
+	"fmt"
 	"github.com/codekoala/network-shaper/view/component"
 	"github.com/codekoala/network-shaper/view/model"
 )
 
 func GetBaseData(state model.GlobalState) string {
-  return fmt.Sprintf(
-    `{ lightTheme: $persist(%v) }`,
-    state.Theme == model.LightTheme,
-  )
+	return fmt.Sprintf(
+		`{ lightTheme: $persist(%v) }`,
+		state.Theme == model.LightTheme,
+	)
 }
 
 templ Base(state model.GlobalState, content templ.Component) {
@@ -19,6 +19,7 @@ templ Base(state model.GlobalState, content templ.Component) {
 		<head>
 			<title>Network Shaper - { state.GetTitle() }</title>
 			<script src="/static/htmx.min.js" defer></script>
+			<script src="/static/htmx.json-enc.js" defer></script>
 			<script src="/static/alpinejs.persist.js" defer></script>
 			<script src="/static/alpinejs.min.js" defer></script>
 			<script src="/static/site.js" defer></script>
@@ -48,7 +49,7 @@ templ Base(state model.GlobalState, content templ.Component) {
 						</div>
 					</div>
 					<div class="basis-1/12 mx-auto py-2" hx-swap="innerHTML" hx-target="this">
-            @component.Theme(state)
+						@component.Theme(state)
 					</div>
 				</div>
 				<div class="divider"></div>

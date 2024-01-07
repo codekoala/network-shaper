@@ -36,35 +36,35 @@ var (
 // Netem represents the netem configuration of a specific network interface
 type Netem struct {
 	// packet delay configuration
-	Delay           float64 `json:"delay"`
-	DelayUnit       string  `json:"delay_unit"`
-	DelayJitter     float64 `json:"delay_jitter"`
-	DelayJitterUnit string  `json:"delay_jitter_unit"`
-	DelayCorr       float64 `json:"delay_corr"`
+	Delay           float64 `json:"delay" form:"delay"`
+	DelayUnit       string  `json:"delay_unit" form:"delay_unit"`
+	DelayJitter     float64 `json:"delay_jitter" form:"delay_jitter"`
+	DelayJitterUnit string  `json:"delay_jitter_unit" form:"delay_jitter_unit"`
+	DelayCorr       float64 `json:"delay_corr" form:"delay_corr"`
 
 	// packet loss configuration
-	LossPct  float64 `json:"loss_pct"`
-	LossCorr float64 `json:"loss_corr"`
+	LossPct  float64 `json:"loss_pct" form:"loss_pct"`
+	LossCorr float64 `json:"loss_corr" form:"loss_corr"`
 
 	// packet duplication configuration
-	DupePct  float64 `json:"dupe_pct"`
-	DupeCorr float64 `json:"dupe_corr"`
+	DupePct  float64 `json:"dupe_pct" form:"dupe_pct"`
+	DupeCorr float64 `json:"dupe_corr" form:"dupe_corr"`
 
 	// packet corruption configuration
-	CorruptPct  float64 `json:"corrupt_pct"`
-	CorruptCorr float64 `json:"corrupt_corr"`
+	CorruptPct  float64 `json:"corrupt_pct" form:"corrupt_pct"`
+	CorruptCorr float64 `json:"corrupt_corr" form:"corrupt_corr"`
 
 	// packet reordering configuration
-	ReorderPct  float64 `json:"reorder_pct"`
-	ReorderCorr float64 `json:"reorder_corr"`
-	ReorderGap  int64   `json:"reorder_gap"`
+	ReorderPct  float64 `json:"reorder_pct" form:"reorder_pct"`
+	ReorderCorr float64 `json:"reorder_corr" form:"reorder_corr"`
+	ReorderGap  int64   `json:"reorder_gap" form:"reorder_gap"`
 
 	// rate limiting configuration
-	Rate             float64 `json:"rate"`
-	RateUnit         string  `json:"rate_unit"`
-	RatePktOverhead  int64   `json:"rate_pkt_overhead"`
-	RateCellSize     int64   `json:"rate_cell_size"`
-	RateCellOverhead int64   `json:"rate_cell_overhead"`
+	Rate             float64 `json:"rate" form:"rate"`
+	RateUnit         string  `json:"rate_unit" form:"rate_unit"`
+	RatePktOverhead  int64   `json:"rate_pkt_overhead" form:"rate_pkt_overhead"`
+	RateCellSize     int64   `json:"rate_cell_size" form:"rate_cell_size"`
+	RateCellOverhead int64   `json:"rate_cell_overhead" form:"rate_cell_overhead"`
 }
 
 func (n *Netem) Clone() *Netem {

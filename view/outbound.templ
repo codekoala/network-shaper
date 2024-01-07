@@ -14,5 +14,5 @@ templ OutboundRulesForm(cfg *netem.Netem) {
     These settings apply to traffic leaving the network controlled by the network shaper.
   </div>
 
-  @component.RulesForm(cfg)
+  @component.RulesForm("outbound", cfg)
 }

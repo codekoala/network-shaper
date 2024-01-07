@@ -50,12 +50,11 @@ func main() {
 
 	app.Get("/", vIndex)
 	app.Get("/inbound", vInbound)
-	app.Post("/inbound/stage", stageChange)
 	app.Get("/outbound", vOutbound)
-	app.Post("/outbound/stage", stageChange)
 	app.Get("/devices", vDevices)
 
 	app.Post("/theme", setTheme)
+	app.Post("/stage", stageChange)
 
 	if err := app.Listen(":3000"); err != nil {
 		log.Fatal().Err(err).Msg("error running server")
@@ -124,11 +123,15 @@ func setTheme(c *fiber.Ctx) error {
 }
 
 func stageChange(c *fiber.Ctx) error {
+	var pending netem.Netem
+	if err := c.BodyParser(&pending); err != nil {
+		log.Error().Err(err).Msg("failed to parse body")
+		return err
+	}
+
 	device := c.FormValue("device")
-	field := c.FormValue("field")
-	value := c.FormValue("value")
 
-	log.Info().Str("device", device).Str("field", field).Str("value", value).Msg("stage change")
+	log.Info().Str("device", device).Interface("erf", pending).Msg("stage change")
 
-	return c.JSON(fiber.Map{"success": true})
+	return RenderPartial(c, component.RulesForm(device, &pending), true)
 }

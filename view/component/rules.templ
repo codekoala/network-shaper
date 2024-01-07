@@ -2,10 +2,14 @@ package component
 
 import "github.com/codekoala/network-shaper/netem"
 
-templ RulesForm(cfg *netem.Netem) {
-  @DelaySettings(cfg)
-  @RateLimitSettings(cfg)
-  @CorruptionSettings(cfg)
-  @DuplicationSettings(cfg)
-  @PacketLossSettings(cfg)
+templ RulesForm(device string, cfg *netem.Netem) {
+  <form hx-post="/stage" hx-target="this">
+    <input type="hidden" name="device" value={ device } />
+
+    @DelaySettings(cfg)
+    @RateLimitSettings(cfg)
+    @CorruptionSettings(cfg)
+    @DuplicationSettings(cfg)
+    @PacketLossSettings(cfg)
+  </form>
 }
