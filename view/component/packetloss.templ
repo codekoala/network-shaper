@@ -18,7 +18,13 @@ templ PacketLossSettings(cfg *netem.Netem) {
     <div class="form-control">
       <label class="label cursor-pointer">
         <span class="label-text text-lg font-bold">Packet Loss</span>
-        <input type="checkbox" class="toggle toggle-primary" x-model="enabled" />
+        <input type="checkbox"
+          class="toggle toggle-primary"
+          x-model="enabled"
+          if cfg.HasLossSettings() {
+            checked="checked"
+          }
+        />
       </label>
     </div>
 
@@ -33,6 +39,7 @@ templ PacketLossSettings(cfg *netem.Netem) {
         fs.Name("loss_pct"),
         fs.Label("Percent"),
         fs.Unit("%"),
+        fs.Value(cfg.LossPct),
       ))
 
       @fs.FloatSlider(fs.With(
@@ -40,6 +47,7 @@ templ PacketLossSettings(cfg *netem.Netem) {
         fs.Label("Correlation"),
         fs.Unit("%"),
         fs.Optional(true),
+        fs.Value(cfg.LossCorr),
       ))
     </section>
   </div>

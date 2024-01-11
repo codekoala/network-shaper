@@ -18,7 +18,13 @@ templ CorruptionSettings(cfg *netem.Netem) {
 		<div class="form-control">
 			<label class="label cursor-pointer">
 				<span class="label-text text-lg font-bold">Corruption</span>
-				<input type="checkbox" class="toggle toggle-primary" x-model="enabled"/>
+				<input type="checkbox"
+          class="toggle toggle-primary"
+          x-model="enabled"
+          if cfg.HasCorruptionSettings() {
+            checked="checked"
+          }
+        />
 			</label>
 		</div>
 		<div>
@@ -30,12 +36,14 @@ templ CorruptionSettings(cfg *netem.Netem) {
         fs.Name("corrupt_pct"),
         fs.Label("Percent"),
         fs.Unit("%"),
+        fs.Value(cfg.CorruptPct),
       ))
 			@fs.FloatSlider(fs.With(
         fs.Name("corrupt_corr"),
         fs.Label("Correlation"),
         fs.Unit("%"),
         fs.Optional(true),
+        fs.Value(cfg.CorruptCorr),
       ))
 		</section>
 	</div>

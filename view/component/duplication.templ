@@ -18,7 +18,13 @@ templ DuplicationSettings(cfg *netem.Netem) {
 		<div class="form-control">
 			<label class="label cursor-pointer">
 				<span class="label-text text-lg font-bold">Duplication</span>
-				<input type="checkbox" class="toggle toggle-primary" x-model="enabled"/>
+				<input type="checkbox"
+          class="toggle toggle-primary"
+          x-model="enabled"
+          if cfg.HasDuplicationSettings() {
+            checked="checked"
+          }
+        />
 			</label>
 		</div>
 		<div>
@@ -30,12 +36,14 @@ templ DuplicationSettings(cfg *netem.Netem) {
         fs.Name("dupe_pct"),
         fs.Label("Percent"),
         fs.Unit("%"),
+        fs.Value(cfg.DupePct),
       ))
 			@fs.FloatSlider(fs.With(
          fs.Name("dupe_corr"),
         fs.Label("Correlation"),
         fs.Unit("%"),
         fs.Optional(true),
+        fs.Value(cfg.DupeCorr),
       ))
 		</section>
 	</div>

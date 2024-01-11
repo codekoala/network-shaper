@@ -95,11 +95,11 @@ func vIndex(c *fiber.Ctx) error {
 }
 
 func vInbound(c *fiber.Ctx) error {
-	return Render(c, view.InboundRulesForm(&cfg.Inbound.Netem))
+	return Render(c, view.InboundRulesForm(pendingIn))
 }
 
 func vOutbound(c *fiber.Ctx) error {
-	return Render(c, view.OutboundRulesForm(&cfg.Outbound.Netem))
+	return Render(c, view.OutboundRulesForm(pendingOut))
 }
 
 func vDevices(c *fiber.Ctx) error {
@@ -130,6 +130,12 @@ func stageChange(c *fiber.Ctx) error {
 	}
 
 	device := c.FormValue("device")
+	switch device {
+	case "inbound":
+		pendingIn = &pending
+	case "outbound":
+		pendingOut = &pending
+	}
 
 	log.Info().Str("device", device).Interface("erf", pending).Msg("stage change")
 
