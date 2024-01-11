@@ -12,6 +12,7 @@ import (
 	"github.com/codekoala/network-shaper/view/layout"
 	"github.com/codekoala/network-shaper/view/model"
 	fiber "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -32,6 +33,7 @@ func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	app := fiber.New()
+	app.Use(compress.New())
 	store = session.New()
 
 	cfg.Inbound.Device = "br0"
