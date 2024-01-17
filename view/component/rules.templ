@@ -1,10 +1,16 @@
 package component
 
-import "github.com/codekoala/network-shaper/netem"
+import (
+"strings"
+"github.com/codekoala/network-shaper/netem"
+)
 
 templ RulesForm(device string, cfg *netem.Netem) {
   <form hx-post="/stage" hx-target="this">
     <input type="hidden" name="device" value={ device } />
+
+    <code>{ cfg.String() }</code>
+    <pre>tc { strings.Join(cfg.ToArgs(device), " ") }</pre>
 
     @DelaySettings(cfg)
     @RateLimitSettings(cfg)

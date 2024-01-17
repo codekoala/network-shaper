@@ -202,6 +202,100 @@ func (n *Netem) Parse(rule string) {
 	n.ParseRate(rule)
 }
 
+// String method returns the netem rule as a string
+func (n *Netem) String() string {
+	return "tc " + strings.Join(n.ToArgs("<device>"), " ")
+}
+
+// ToArgs method returns the netem rule as a list of arguments to `tc`
+func (n *Netem) ToArgs(device string) (args []string) {
+	var unit string
+
+	defArgs := []string{"qdisc", "replace", "dev", device, "root", "netem"}
+
+	if n.Delay > 0 {
+		unit = GetTimeUnit(n.DelayUnit, "ms")
+		args = append(args, "delay")
+		args = append(args, f2str(n.Delay)+unit)
+
+		if n.DelayJitter > 0 {
+			unit = GetTimeUnit(n.DelayJitterUnit, "ms")
+			args = append(args, f2str(n.DelayJitter)+unit)
+
+			if n.DelayCorr > 0 {
+				args = append(args, f2str(n.DelayCorr)+"%")
+			}
+		}
+
+		// packet reordering requires a delay to be specified
+		if n.ReorderPct > 0 {
+			args = append(args, "reorder")
+			args = append(args, f2str(n.ReorderPct)+"%")
+			if n.ReorderCorr > 0 {
+				args = append(args, f2str(n.ReorderCorr)+"%")
+			}
+
+			if n.ReorderGap > 0 {
+				args = append(args, "gap")
+				args = append(args, strconv.FormatInt(n.ReorderGap, 10))
+			}
+		}
+
+	}
+
+	if n.CorruptPct > 0 {
+		args = append(args, "corrupt")
+		args = append(args, f2str(n.CorruptPct)+"%")
+		if n.CorruptCorr > 0 {
+			args = append(args, f2str(n.CorruptCorr)+"%")
+		}
+	}
+
+	if n.DupePct > 0 {
+		args = append(args, "duplicate")
+		args = append(args, f2str(n.DupePct)+"%")
+		if n.DupeCorr > 0 {
+			args = append(args, f2str(n.DupeCorr)+"%")
+		}
+	}
+
+	if n.LossPct > 0 {
+		args = append(args, "loss")
+		args = append(args, f2str(n.LossPct)+"%")
+		if n.LossCorr > 0 {
+			args = append(args, f2str(n.LossCorr)+"%")
+		}
+	}
+
+	if n.Rate > 0 {
+		args = append(args, "rate")
+		unit = GetRateUnit(n.RateUnit, "kbit")
+		args = append(args, f2str(n.Rate)+unit)
+
+		// packet overhead can be negative or positive
+		if n.RatePktOverhead != 0 {
+			args = append(args, strconv.FormatInt(n.RatePktOverhead, 10))
+
+			// cell size is unsigned
+			if n.RateCellSize > 0 {
+				args = append(args, strconv.FormatInt(n.RateCellSize, 10))
+
+				// cell overhead can be negative or positive
+				if n.RateCellOverhead != 0 {
+					args = append(args, strconv.FormatInt(n.RateCellOverhead, 10))
+				}
+			}
+		}
+	}
+
+	// try to apply the settings if we have any to set
+	if len(args) > 0 {
+		args = append(defArgs, args...)
+	}
+
+	return
+}
+
 // Apply method configures netem for the specified device.
 func (n *Netem) Apply(device string) error {
 	var (
